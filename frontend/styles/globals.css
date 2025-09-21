@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Global base styles following design system */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-text-primary;
+    @apply transition-colors duration-200;
+  }
+
+  /* Light mode override */
+  .light body {
+    @apply bg-background-light text-text-light-primary;
+  }
+}
+
+/* Component styles following copilot-rules.md */
+@layer components {
+  /* Card component - flat design, 12px radius, 1px border */
+  .ofc-card {
+    @apply bg-background-card border border-border rounded-card p-4;
+    @apply transition-colors duration-200;
+  }
+
+  .light .ofc-card {
+    @apply bg-background-light border-border-light;
+  }
+
+  /* Badge component with semantic colors and icons */
+  .ofc-badge {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium;
+  }
+
+  .ofc-badge--vigente {
+    @apply bg-primary/10 text-primary border border-primary/20;
+  }
+
+  .ofc-badge--pendiente {
+    @apply bg-warn/10 text-warn border border-warn/20;
+  }
+
+  .ofc-badge--vencido {
+    @apply bg-danger/10 text-danger border border-danger/20;
+  }
+
+  /* KPI Card with large values and trends */
+  .ofc-kpi-card {
+    @apply ofc-card flex flex-col;
+  }
+
+  .ofc-kpi-value {
+    @apply text-2xl font-bold text-text-primary;
+  }
+
+  .light .ofc-kpi-value {
+    @apply text-text-light-primary;
+  }
+
+  .ofc-kpi-label {
+    @apply text-sm text-text-secondary;
+  }
+
+  .light .ofc-kpi-label {
+    @apply text-text-light-secondary;
+  }
+
+  /* Table styles - gray header, row separators */
+  .ofc-table {
+    @apply w-full border-collapse;
+  }
+
+  .ofc-table th {
+    @apply bg-header text-left p-3 border-b border-border text-sm font-medium;
+  }
+
+  .light .ofc-table th {
+    @apply bg-header-light;
+  }
+
+  .ofc-table td {
+    @apply p-3 border-b border-border/30;
+  }
+
+  .light .ofc-table td {
+    @apply border-border-light/30;
+  }
+
+  /* Button variants */
+  .ofc-button {
+    @apply px-4 py-2 rounded font-medium transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
+
+  .ofc-button--primary {
+    @apply bg-primary text-black hover:bg-primary-600;
+  }
+
+  .ofc-button--secondary {
+    @apply bg-transparent border border-border text-text-primary;
+    @apply hover:bg-background-secondary;
+  }
+
+  .light .ofc-button--secondary {
+    @apply border-border-light text-text-light-primary hover:bg-background-light-secondary;
+  }
+
+  .ofc-button--danger {
+    @apply bg-danger text-white hover:bg-danger/90;
+  }
+
+  /* Input styles */
+  .ofc-input {
+    @apply w-full px-3 py-2 bg-background-card border border-border rounded;
+    @apply text-text-primary placeholder-text-tertiary;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary;
+  }
+
+  .light .ofc-input {
+    @apply bg-background-light border-border-light text-text-light-primary;
+    @apply placeholder-text-light-tertiary;
+  }
+
+  /* Progress bar */
+  .ofc-progress {
+    @apply w-full bg-background-secondary rounded-full h-2;
+  }
+
+  .light .ofc-progress {
+    @apply bg-background-light-secondary;
+  }
+
+  .ofc-progress-fill {
+    @apply bg-primary h-2 rounded-full transition-all duration-300;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-muted {
+    @apply text-text-tertiary;
+  }
+
+  .light .text-muted {
+    @apply text-text-light-tertiary;
+  }
+
+  .border-muted {
+    @apply border-border/30;
+  }
+
+  .light .border-muted {
+    @apply border-border-light/30;
+  }
+}

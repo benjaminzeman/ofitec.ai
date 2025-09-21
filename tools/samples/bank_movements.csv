@@ -1,0 +1,3 @@
+Fecha,Banco,Cuenta,Glosa,Monto,Moneda,Tipo,Saldo,Referencia,ID
+2025-02-12,BancoChile,12345678,Compra combustible,-125000,CLP,debit,5000000,OC-123,CART-0001
+2025-02-14,BancoChile,12345678,Abono cliente,2500000,CLP,credit,7500000,INV-456,CART-0002

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conciliación Bancaria - OFITEC ofitec.ai</title>
+    <link rel="stylesheet" href="/static/css/fusion_theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="fusion-container">
+        <!-- Navigation -->
+        <nav class="fusion-nav">
+            <div class="nav-brand">
+                <i class="fas fa-building"></i>
+                <span>OFITEC ofitec.ai</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/conciliacion" class="nav-link active">
+                    <i class="fas fa-balance-scale"></i>
+                    <span>Conciliación</span>
+                </a>
+                <a href="/facturas-venta" class="nav-link">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Facturas Venta</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- CEO Copilot Panel -->
+        <div class="copilot-panel" id="copilotPanel">
+            <div class="copilot-header">
+                <div class="copilot-title">
+                    <i class="fas fa-robot"></i>
+                    <span>CEO Copilot IA</span>
+                </div>
+                <button class="copilot-toggle" onclick="toggleCopilot()">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+            <div class="copilot-content" id="copilotContent">
+                <div class="copilot-messages" id="copilotMessages">
+                    <div class="copilot-message bot">
+                        <div class="message-content">
+                            ¡Hola! Soy tu CEO Copilot. ¿En qué puedo ayudarte con la conciliación bancaria?
+                        </div>
+                    </div>
+                </div>
+                <div class="copilot-input">
+                    <input type="text" id="copilotQuery" placeholder="Pregunta sobre conciliación bancaria..." onkeypress="handleCopilotKeyPress(event)">
+                    <button onclick="sendCopilotMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="fusion-main">
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-balance-scale"></i>
+                    Conciliación Bancaria
+                </h1>
+                <p>Revisión y conciliación de movimientos bancarios con IA</p>
+            </div>
+
+            <!-- Conciliación Content -->
+            <div class="conciliacion-container">
+                <!-- Resumen -->
+                <div class="conciliacion-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3>Conciliados</h3>
+                            <span id="totalConciliados">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3>Pendientes</h3>
+                            <span id="totalPendientes">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3>Discrepancias</h3>
+                            <span id="totalDiscrepancias">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="conciliacion-filters">
+                    <div class="filter-group">
+                        <label>Banco:</label>
+                        <select id="filtroBanco">
+                            <option value="">Todos los bancos</option>
+                            <option value="Banco de Chile">Banco de Chile</option>
+                            <option value="Santander">Santander</option>
+                            <option value="BCI">BCI</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Estado:</label>
+                        <select id="filtroEstado">
+                            <option value="">Todos</option>
+                            <option value="conciliado">Conciliado</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="discrepancia">Discrepancia</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha:</label>
+                        <input type="date" id="filtroFechaDesde">
+                        <input type="date" id="filtroFechaHasta">
+                    </div>
+                    <button class="btn-apply-filters" onclick="aplicarFiltros()">
+                        <i class="fas fa-filter"></i>
+                        Aplicar Filtros
+                    </button>
+                </div>
+
+                <!-- Tabla de Movimientos -->
+                <div class="conciliacion-table">
+                    <table id="tablaConciliacion">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Banco</th>
+                                <th>Descripción</th>
+                                <th>Cargo</th>
+                                <th>Abono</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaConciliacionBody">
+                            <!-- Datos cargados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="conciliacion-actions">
+                    <button class="btn-conciliar" onclick="conciliarAutomatico()">
+                        <i class="fas fa-magic"></i>
+                        Conciliación Automática IA
+                    </button>
+                    <button class="btn-export" onclick="exportarConciliacion()">
+                        <i class="fas fa-download"></i>
+                        Exportar Resultados
+                    </button>
+                    <button class="btn-refresh" onclick="actualizarDatos()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/fusion_portal.js"></script>
+    <script>
+        // Cargar datos específicos de conciliación al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConciliacionData();
+        });
+
+        function aplicarFiltros() {
+            console.log('Aplicando filtros de conciliación...');
+            loadConciliacionData();
+        }
+
+        function conciliarAutomatico() {
+            console.log('Iniciando conciliación automática con IA...');
+            // Implementar lógica de conciliación automática
+        }
+
+        function exportarConciliacion() {
+            console.log('Exportando resultados de conciliación...');
+            // Implementar exportación
+        }
+
+        function actualizarDatos() {
+            console.log('Actualizando datos de conciliación...');
+            loadConciliacionData();
+        }
+    </script>
+</body>
+</html>
+
+

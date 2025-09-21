@@ -1,0 +1,10 @@
+[run]
+branch = True
+source = backend
+omit = 
+    backend/server_copy_tmp.py
+    backend/server_nocrlf.py
+
+[report]
+show_missing = True
+skip_covered = True

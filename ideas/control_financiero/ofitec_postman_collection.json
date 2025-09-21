@@ -1,0 +1,92 @@
+{
+  "info": {
+    "name": "OFITEC Control Proyectos",
+    "_postman_id": "c7f9e7c4-7d9a-41b2-9d5d-ctrlfin",
+    "description": "Colección para probar endpoints de control financiero de proyectos en OFITEC.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET /api/projects/control",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5555/api/projects/control?with_meta=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5555",
+          "path": [
+            "api",
+            "projects",
+            "control"
+          ],
+          "query": [
+            {
+              "key": "with_meta",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET /api/projects/:id/ledger",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5555/api/projects/{{project_id}}/ledger",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5555",
+          "path": [
+            "api",
+            "projects",
+            "{{project_id}}",
+            "ledger"
+          ]
+        }
+      },
+      "variable": [
+        {
+          "key": "project_id",
+          "value": "PROYECTO_X"
+        }
+      ]
+    },
+    {
+      "name": "POST /api/aliases/project",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"from\": \"Proyecto X Excel\", \"to\": \"Proyecto X ERP\"}"
+        },
+        "url": {
+          "raw": "http://localhost:5555/api/aliases/project",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5555",
+          "path": [
+            "api",
+            "aliases",
+            "project"
+          ]
+        }
+      }
+    }
+  ]
+}

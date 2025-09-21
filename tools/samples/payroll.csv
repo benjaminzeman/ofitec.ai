@@ -1,0 +1,3 @@
+Periodo,RUT_Trabajador,Nombre,Cargo,Bruto,Liquido,Descuentos,FechaPago,Fuente
+2025-01,12345678-5,Juan Perez,Maestro,900000,700000,200000,2025-02-05,SAMPLE
+2025-02,12345678-5,Juan Perez,Maestro,900000,700000,200000,2025-03-05,SAMPLE

@@ -1,0 +1,187 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  schedule:
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+    inputs:
+      run_stress:
+        description: "Run stress tests"
+        required: false
+        default: "false"
+      run_perf:
+        description: "Run performance tests"
+        required: false
+        default: "true"
+      perf_budget_ms:
+        description: "Override PERF_SUGGEST_P95_BUDGET_MS"
+        required: false
+        default: "120"
+      max_failure_ratio:
+        description: "Max allowed failure_ratio"
+        required: false
+        default: "0.02"
+      max_drop_ratio:
+        description: "Max allowed drop_ratio"
+        required: false
+        default: "0.05"
+      min_coverage:
+        description: "Minimum backend coverage % (lines)"
+        required: false
+        default: "70"
+
+concurrency:
+  group: ci-tests-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  lint-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Install frontend deps
+        run: |
+          cd frontend && npm ci
+      - name: Run format check
+        run: |
+          npm run format:check || (echo "Formatting issues detected" && exit 1)
+      - name: Run lint
+        run: |
+          npm run lint -- --no-error-on-unmatched-pattern
+
+  core:
+    runs-on: ubuntu-latest
+    env:
+      SKIP_STRESS_TESTS: 1
+      SKIP_PERF_TESTS: 1
+      MIN_COVERAGE: ${{ github.event.inputs.min_coverage || '70' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Run unit tests with coverage
+        run: |
+          pytest -q --cov=backend --cov-report=term-missing --cov-report=xml:coverage.xml
+      - name: Enforce coverage threshold
+        run: |
+          pct=$(grep -E 'line-rate' coverage.xml | head -n1 | sed -E 's/.*line-rate="([0-9\.]+)".*/\1/')
+          perc=$(python -c "import sys;print(f'{float(sys.argv[1])*100:.2f}')" "$pct" 2>/dev/null || echo 0)
+          echo "Reported line coverage: ${perc}% (min ${MIN_COVERAGE}%)"
+          awk -v p="$perc" -v m="$MIN_COVERAGE" 'BEGIN{ if (p+0 < m+0) { printf("Coverage %.2f < %.2f\n", p,m); exit 1 } }'
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: |
+            coverage.xml
+            .coverage
+
+  perf:
+    if: ${{ github.event.inputs.run_perf != 'false' }}
+    runs-on: ubuntu-latest
+    needs: core
+    env:
+      PERF_SUGGEST_P95_BUDGET_MS: ${{ github.event.inputs.perf_budget_ms || '120' }}
+      PERF_BASELINE_JSON: perf_result.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Run perf tests
+        run: |
+          pytest -q -m perf
+      - name: Append perf summary
+        if: always()
+        run: |
+          if [ -f perf_result.json ]; then
+            echo "### Performance Baseline" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '\n\n\`perf_result.json\` contenido:' >> $GITHUB_STEP_SUMMARY
+            cat perf_result.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No perf_result.json generado" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Update cumulative perf CSV
+        if: always()
+        run: |
+          if [ -f perf_result.json ]; then
+            ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            iter=$(jq -r '.iterations' perf_result.json)
+            mean=$(jq -r '.mean_ms' perf_result.json)
+            p95=$(jq -r '.p95_ms' perf_result.json)
+            budget=$(jq -r '.budget_ms' perf_result.json)
+            echo "timestamp,iterations,mean_ms,p95_ms,budget_ms" > perf_row.tmp
+            echo "$ts,$iter,$mean,$p95,$budget" >> perf_row.tmp
+            if [ -f perf_history.csv ]; then
+              echo "Appending to existing perf_history.csv";
+              # Skip header of temp row when appending
+              tail -n 1 perf_row.tmp >> perf_history.csv
+            else
+              mv perf_row.tmp perf_history.csv
+            fi
+          fi
+      - name: Upload perf history artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-history
+          path: perf_history.csv
+          if-no-files-found: ignore
+      - name: Upload perf artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-baseline-json
+          path: perf_result.json
+          if-no-files-found: ignore
+
+  stress:
+    if: ${{ github.event.inputs.run_stress == 'true' }}
+    runs-on: ubuntu-latest
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Run stress tests
+        run: |
+          pytest -q -m stress
+
+  quality-thresholds:
+    runs-on: ubuntu-latest
+    needs: core
+    env:
+      MAX_FAILURE_RATIO: ${{ github.event.inputs.max_failure_ratio || '0.02' }}
+      MAX_DROP_RATIO: ${{ github.event.inputs.max_drop_ratio || '0.05' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Run threshold test
+        run: |
+          pytest -q -k quality_thresholds

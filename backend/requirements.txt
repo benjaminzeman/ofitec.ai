@@ -1,0 +1,10 @@
+flask
+flask-cors
+pandas
+python-dotenv
+
+openpyxl>=3.1.0
+pytest
+pytest-cov
+rapidfuzz>=3.0.0
+prometheus-client>=0.20.0

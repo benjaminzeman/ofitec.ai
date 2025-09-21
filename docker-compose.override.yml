@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ofitec-postgres
+    environment:
+      POSTGRES_DB: ofitec
+      POSTGRES_USER: ofitec
+      POSTGRES_PASSWORD: ofitec
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    environment:
+      DATABASE_URL: postgresql+psycopg2://ofitec:ofitec@postgres:5432/ofitec
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "python -c \"import urllib.request,sys;\ntry:\n urllib.request.urlopen('http://localhost:5555/api/health', timeout=5)\n sys.exit(0)\nexcept Exception:\n sys.exit(1)\n\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    environment:
+      NEXT_PUBLIC_API_BASE: http://backend:5555/api
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "node -e \"(async () => { try { const res = await fetch('http://localhost:3001/api/health?ping=1'); process.exit(res.ok ? 0 : 1); } catch (err) { process.exit(1); } })();\""]
+      interval: 30s
+      timeout: 10s
+    
+volumes:
+  postgres-data:

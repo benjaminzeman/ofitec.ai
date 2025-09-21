@@ -1,0 +1,28 @@
+# Ofitec ETL config (example)
+version: 1
+defaults:
+  delimiter: auto
+  decimal: auto  # accepts ',' or '.'
+  date_formats: ["%Y-%m-%d","%d-%m-%Y","%d/%m/%Y"]
+  currency: "CLP"
+sheets:
+  - sheet: "Presupuesto"
+    header_row: 1
+    target_table: "partidas"
+    column_map: {"codigo_partida": "ITEM", "descripcion": "DESCRIPCION", "unidad": "UNIDAD", "cantidad": "CANTIDAD", "precio_unitario": "PRECIO UNITARIO $", "total": "PRECIO TOTAL $"}
+    interactive_if_ambiguous: true
+  - sheet: "Partidas"
+    header_row: 1
+    target_table: "partidas"
+    column_map: {"codigo_partida": "ITEM", "descripcion": "DESCRIPCION", "unidad": "UNI", "cantidad": "Cantidad", "precio_unitario": "PU", "total": "Subtotal"}
+    interactive_if_ambiguous: true
+  - sheet: "Recursos"
+    header_row: 1
+    target_table: "partidas"
+    column_map: {"descripcion": "Descripcion", "unidad": "RecursoID", "cantidad": "Cant de Dias", "total": "TOTAL HH"}
+    interactive_if_ambiguous: true
+  - sheet: "Costo_Indirecto"
+    header_row: 1
+    target_table: "partidas"
+    column_map: {"codigo_partida": "ITEM", "descripcion": "DESCRIPCIÓN", "unidad": "UD", "cantidad": "CANTIDAD", "precio_unitario": "P. UNITARIO", "total": "TOTAL"}
+    interactive_if_ambiguous: true

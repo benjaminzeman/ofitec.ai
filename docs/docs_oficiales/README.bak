@@ -1,0 +1,83 @@
+# 📚 DOCUMENTOS OFICIALES OFITEC.AI
+
+**Carpeta:** `docs_oficiales/`  
+**Propósito:** Documentación estratégica y normativa oficial del sistema OFITEC  
+**Estado:** Centralizada y organizada  
+
+---
+
+## 🏛️ DOCUMENTOS ESTRATÉGICOS FUNDAMENTALES
+
+### 1. LEY_DE_BASE_DATOS_OFICIAL.md
+- **Propósito:** Estándares NASA para gestión de datos críticos
+- **Alcance:** Toda la base de datos chipax_data.db
+- **Cumplimiento:** OBLIGATORIO
+- **Última actualización:** 12 Sept 2025
+
+### 2. LEY_DE_PUERTOS_OFICIAL.md  
+- **Propósito:** Gobernanza de arquitectura de puertos
+- **Alcance:** Todos los servicios y APIs
+- **Cumplimiento:** OBLIGATORIO
+- **Última actualización:** 12 Sept 2025
+
+### 3. ESTRATEGIA_CREACION_PAGINAS.md
+- **Propósito:** Metodología para desarrollo de páginas
+- **Alcance:** Frontend y componentes React/Next.js
+- **Cumplimiento:** RECOMENDADO
+- **Última actualización:** [fecha original]
+
+### 4. ESTRATEGIA_VISUAL.md
+- **Propósito:** Directrices de diseño visual y UX
+- **Alcance:** Toda la interfaz de usuario
+- **Cumplimiento:** RECOMENDADO  
+- **Última actualización:** [fecha original]
+
+### 5. MAPEO_BASE_DATOS_PAGINAS.md
+- **Propósito:** Relación entre datos y páginas del portal
+- **Alcance:** Integración frontend-backend
+- **Cumplimiento:** REFERENCIA OBLIGATORIA
+- **Última actualización:** [fecha original]
+
+### 6. ESTADO_SISTEMA_ORGANIZADO.md
+- **Propósito:** Estado actual del sistema completamente organizado
+- **Alcance:** Resumen ejecutivo de toda la arquitectura
+- **Cumplimiento:** REFERENCIA DE ESTADO
+- **Última actualización:** 11 Sept 2024
+
+---
+
+## 📋 CÓMO USAR ESTOS DOCUMENTOS
+
+### Para Desarrolladores:
+1. **Antes de cualquier cambio:** Consultar documentos relevantes
+2. **LEY_DE_BASE_DATOS_OFICIAL.md:** Para cualquier operación de datos
+3. **LEY_DE_PUERTOS_OFICIAL.md:** Para servicios y APIs
+4. **ESTRATEGIA_CREACION_PAGINAS.md:** Para nuevas páginas
+5. **ESTRATEGIA_VISUAL.md:** Para componentes UI
+6. **MAPEO_BASE_DATOS_PAGINAS.md:** Para integración de datos
+
+### Para Gestión de Proyecto:
+- Estos documentos son la **ÚNICA FUENTE DE VERDAD**
+- Cualquier desviación debe ser documentada y aprobada
+- Revisión trimestral obligatoria
+
+---
+
+## 🔄 CONTROL DE VERSIONES
+
+- **Versión Actual:** 1.0 (Centralizada)
+- **Próxima Revisión:** Diciembre 2025
+- **Responsable:** Equipo de Arquitectura OFITEC
+
+---
+
+## 🚨 IMPORTANTE
+
+**TODOS los desarrollos deben cumplir con estos documentos.**
+
+**No se permiten cambios arbitrarios sin consultar estas normativas.**
+
+---
+
+*"Documentación centralizada = Desarrollo ordenado"*
+

@@ -1,0 +1,37 @@
+# Node
+frontend/node_modules/
+frontend/.next/
+node_modules/
+
+# Python cache & test artifacts
+/.pytest_cache/
+
+# Placeholder artifacts
+%s
+
+# Python
+**/__pycache__/
+*.pyc
+
+# Data
+data/*.db
+*.db
+*.db.*
+data/raw/**
+data/backups/**
+data/processed/**
+
+# Logs
+logs/
+*.log
+
+# External services (treat as submodule/repo)
+services/conciliacion_bancaria/
+
+# Env
+.env
+backend/.env
+
+# OS
+.DS_Store
+Thumbs.db

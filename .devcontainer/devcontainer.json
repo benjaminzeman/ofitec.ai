@@ -1,0 +1,34 @@
+{
+  "name": "ofitec.ai Codespace",
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "forwardPorts": [3001, 5555],
+  "portsAttributes": {
+    "3001": { "label": "Frontend (Next.js)" },
+    "5555": { "label": "Backend (Flask)" }
+  },
+  "postCreateCommand": "/bin/bash -lc 'cd frontend && npm ci --no-audit --no-fund && cd ../backend && pip install -r requirements.txt'",
+  "postAttachCommand": "/bin/bash -lc 'echo Codespace ready'"
+}

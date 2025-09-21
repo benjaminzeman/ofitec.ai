@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ofitec.ai - Dashboard Ejecutivo</title>
+    
+    <!-- CSS Fusion Theme -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fusion_theme.css') }}">
+    
+    <!-- Fuentes e iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Meta tags para SEO -->
+    <meta name="description" content="Portal Ejecutivo OFITEC - Dashboard en tiempo real con CEO Copilot IA">
+    <meta name="keywords" content="OFITEC, dashboard, ejecutivo, construcción, proyectos, finanzas">
+    
+    <!-- Preload para performance -->
+    <link rel="preload" href="{{ url_for('static', filename='js/fusion_portal.js') }}" as="script">
+</head>
+<body>
+    <!-- Navigation Header Fusion -->
+    <nav class="portal-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-building"></i>
+                <span>OFITEC</span>
+                <span class="version">ofitec.ai v1.0</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="/" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/home-executive" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Home Ejecutiva</span>
+                </a>
+                <a href="/conciliacion" class="nav-link">
+                    <i class="fas fa-university"></i>
+                    <span>Conciliación</span>
+                </a>
+                <a href="/facturas-venta" class="nav-link">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Fact. Venta</span>
+                </a>
+                <a href="/facturas-compra" class="nav-link">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Fact. Compra</span>
+                </a>
+                <a href="/impuestos" class="nav-link">
+                    <i class="fas fa-calculator"></i>
+                    <span>Impuestos</span>
+                </a>
+                <a href="/cartola-bancaria" class="nav-link">
+                    <i class="fas fa-money-check-alt"></i>
+                    <span>Cartola</span>
+                </a>
+                <a href="/proyectos" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Proyectos</span>
+                </a>
+                <a href="/finanzas" class="nav-link">
+                    <i class="fas fa-chart-area"></i>
+                    <span>Finanzas</span>
+                </a>
+                <a href="/centro-operativo" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Centro Op.</span>
+                </a>
+                <a href="/documentos" class="nav-link">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Documentos</span>
+                </a>
+                <a href="/reportes" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="copilot-toggle" onclick="toggleCopilot()" title="CEO Copilot IA (Alt+C)">
+                    <i class="fas fa-robot"></i>
+                    <span>CEO Copilot</span>
+                </button>
+                <div class="user-menu">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Administrador</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container">
+        <!-- Dashboard Grid Fusion -->
+        <div class="dashboard-grid">
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Executive Summary Header -->
+                <div class="page-header">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard Ejecutivo OFITEC
+                        <span class="live-indicator">
+                            <i class="fas fa-circle pulse"></i>
+                            En vivo
+                        </span>
+                    </h1>
+                    <p class="page-subtitle">
+                        Plataforma ofitec.ai con CEO Copilot IA y datos reales de Chipax
+                    </p>
+                    <div id="data-source-indicator" style="margin-top: 10px; font-weight: 600;">
+                        🔄 Cargando fuente de datos...
+                    </div>
+                </div>
+
+                <!-- Health Score Card -->
+                <div class="health-score-card">
+                    <h3 style="margin-bottom: 20px; color: var(--text-primary);">
+                        <i class="fas fa-heartbeat"></i>
+                        Salud Empresarial
+                    </h3>
+                    <div class="score-container">
+                        <div class="score-circle" id="health-score">
+                            <span class="score-value">78</span>
+                            <span class="score-label">Score General</span>
+                        </div>
+                    </div>
+                    <div class="score-insights">
+                        <h4>Insights CEO Copilot IA</h4>
+                        <ul id="ai-recommendations">
+                            <li>📈 Acelerar cobros en Torres Norte para mejorar liquidez</li>
+                            <li>🔧 Revisar eficiencia materiales (desviación +15%)</li>
+                            <li>📊 Implementar control semanal proyectos alto riesgo</li>
+                            <li>💰 Optimizar flujo de caja próximos 30 días</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- KPIs Executive Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Proyectos Activos</h3>
+                            <div class="kpi-value" id="proyectos-activos">8</div>
+                            <span class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +2 este mes
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Presupuesto Total</h3>
+                            <div class="kpi-value" id="presupuesto-total">$15.6M</div>
+                            <span class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +8.5%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Avance Promedio</h3>
+                            <div class="kpi-value" id="avance-promedio">73%</div>
+                            <span class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +5% esta semana
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Cronograma</h3>
+                            <div class="kpi-value" id="cronograma">-3 días</div>
+                            <span class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                Adelantado
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Margen Operacional</h3>
+                            <div class="kpi-value" id="margen">24.7%</div>
+                            <span class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +1.2%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Liquidez</h3>
+                            <div class="kpi-value" id="liquidez">45 días</div>
+                            <span class="kpi-trend warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Monitorear
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas y Predicciones -->
+                <div class="section">
+                    <div class="section-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h2>Alertas Financieras Críticas</h2>
+                    </div>
+                    <div id="financial-alerts" class="alerts-container">
+                        <!-- Se llenan dinámicamente -->
+                        <div class="alert alert-warning">
+                            <h4>⚠️ Flujo de caja ajustado próximos 15 días</h4>
+                            <p>Acelerar cobros pendientes y renegociar plazos de pago con proveedores principales.</p>
+                            <span class="badge badge-warning">MEDIA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <i class="fas fa-crystal-ball"></i>
+                        <h2>Predicciones CEO Copilot IA</h2>
+                    </div>
+                    <div id="ai-predictions" class="predictions-container">
+                        <!-- Se llenan dinámicamente -->
+                        <div class="prediction-item">
+                            <h4>🔮 Posible superación de presupuesto en 15% - Proyecto Torres Norte</h4>
+                            <p><strong>Acción sugerida:</strong> Revisar costos de materiales y renegociar con proveedores</p>
+                            <div class="prediction-meta">
+                                <span class="badge badge-info">Probabilidad: 75%</span>
+                                <span class="badge badge-warning">Impacto: Alto</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Fusion -->
+                <div class="section">
+                    <div class="section-header">
+                        <i class="fas fa-bolt"></i>
+                        <h2>Acciones Rápidas</h2>
+                    </div>
+                    <div class="kpi-grid">
+                        <a href="/conciliacion" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-university" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Conciliación Bancaria</h3>
+                            </div>
+                            <div class="card-body">
+                                Revisar y conciliar movimientos bancarios con IA
+                            </div>
+                        </a>
+
+                        <a href="/facturas-venta" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-file-invoice-dollar" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Facturas de Venta</h3>
+                            </div>
+                            <div class="card-body">
+                                Gestionar facturas emitidas y cobranzas
+                            </div>
+                        </a>
+
+                        <a href="/impuestos" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-calculator" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Gestión Tributaria</h3>
+                            </div>
+                            <div class="card-body">
+                                Control de IVA, retenciones y renta
+                            </div>
+                        </a>
+
+                        <a href="/proyectos" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-project-diagram" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Control de Proyectos</h3>
+                            </div>
+                            <div class="card-body">
+                                Monitoreo avanzado con predicciones IA
+                            </div>
+                        </a>
+
+                        <a href="/finanzas" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-chart-area" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Análisis Financiero</h3>
+                            </div>
+                            <div class="card-body">
+                                Análisis predictivo con datos reales
+                            </div>
+                        </a>
+
+                        <a href="/reportes" class="card" style="text-decoration: none; cursor: pointer;">
+                            <div class="card-header">
+                                <i class="fas fa-download" style="color: var(--ofitec-green);"></i>
+                                <h3 class="card-title">Reportes Ejecutivos</h3>
+                            </div>
+                            <div class="card-body">
+                                Reportes inteligentes y exportación
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CEO Copilot Sidebar -->
+            <aside id="copilot-panel" class="copilot-panel">
+                <div class="copilot-header">
+                    <h3>
+                        <i class="fas fa-robot"></i>
+                        CEO Copilot IA
+                    </h3>
+                    <button onclick="toggleCopilot()" class="close-btn" title="Cerrar (Esc)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="copilot-content">
+                    <div id="copilot-messages" class="messages-container">
+                        <!-- Mensajes se cargan dinámicamente -->
+                    </div>
+                    
+                    <div class="copilot-input">
+                        <div class="input-group">
+                            <input type="text" 
+                                   id="copilot-query" 
+                                   placeholder="Pregunta sobre finanzas, proyectos, predicciones..." 
+                                   maxlength="500"
+                                   autocomplete="off">
+                            <button onclick="sendCopilotQuery()" title="Enviar (Enter)">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                            💡 Con acceso a datos reales de Chipax • Alt+C para abrir/cerrar
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-robot fa-spin"></i>
+            <p>CEO Copilot procesando datos...</p>
+        </div>
+    </div>
+
+    <!-- Fusion Portal JavaScript -->
+    <script src="{{ url_for('static', filename='js/fusion_portal.js') }}"></script>
+    
+    <!-- Inicialización del portal -->
+    <script>
+        // Configuración específica del dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 Iniciando ofitec.ai Dashboard');
+            
+            // Configurar auto-refresh del dashboard
+            setInterval(() => {
+                if (window.location.pathname === '/') {
+                    loadDashboardData();
+                }
+            }, 30000); // Cada 30 segundos
+            
+            // Mostrar indicador de carga inicial
+            showLoading('Cargando dashboard ejecutivo...');
+            
+            // Cargar datos después de un momento para que se vea la animación
+            setTimeout(() => {
+                loadDashboardData();
+                hideLoading();
+            }, 1000);
+        });
+        
+        // Analytics y métricas
+        console.log('📊 ofitec.ai v1.0');
+        console.log('🤖 CEO Copilot: Habilitado');
+        console.log('📈 Datos reales: Chipax DB');
+        console.log('🎨 Tema: DeFi Fusion');
+        console.log('⚡ SPA: Navegación fluida');
+    </script>
+</body>
+</html>
+
+

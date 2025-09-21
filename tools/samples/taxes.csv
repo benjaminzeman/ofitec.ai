@@ -1,0 +1,3 @@
+Periodo,Tipo,Debito,Credito,Neto,Estado,FechaPresentacion,Fuente
+2025-01,IVA,1500000,300000,1200000,Declarado,2025-02-15,SAMPLE
+2025-02,IVA,1100000,200000,900000,Declarado,2025-03-15,SAMPLE

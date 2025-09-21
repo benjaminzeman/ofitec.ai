@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: conciliacion-stub-guard
+        name: conciliacion stub guard
+        entry: python scripts/guard_conciliacion_stub.py
+        language: system
+        pass_filenames: false

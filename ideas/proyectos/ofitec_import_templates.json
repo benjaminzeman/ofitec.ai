@@ -1,0 +1,256 @@
+{
+  "templates": [
+    {
+      "excel_sheet": "Presupuesto",
+      "header_row": 1,
+      "target_table": "partidas",
+      "column_map": {
+        "codigo_partida": "ITEM",
+        "descripcion": "DESCRIPCION",
+        "unidad": "UNIDAD",
+        "cantidad": "CANTIDAD",
+        "precio_unitario": "PRECIO UNITARIO $",
+        "total": "PRECIO TOTAL $"
+      },
+      "suggestions": {
+        "codigo_capitulo": [],
+        "codigo_partida": [
+          {
+            "excel_col_name": "ITEM",
+            "excel_col_norm": "item"
+          }
+        ],
+        "descripcion": [
+          {
+            "excel_col_name": "DESCRIPCION",
+            "excel_col_norm": "descripcion"
+          }
+        ],
+        "unidad": [
+          {
+            "excel_col_name": "UNIDAD",
+            "excel_col_norm": "unidad"
+          },
+          {
+            "excel_col_name": "PRECIO UNITARIO $",
+            "excel_col_norm": "precio_unitario"
+          },
+          {
+            "excel_col_name": "PRECIO UNITARIO UF",
+            "excel_col_norm": "precio_unitario_uf"
+          },
+          {
+            "excel_col_name": "PRECIO TOTAL UF",
+            "excel_col_norm": "precio_total_uf"
+          }
+        ],
+        "cantidad": [
+          {
+            "excel_col_name": "CANTIDAD",
+            "excel_col_norm": "cantidad"
+          }
+        ],
+        "precio_unitario": [
+          {
+            "excel_col_name": "PRECIO UNITARIO $",
+            "excel_col_norm": "precio_unitario"
+          },
+          {
+            "excel_col_name": "PRECIO UNITARIO UF",
+            "excel_col_norm": "precio_unitario_uf"
+          }
+        ],
+        "total": [
+          {
+            "excel_col_name": "PRECIO TOTAL $",
+            "excel_col_norm": "precio_total"
+          },
+          {
+            "excel_col_name": "PRECIO TOTAL UF",
+            "excel_col_norm": "precio_total_uf"
+          }
+        ]
+      },
+      "notes": "Este mapeo es inferido automáticamente; confirmar/editar en UI si hay ambigüedad."
+    },
+    {
+      "excel_sheet": "Partidas",
+      "header_row": 1,
+      "target_table": "partidas",
+      "column_map": {
+        "codigo_partida": "ITEM",
+        "descripcion": "DESCRIPCION",
+        "unidad": "UNI",
+        "cantidad": "Cantidad",
+        "precio_unitario": "PU",
+        "total": "Subtotal"
+      },
+      "suggestions": {
+        "codigo_capitulo": [],
+        "codigo_partida": [
+          {
+            "excel_col_name": "ITEM",
+            "excel_col_norm": "item"
+          }
+        ],
+        "descripcion": [
+          {
+            "excel_col_name": "DESCRIPCION",
+            "excel_col_norm": "descripcion"
+          }
+        ],
+        "unidad": [
+          {
+            "excel_col_name": "UNI",
+            "excel_col_norm": "uni"
+          },
+          {
+            "excel_col_name": "Subtotal",
+            "excel_col_norm": "subtotal"
+          },
+          {
+            "excel_col_name": "PU",
+            "excel_col_norm": "pu"
+          }
+        ],
+        "cantidad": [
+          {
+            "excel_col_name": "Cantidad",
+            "excel_col_norm": "cantidad"
+          }
+        ],
+        "precio_unitario": [
+          {
+            "excel_col_name": "PU",
+            "excel_col_norm": "pu"
+          }
+        ],
+        "total": [
+          {
+            "excel_col_name": "Subtotal",
+            "excel_col_norm": "subtotal"
+          },
+          {
+            "excel_col_name": "TOTAL",
+            "excel_col_norm": "total"
+          }
+        ]
+      },
+      "notes": "Este mapeo es inferido automáticamente; confirmar/editar en UI si hay ambigüedad."
+    },
+    {
+      "excel_sheet": "Recursos",
+      "header_row": 1,
+      "target_table": "partidas",
+      "column_map": {
+        "descripcion": "Descripcion",
+        "unidad": "RecursoID",
+        "cantidad": "Cant de Dias",
+        "total": "TOTAL HH"
+      },
+      "suggestions": {
+        "codigo_capitulo": [],
+        "codigo_partida": [],
+        "descripcion": [
+          {
+            "excel_col_name": "Descripcion",
+            "excel_col_norm": "descripcion"
+          }
+        ],
+        "unidad": [
+          {
+            "excel_col_name": "RecursoID",
+            "excel_col_norm": "recursoid"
+          },
+          {
+            "excel_col_name": "Grupo",
+            "excel_col_norm": "grupo"
+          },
+          {
+            "excel_col_name": "Unidad",
+            "excel_col_norm": "unidad"
+          },
+          {
+            "excel_col_name": "CostoUnitario",
+            "excel_col_norm": "costounitario"
+          }
+        ],
+        "cantidad": [
+          {
+            "excel_col_name": "Cant de Dias",
+            "excel_col_norm": "cant_de_dias"
+          }
+        ],
+        "precio_unitario": [],
+        "total": [
+          {
+            "excel_col_name": "TOTAL HH",
+            "excel_col_norm": "total_hh"
+          },
+          {
+            "excel_col_name": "TOTAL $",
+            "excel_col_norm": "total"
+          }
+        ]
+      },
+      "notes": "Este mapeo es inferido automáticamente; confirmar/editar en UI si hay ambigüedad."
+    },
+    {
+      "excel_sheet": "Costo_Indirecto",
+      "header_row": 1,
+      "target_table": "partidas",
+      "column_map": {
+        "codigo_partida": "ITEM",
+        "descripcion": "DESCRIPCIÓN",
+        "unidad": "UD",
+        "cantidad": "CANTIDAD",
+        "precio_unitario": "P. UNITARIO",
+        "total": "TOTAL"
+      },
+      "suggestions": {
+        "codigo_capitulo": [],
+        "codigo_partida": [
+          {
+            "excel_col_name": "ITEM",
+            "excel_col_norm": "item"
+          }
+        ],
+        "descripcion": [
+          {
+            "excel_col_name": "DESCRIPCIÓN",
+            "excel_col_norm": "descripcion"
+          }
+        ],
+        "unidad": [
+          {
+            "excel_col_name": "UD",
+            "excel_col_norm": "ud"
+          },
+          {
+            "excel_col_name": "P. UNITARIO",
+            "excel_col_norm": "p_unitario"
+          }
+        ],
+        "cantidad": [
+          {
+            "excel_col_name": "CANTIDAD",
+            "excel_col_norm": "cantidad"
+          }
+        ],
+        "precio_unitario": [
+          {
+            "excel_col_name": "P. UNITARIO",
+            "excel_col_norm": "p_unitario"
+          }
+        ],
+        "total": [
+          {
+            "excel_col_name": "TOTAL",
+            "excel_col_norm": "total"
+          }
+        ]
+      },
+      "notes": "Este mapeo es inferido automáticamente; confirmar/editar en UI si hay ambigüedad."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+﻿Hoja,Tabla destino,Campo destino,Columna Excel seleccionada
+Presupuesto,partidas,codigo_partida,ITEM
+Presupuesto,partidas,descripcion,DESCRIPCION
+Presupuesto,partidas,unidad,UNIDAD
+Presupuesto,partidas,cantidad,CANTIDAD
+Presupuesto,partidas,precio_unitario,PRECIO UNITARIO $
+Presupuesto,partidas,total,PRECIO TOTAL $
+Partidas,partidas,codigo_partida,ITEM
+Partidas,partidas,descripcion,DESCRIPCION
+Partidas,partidas,unidad,UNI
+Partidas,partidas,cantidad,Cantidad
+Partidas,partidas,precio_unitario,PU
+Partidas,partidas,total,Subtotal
+Recursos,partidas,descripcion,Descripcion
+Recursos,partidas,unidad,RecursoID
+Recursos,partidas,cantidad,Cant de Dias
+Recursos,partidas,total,TOTAL HH
+Costo_Indirecto,partidas,codigo_partida,ITEM
+Costo_Indirecto,partidas,descripcion,DESCRIPCIÓN
+Costo_Indirecto,partidas,unidad,UD
+Costo_Indirecto,partidas,cantidad,CANTIDAD
+Costo_Indirecto,partidas,precio_unitario,P. UNITARIO
+Costo_Indirecto,partidas,total,TOTAL

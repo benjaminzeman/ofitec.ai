@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página no encontrada | ofitec.ai</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fusion_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="error-page">
+            <div class="error-content">
+                <div class="error-icon">
+                    <i class="fas fa-robot" style="color: var(--ofitec-green);"></i>
+                </div>
+                <h1>404</h1>
+                <h2>Página no encontrada</h2>
+                <p>El CEO Copilot no puede localizar esta página en ofitec.ai.</p>
+                
+                <div class="error-actions">
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-home"></i>
+                        Dashboard Principal
+                    </a>
+                    <a href="/home-executive" class="btn btn-secondary">
+                        <i class="fas fa-chart-line"></i>
+                        Home Ejecutiva
+                    </a>
+                </div>
+                
+                <div class="error-suggestions">
+                    <h3>🌐 ofitec.ai - Páginas disponibles:</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div class="suggestion-group">
+                            <h4>📊 Dashboard & Ejecutivo</h4>
+                            <ul>
+                                <li><a href="/"><i class="fas fa-home"></i> Dashboard Principal</a></li>
+                                <li><a href="/home-executive"><i class="fas fa-chart-line"></i> Home Ejecutiva</a></li>
+                                <li><a href="/centro-operativo"><i class="fas fa-tachometer-alt"></i> Centro Operativo</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="suggestion-group">
+                            <h4>🏦 Finanzas & Bancario</h4>
+                            <ul>
+                                <li><a href="/conciliacion"><i class="fas fa-university"></i> Conciliación Bancaria</a></li>
+                                <li><a href="/cartola-bancaria"><i class="fas fa-money-check-alt"></i> Cartola Bancaria</a></li>
+                                <li><a href="/finanzas"><i class="fas fa-chart-area"></i> Análisis Financiero</a></li>
+                                <li><a href="/impuestos"><i class="fas fa-calculator"></i> Gestión Impuestos</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="suggestion-group">
+                            <h4>📄 Facturación & Docs</h4>
+                            <ul>
+                                <li><a href="/facturas-venta"><i class="fas fa-file-invoice-dollar"></i> Facturas Venta</a></li>
+                                <li><a href="/facturas-compra"><i class="fas fa-file-invoice"></i> Facturas Compra</a></li>
+                                <li><a href="/documentos"><i class="fas fa-folder-open"></i> Gestión Documental</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="suggestion-group">
+                            <h4>🏗️ Proyectos & Reportes</h4>
+                            <ul>
+                                <li><a href="/proyectos"><i class="fas fa-project-diagram"></i> Gestión Proyectos</a></li>
+                                <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes Ejecutivos</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fusion-features">
+                    <h3>✨ ofitec.ai - Características:</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <div class="feature-item">
+                            <i class="fas fa-robot"></i>
+                            <span>CEO Copilot IA</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-database"></i>
+                            <span>Datos Reales Chipax</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Navegación SPA</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-palette"></i>
+                            <span>Tema DeFi Profesional</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>12 Páginas Funcionales</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>APIs REST Completas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-content {
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .error-content h1 {
+            font-size: 6rem;
+            font-weight: 700;
+            background: var(--gradient-ofitec);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .error-content h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .error-content p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .error-suggestions {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-suggestions h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .suggestion-group {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .suggestion-group h4 {
+            color: var(--ofitec-green);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-group ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestion-group li {
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestion-group a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .suggestion-group a:hover {
+            color: var(--text-primary);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .suggestion-group i {
+            color: var(--ofitec-green);
+            width: 16px;
+        }
+
+        .fusion-features {
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+
+        .fusion-features h3 {
+            color: var(--ofitec-green);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .feature-item i {
+            color: var(--ofitec-green);
+        }
+
+        @media (max-width: 768px) {
+            .error-content {
+                padding: 2rem;
+            }
+            
+            .error-content h1 {
+                font-size: 4rem;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+            }
+            
+            .error-suggestions div[style*="grid"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+
+    <script>
+        // Agregar algo de interactividad
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animar el ícono
+            const icon = document.querySelector('.error-icon i');
+            if (icon) {
+                setInterval(() => {
+                    icon.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        icon.style.transform = 'scale(1)';
+                    }, 300);
+                }, 3000);
+            }
+            
+            // Log para debugging
+            console.log('🔍 ofitec.ai - Página 404 cargada');
+            console.log('🌐 Páginas disponibles: 12 módulos funcionales');
+        });
+    </script>
+</body>
+</html>
+
+

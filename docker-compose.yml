@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5555:5555"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./data:/app/data
+    depends_on: []
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:5555/api
+      BACKEND_URL: http://backend:5555
+    depends_on:
+      - backend

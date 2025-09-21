@@ -1,0 +1,105 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Rebuild backend and frontend containers",
+			"type": "shell",
+			"command": "docker compose build --no-cache && docker compose up -d --force-recreate",
+			"group": "build"
+		},
+		{
+			"label": "compose: rebuild-up",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\dev_compose_rebuild.ps1"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "smoke: sc_ep",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\smoke_sc_ep.ps1"
+			],
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
+			"label": "dev: rebuild + smoke",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\dev_rebuild_and_smoke.ps1"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "AR: Promote rules (DryRun)",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\promote_ar_rules.ps1",
+				"-DryRun"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "AR: Promote rules",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\promote_ar_rules.ps1"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "smoke: ar_auto_assign",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\smoke_ar_auto_assign.ps1",
+				"-DryRun"
+			],
+			"group": "test"
+		},
+		{
+			"label": "AR: Promote rules (DryRun)",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\promote_ar_rules.ps1",
+				"-DryRun",
+				"-MinCount",
+				"3"
+			],
+			"group": "build"
+		}
+	]
+}

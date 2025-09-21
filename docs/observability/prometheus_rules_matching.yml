@@ -1,0 +1,43 @@
+groups:
+  - name: matching-ap-rules
+    interval: 1m
+    rules:
+      - alert: MatchingAPLowConfidenceP95
+        expr: matching_ap_confidence_p95 < 0.70
+        for: 5m
+        labels:
+          severity: warning
+          service: matching-ap
+        annotations:
+          summary: "AP matching confidence p95 bajo (<70%)"
+          description: "El percentil 95 de confianza ha caído por debajo de 0.70 durante 5m. Revisar recientes eventos de matching."
+
+      - alert: MatchingAPLowConfidenceP99
+        expr: matching_ap_confidence_p99 < 0.75
+        for: 10m
+        labels:
+          severity: warning
+          service: matching-ap
+        annotations:
+          summary: "AP matching confianza p99 bajo (<75%)"
+          description: "El percentil 99 de confianza se mantiene <0.75. Puede indicar degradación amplia o buckets de alta confianza vacíos."
+
+      - alert: MatchingAPAcceptanceDrop
+        expr: matching_ap_acceptance_rate < 0.50
+        for: 10m
+        labels:
+          severity: critical
+          service: matching-ap
+        annotations:
+          summary: "Acceptance rate AP <50%"
+          description: "Tasa de aceptación de eventos AP cayó por debajo de 50% por 10m. Potencial regresión en heurística o datos de entrada."
+
+      - alert: MatchingAPAdvancedMetricsMissing
+        expr: absent(matching_ap_confidence_p95) and matching_ap_events_total > 0
+        for: 15m
+        labels:
+          severity: info
+          service: matching-ap
+        annotations:
+          summary: "Advanced metrics ausentes"
+          description: "No se exponen percentiles de confianza con eventos presentes. Verificar variable MATCHING_AP_ADVANCED y logs."

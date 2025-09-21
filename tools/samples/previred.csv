@@ -1,0 +1,3 @@
+Periodo,RUT_Trabajador,Nombre,RUT_Empresa,Monto,Estado,FechaPago,Fuente
+2025-01,12345678-5,Juan Perez,76895432-1,250000,Pago,2025-02-10,SAMPLE
+2025-02,12345678-5,Juan Perez,76895432-1,250000,Pago,2025-03-10,SAMPLE

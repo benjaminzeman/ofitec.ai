@@ -1,0 +1,77 @@
+{
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "1.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "1.0.0" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "1.0.0" }
+  ],
+  "title": "Matching AP Confidence Overview",
+  "uid": "matching-ap-conf-overview",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "AP Events Total",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "targets": [ { "expr": "matching_ap_events_total" } ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Confidence p95 vs Bucket p95",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "fieldConfig": { "defaults": { "unit": "none", "min": 0, "max": 1 }, "overrides": [] },
+      "targets": [
+        { "expr": "matching_ap_confidence_p95", "legendFormat": "raw p95" },
+        { "expr": "matching_ap_confidence_p95_bucket", "legendFormat": "bucket p95" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Confidence Sum (Exact or Approx)",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [ { "expr": "matching_ap_confidence_sum", "legendFormat": "sum" } ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Confidence Buckets (Current Scrape)",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true } } }
+      ],
+      "targets": [ { "expr": "matching_ap_confidence_bucket" } ],
+      "options": { "showHeader": true }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Acceptance Rate",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
+      "targets": [ { "expr": "matching_ap_acceptance_rate" } ]
+    }
+    ,
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Confidence p99 vs Bucket p99",
+      "datasource": { "type": "prometheus", "uid": "PROM_DS" },
+      "fieldConfig": { "defaults": { "unit": "none", "min": 0, "max": 1 }, "overrides": [] },
+      "targets": [
+        { "expr": "matching_ap_confidence_p99", "legendFormat": "raw p99" },
+        { "expr": "matching_ap_confidence_p99_bucket", "legendFormat": "bucket p99" }
+      ]
+    }
+  ],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" }
+}
