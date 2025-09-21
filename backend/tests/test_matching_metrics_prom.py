@@ -96,6 +96,9 @@ class MatchingMetricsPromTests(unittest.TestCase):
         self.assertIn('matching_ap_confidence_p95', text)
         # p99 raw (may equal p95 if few events)
         self.assertIn('matching_ap_confidence_p99', text)
+        # new high ratio & stddev gauges
+        self.assertIn('matching_ap_confidence_high_ratio', text)
+        self.assertIn('matching_ap_confidence_stddev', text)
         val = None
         for line in text.splitlines():
             if line.startswith('matching_ap_confidence_p95_bucket'):
@@ -124,8 +127,20 @@ class MatchingMetricsPromTests(unittest.TestCase):
             self.assertNotIn('matching_ap_confidence_p99_bucket', text)
             self.assertNotIn('matching_ap_confidence_p95', text)
             self.assertNotIn('matching_ap_confidence_p99', text)
+            self.assertNotIn('matching_ap_confidence_high_ratio', text)
+            self.assertNotIn('matching_ap_confidence_stddev', text)
         finally:
             os.environ.pop('MATCHING_AP_ADVANCED', None)
+
+    def test_mini_endpoint_subset_fields(self):
+        rs = self.client.get('/api/matching/metrics/mini')
+        self.assertEqual(rs.status_code, 200)
+        payload = rs.get_json()
+        self.assertIn('ap', payload)
+        self.assertIn('ar', payload)
+        for key in ['confidence_p95', 'confidence_p99', 'confidence_high_ratio', 'confidence_stddev', 'acceptance_rate']:
+            self.assertIn(key, payload['ap'])
+        self.assertIn('project_assign_rate', payload['ar'])
 
 
 if __name__ == '__main__':

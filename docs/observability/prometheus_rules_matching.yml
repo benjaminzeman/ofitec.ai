@@ -41,3 +41,23 @@ groups:
         annotations:
           summary: "Advanced metrics ausentes"
           description: "No se exponen percentiles de confianza con eventos presentes. Verificar variable MATCHING_AP_ADVANCED y logs."
+
+      - alert: MatchingAPHighConfidenceRatioLow
+        expr: matching_ap_confidence_high_ratio < 0.40
+        for: 10m
+        labels:
+          severity: warning
+          service: matching-ap
+        annotations:
+          summary: "High confidence ratio <40%"
+          description: "Proporción de eventos con confianza >=0.90 por debajo de 40% durante 10m. Revisar degradación de precisión."
+
+      - alert: MatchingAPConfidenceStddevSpike
+        expr: increase(matching_ap_confidence_stddev[15m]) > 0.10
+        for: 5m
+        labels:
+          severity: info
+          service: matching-ap
+        annotations:
+          summary: "Spike stddev confianza"
+          description: "Desviación estándar de confianza subió >0.10 en 15m. Posible volatilidad de entradas o regresión."

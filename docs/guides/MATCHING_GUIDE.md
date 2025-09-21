@@ -35,9 +35,6 @@ Campos:
 
 | Código | Situación | Acción |
 |--------|-----------|--------|
-| links_exceed_po_total | Sumatoria supera el total PO | Reducir monto aplicado |
-| amount_exceeds_remaining | Monto línea > saldo | Ajustar monto |
-| qty_exceeds_remaining | Cantidad > saldo | Ajustar qty |
 | invoice_over_receipt | recv_required y recepción insuficiente | Registrar recepción o bajar qty |
 
 ## 6. Scoring (Sugerencias)
@@ -49,38 +46,71 @@ Heurística (ejemplos de factores):
 - Coincidencia de vendor.
 - Antigüedad (prioriza líneas más antiguas cuando similar score).
 
-## 7. Feedback
-
-Motiva aprendizaje/manual analytics.
 
 Campos típicos `reason`: `partial_delivery`, `force_override`, `price_variation_explained`.
 
-## 8. Métricas Recomendada (Futuro)
-
-- % Facturas auto-sugeridas sin override.
-- Tiempo promedio desde recepción a match definitivo.
-- Ranking vendors con mayor tasa de overrides.
-
-## 9. Checklist Rápido
+## 7. Checklist Rápido
 
 1. Verificar config tolerancias.
 2. Ejecutar sugerencias.
 3. Ajustar manual si violaciones leves justificadas.
 4. Confirmar.
-5. Registrar feedback si override.
 
-## 10. Roadmap Sugerido
-
-- Endpoint de auditoría de eventos de matching.
-- Ajuste dinámico de tolerancias por histórico.
-- Detección de outliers (precio unitario vs histórico).
-
-## 11. Troubleshooting
+## 8. Troubleshooting Rápido
 
 | Síntoma | Posible Causa | Paso |
 |---------|---------------|------|
 | Preview siempre viola recepciones | Falta vista recepciones real | Revisar `recv_required` o poblar recepciones |
-| No aparecen sugerencias | Filtros demasiado estrictos | Revisar tolerancias globales |
-| Feedback 404 | Endpoint no cargado | Validar blueprint `api_ap_match` en servidor |
+| No aparecen sugerencias | Filtros demasiado estrictos | Revisar tolerancias globales / vendor |
+| Feedback 404 | Blueprint no registrado | Verificar carga de `api_ap_match` |
 
-## Fin de la Guía
+## 9. Métricas Avanzadas de Confianza
+
+Se exponen si `MATCHING_AP_ADVANCED` (default=on):
+
+- `matching_ap_confidence_p50`, `matching_ap_confidence_p95`, `matching_ap_confidence_p99`
+- `matching_ap_confidence_p95_bucket`, `matching_ap_confidence_p99_bucket`
+- `matching_ap_confidence_sum` (exacta o aproximada)
+- `matching_ap_confidence_bucket{range="..."}` distribución discreta
+- `matching_ap_confidence_hist_bucket{le="..."}` cumulativa estilo histograma
+- `matching_ap_confidence_high_ratio` proporción con `confidence >= 0.90`
+- `matching_ap_confidence_stddev` desviación estándar poblacional
+
+### Interpretación
+
+- High Ratio: caída sostenida mientras p95 se mantiene = erosión de cola alta.
+- Stddev: spike súbito = volatilidad; caída brusca junto a pérdida de percentiles altos = homogenización anómala.
+
+### Alertas Sugeridas
+
+```yaml
+- alert: MatchingAPHighRatioLow
+  expr: matching_ap_confidence_high_ratio < 0.40
+  for: 10m
+  labels:
+    severity: warning
+    service: matching-ap
+  annotations:
+    summary: "High confidence ratio bajo (<40%)"
+    description: "Proporción de eventos >=0.9 cayó <40% por 10m. Posible degradación precisión."
+
+- alert: MatchingAPStddevSpike
+  expr: increase(matching_ap_confidence_stddev[15m]) > 0.10
+  for: 5m
+  labels:
+    severity: info
+    service: matching-ap
+  annotations:
+    summary: "Spike en stddev de confianza"
+    description: "Desviación estándar subió >0.10 en 15m. Revisar entradas y últimos deploys."
+```
+
+## 10. Endpoint Mini
+
+`GET /api/matching/metrics/mini` devuelve subset para dashboards de alta frecuencia (cada 15–30s) minimizando carga: p95, p99, high_ratio, stddev y acceptance + project_assign_rate.
+
+## 11. Futuro (Ideas)
+
+- Ajuste dinámico de tolerancias historicidad.
+- Enriquecer features con estacionalidad de proveedor.
+- Detección de outliers (precio unitario vs histórico).
