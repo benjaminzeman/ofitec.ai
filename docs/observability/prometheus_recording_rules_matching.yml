@@ -1,0 +1,67 @@
+# Recording rules sugeridas para suavizar queries de dashboards y facilitar alertas derivadas.
+# Copiar / adaptar en tu configuración de Prometheus (rule_files) según convenga.
+# Nombre de grupo orientado a AP Matching y Conciliación.
+
+groups:
+  - name: matching_ap_recording
+    interval: 30s
+    rules:
+      # Promedio móvil 5m de ratio alto de confianza (>=0.90)
+      - record: matching_ap:confidence_high_ratio:mean_5m
+        expr: avg_over_time(matching_ap_confidence_high_ratio[5m])
+
+      # Desviación estándar móvil 5m (para detectar picos)
+      - record: matching_ap:confidence_stddev:mean_5m
+        expr: avg_over_time(matching_ap_confidence_stddev[5m])
+
+      # Diferencia (delta) de stddev entre ventana corta (5m) y larga (30m)
+      - record: matching_ap:confidence_stddev:delta_5m_30m
+        expr: (avg_over_time(matching_ap_confidence_stddev[5m]) - avg_over_time(matching_ap_confidence_stddev[30m]))
+
+      # p95 bucket vs raw (gap) para monitorear degradación de precisión del estimador
+      - record: matching_ap:confidence_p95_gap
+        expr: (matching_ap_confidence_p95_raw - matching_ap_confidence_p95_bucket)
+
+      # p99 bucket vs raw (gap) para picos extremos
+      - record: matching_ap:confidence_p99_gap
+        expr: (matching_ap_confidence_p99_raw - matching_ap_confidence_p99_bucket)
+
+      # Suma de confianza normalizada (ej: por 1000 eventos) en 15m
+      - record: matching_ap:confidence_sum_per_k_events_15m
+        expr: (increase(matching_ap_confidence_sum[15m]) / clamp_min(increase(matching_ap_events_total[15m]),1)) * 1000
+
+      # Ratio de eventos con confianza >=0.95 (derivado de buckets si se añade bucket por encima)
+      # Placeholder si se agrega bucket específico en el futuro:
+      # - record: matching_ap:confidence_very_high_ratio:mean_15m
+      #   expr: avg_over_time(matching_ap_confidence_very_high_ratio[15m])
+
+  - name: conciliacion_recording
+    interval: 30s
+    rules:
+      # p95 latencia móvil 5m
+      - record: recon:latency_p95_5m
+        expr: histogram_quantile(0.95, sum(rate(recon_latency_seconds_bucket[5m])) by (le))
+
+      # p95 latencia móvil 30m para comparar tendencia
+      - record: recon:latency_p95_30m
+        expr: histogram_quantile(0.95, sum(rate(recon_latency_seconds_bucket[30m])) by (le))
+
+      # Gap p95 corto vs largo (positivo = empeorando)
+      - record: recon:latency_p95_gap_5m_30m
+        expr: (histogram_quantile(0.95, sum(rate(recon_latency_seconds_bucket[5m])) by (le)) - histogram_quantile(0.95, sum(rate(recon_latency_seconds_bucket[30m])) by (le)))
+
+      # Throughput reconciliations 5m
+      - record: recon:throughput_rps_5m
+        expr: rate(recon_reconciliations_total[5m])
+
+      # Throughput links 5m (si cada reconciliación produce varios links)
+      - record: recon:links_rps_5m
+        expr: rate(recon_links_total[5m])
+
+      # Longitud máxima de alias (últimos 15m) para detectar anomalías
+      - record: recon:alias_max_len_15m
+        expr: max_over_time(recon_alias_max_len[15m])
+
+      # Violaciones de longitud (conteo acumulado 15m)
+      - record: recon:alias_len_violations_15m
+        expr: increase(recon_alias_length_violation_count[15m])

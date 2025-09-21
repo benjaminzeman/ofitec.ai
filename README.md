@@ -359,6 +359,10 @@ Nota: El script NO modifica la base; sólo lee metadatos y ejecuta pragmas.
 - Añadir guía resumida de módulos (índice global docs).
 - Auditoría periódica de dependencias y seguridad (`npm outdated`, `npm audit`).
 
+## Contribuir
+
+Lee `CONTRIBUTING.md` para entender flujo de ramas (única `master`), formato de commits, criterios de PR, estándares de métricas y checklist de calidad antes de subir cambios. Si agregas métricas nuevas en Matching o Conciliación: tests + documentación + panel + (si aplica) alerta.
+
 ## Conciliación (Reconciliation) Metrics & Endpoints
 
 La API de conciliación fue reescrita con un blueprint limpio (`conciliacion_api_clean.py`) y métricas avanzadas.
