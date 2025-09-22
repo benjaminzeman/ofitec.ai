@@ -1,10 +1,20 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": [
-        {
-            "path": "",
-            "envManager": "ms-python.python:system",
-            "packageManager": "ms-python.python:pip"
-        }
-    ]
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": [],
+  // GitHub Copilot enablement mirroring approvals for all languages including docs
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true
+  },
+  // Inline suggestions
+  "github.copilot.inlineSuggest.enable": true,
+  // Autocomplete integration
+  "github.copilot.editor.enableAutoCompletions": true,
+  // Faster acceptance workflow: accept with Tab
+  "editor.inlineSuggest.showToolbar": "onHover",
+  // Reduce delay before Copilot shows inline suggestion (ms)
+  "github.copilot.inlineSuggest.suppressMissingConfigWarning": true,
+  "editor.suggest.snippetsPreventQuickSuggestions": false
 }

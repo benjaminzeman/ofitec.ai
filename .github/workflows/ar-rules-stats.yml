@@ -1,0 +1,240 @@
+name: AR Rules Stats Badge
+
+on:
+  workflow_dispatch:
+    inputs:
+      fail_on_drop_pp:
+        description: 'Fail workflow if drop >= this many pp (empty=do not fail)'
+        required: false
+        default: ''
+      fail_on_cov_drop_pp:
+        description: 'Fail if customer_name_rule_coverage drop >= this many pp'
+        required: false
+        default: ''
+      fail_on_streak:
+        description: 'Fail if N-day downward streak in assignment AND coverage (empty=ignore)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 5 * * *'  # Daily at 05:00 UTC
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: ar-rules-stats-badge
+  cancel-in-progress: false
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies (best effort)
+        run: |
+          pip install -r backend/requirements.txt || true
+
+      - name: Ensure schema (best effort)
+        run: |
+          python tools/apply_schema.py --db data/chipax_data.db --schema tools/schema.sql || true
+
+      - name: Generate stats
+        run: |
+          mkdir -p badges
+          python tools/ar_rules_stats.py --db data/chipax_data.db > badges/ar_rules_stats.json
+
+      - name: Create badge
+        id: create_badge
+        run: |
+          python tools/gen_ar_rules_badge.py --stats badges/ar_rules_stats.json --out badges/ar_rules_coverage.svg --emit-github-output "$GITHUB_OUTPUT"
+
+      - name: Detect assignment rate drop
+        id: drop_check
+        run: |
+          set -e
+          THRESH_PP=5
+          FAIL_FLAG=""
+          if [ -n "${{ github.event.inputs.fail_on_drop_pp }}" ]; then
+            THRESH_PP=${{ github.event.inputs.fail_on_drop_pp }}
+            FAIL_FLAG="--fail"
+          fi
+          python tools/ar_rules_drop_check.py \
+            --current badges/ar_rules_stats.json \
+            --previous badges/prev_ar_rules_stats.json \
+            --out-meta badges/drop_meta.json \
+            --alert-file badge_drop_alert.txt \
+            --threshold-pp $THRESH_PP $FAIL_FLAG || CODE=$?; \
+            if [ "${CODE:-0}" = "2" ]; then echo "Failing due to drop threshold"; exit 2; fi; \
+            cp badges/ar_rules_stats.json badges/prev_ar_rules_stats.json || true
+
+      - name: Append history CSV
+        run: |
+          set -e
+          CUR_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PAR=$(jq -r '.project_assign_rate // 0' badges/ar_rules_stats.json)
+          COV=$(jq -r '.customer_name_rule_coverage // 0' badges/ar_rules_stats.json)
+          HIST=badges/ar_rules_history.csv
+          if [ ! -f "$HIST" ]; then echo "timestamp,project_assign_rate,customer_name_rule_coverage" > "$HIST"; fi
+          echo "$CUR_DATE,$PAR,$COV" >> "$HIST"
+
+      - name: Generate 7d trend badge
+        run: |
+          python tools/gen_ar_rules_trend_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_trend.svg
+
+      - name: Generate coverage-only badge
+        run: |
+          python tools/gen_ar_rules_coverage_badge.py --stats badges/ar_rules_stats.json --out badges/ar_rules_coverage_only.svg || true
+
+      - name: Generate weekly aggregation JSON
+        run: |
+          python tools/gen_ar_rules_weekly_agg.py --history badges/ar_rules_history.csv --out badges/ar_rules_weekly.json || true
+
+      - name: Generate WMA trend badge
+        run: |
+          python tools/gen_ar_rules_wma_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_trend_wma.svg || true
+
+      - name: Detect coverage drop
+        id: cov_drop
+        run: |
+          set -e
+          THRESH="${{ github.event.inputs.fail_on_cov_drop_pp }}"
+          if [ -z "$THRESH" ]; then THRESH=5; FI_FLAG=""; else FI_FLAG="--fail"; fi
+          python tools/ar_rules_drop_check.py \
+            --field customer_name_rule_coverage \
+            --current badges/ar_rules_stats.json \
+            --previous badges/prev_ar_rules_stats.json \
+            --out-meta badges/cov_drop_meta.json \
+            --alert-file cov_drop_alert.txt \
+            --threshold-pp $THRESH $FI_FLAG || CODE=$?; \
+            if [ "${CODE:-0}" = "2" ]; then echo "Failing due to coverage drop threshold"; exit 2; fi
+
+      - name: Detect downward streak
+        id: streak
+        run: |
+          set -e
+          STREAK_N="${{ github.event.inputs.fail_on_streak }}"
+          if [ -z "$STREAK_N" ]; then echo "Streak check disabled"; exit 0; fi
+          HIST=badges/ar_rules_history.csv
+          if [ ! -f "$HIST" ]; then echo "No history"; exit 0; fi
+          TAIL=$(tail -n $STREAK_N "$HIST" | sed '1{/^timestamp/d}')
+          LINES=$(echo "$TAIL" | wc -l | tr -d ' ')
+          if [ "$LINES" -lt "$STREAK_N" ]; then echo "Not enough rows"; exit 0; fi
+          # Extract columns
+          ASSIGN=$(echo "$TAIL" | awk -F',' '{print $2}')
+          COV=$(echo "$TAIL" | awk -F',' '{print $3}')
+          is_down() { echo "$1" | awk 'NR==1{p=$1;next}{if($1>=p){print 0;exit}p=$1}END{print 1}' ; }
+          ADOWN=$(is_down "$ASSIGN")
+          CDOWN=$(is_down "$COV")
+          if [ "$ADOWN" = "1" ] && [ "$CDOWN" = "1" ]; then
+            echo "Downward streak detected ($STREAK_N days)" | tee streak_alert.txt
+            exit 2
+          else
+            echo "No combined downward streak"
+          fi
+        continue-on-error: true
+
+      - name: Fail on streak (if triggered)
+        if: steps.streak.outcome == 'failure'
+        run: |
+          if [ -n "${{ github.event.inputs.fail_on_streak }}" ]; then
+            echo "Failing due to downward streak" && exit 1
+          else
+            echo "Streak triggered but fail_on_streak not set; ignoring"
+          fi
+
+      - name: Commit badge & stats (if changed)
+        run: |
+          if git diff --quiet -- badges/; then
+            echo "No changes in badges directory"
+          else
+            git config user.name "github-actions"
+            git config user.email "actions@users.noreply.github.com"
+            git add badges/ar_rules_stats.json \
+              badges/ar_rules_coverage.svg \
+              badges/ar_rules_coverage_only.svg \
+              badges/ar_rules_trend.svg \
+              badges/ar_rules_trend_wma.svg \
+              badges/ar_rules_weekly.json \
+              badges/prev_ar_rules_stats.json \
+              badges/drop_meta.json \
+              badges/cov_drop_meta.json \
+              badges/ar_rules_history.csv || true
+            if [ -f badge_drop_alert.txt ]; then
+              git add badge_drop_alert.txt
+            fi
+            if [ -f cov_drop_alert.txt ]; then
+              git add cov_drop_alert.txt
+            fi
+            if [ -f streak_alert.txt ]; then
+              git add streak_alert.txt
+            fi
+            git commit -m "chore(badge): update AR rules stats badge"
+            git push
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ar-rules-stats-${{ github.run_number }}
+          path: badges/
+
+      - name: Summary
+        run: |
+          echo "### AR Rules Stats Badge" >> $GITHUB_STEP_SUMMARY
+          echo "Project Assign Rate (%): ${{ steps.create_badge.outputs.project_assign_rate_pct }}" >> $GITHUB_STEP_SUMMARY || true
+          echo "Customer Name Rule Coverage (%): ${{ steps.create_badge.outputs.customer_name_rule_coverage_pct }}" >> $GITHUB_STEP_SUMMARY || true
+          if [ -f badges/ar_rules_weekly.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Weekly Aggregation (rolling window):" >> $GITHUB_STEP_SUMMARY
+            cat badges/ar_rules_weekly.json >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f badge_drop_alert.txt ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**ALERTA**" >> $GITHUB_STEP_SUMMARY
+            cat badge_drop_alert.txt >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f cov_drop_alert.txt ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**ALERTA Cobertura**" >> $GITHUB_STEP_SUMMARY
+            cat cov_drop_alert.txt >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f streak_alert.txt ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**RACHA DESCENDENTE**" >> $GITHUB_STEP_SUMMARY
+            cat streak_alert.txt >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat badges/ar_rules_stats.json >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Slack / Teams notifications (optional)
+        if: always()
+        run: |
+          set -e
+          ALERT_FILES="badge_drop_alert.txt cov_drop_alert.txt streak_alert.txt"
+          MESSAGE=""
+          for f in $ALERT_FILES; do
+            if [ -f "$f" ]; then
+              CONTENT=$(sed 's/"/\"/g' "$f")
+              MESSAGE+="$CONTENT\n"
+            fi
+          done
+          if [ -z "$MESSAGE" ]; then
+            echo "No alerts to notify"; exit 0; fi
+          echo "Alerts detected, attempting notifications";
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"$MESSAGE\"}" ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification failed";
+          fi
+          if [ -n "${{ secrets.TEAMS_WEBHOOK_URL }}" ]; then
+            # Teams expects a simple JSON with text field
+            curl -H 'Content-Type: application/json' -d "{\"text\": \"$MESSAGE\"}" ${{ secrets.TEAMS_WEBHOOK_URL }} || echo "Teams notification failed";
+          fi
+          exit 0

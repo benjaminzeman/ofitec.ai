@@ -7,20 +7,32 @@
     },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "18"
+    },
+    // Add PowerShell to container
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
     }
   },
   "customizations": {
     "vscode": {
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "terminal.integrated.defaultProfile.linux": "bash"
+        // Set pwsh as default integrated terminal in Codespaces
+        "terminal.integrated.defaultProfile.linux": "pwsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": { "path": "/bin/bash" },
+          "pwsh": { "path": "/usr/bin/pwsh" }
+        }
       },
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-azuretools.vscode-docker",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint"
+        "dbaeumer.vscode-eslint",
+        // GitHub Copilot extensions added for AI pair programming in Codespaces
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     }
   },

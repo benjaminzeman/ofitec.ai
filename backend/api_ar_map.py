@@ -671,3 +671,63 @@ def api_ar_map_auto_assign():
         })
     finally:
         con.close()
+
+
+@bp.get("/api/ar/rules_stats")
+def api_ar_rules_stats():  # pragma: no cover
+    """Lightweight AR rules & coverage stats (JSON).
+
+    Mirrors core logic of tools/ar_rules_stats.py without importing it to
+    avoid heavy startup cost. Returns 0 / null values if tables missing.
+    """
+    import os
+    import sqlite3
+    from datetime import datetime, timedelta
+
+    db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "chipax_data.db")
+    if not os.path.isabs(db_path):
+        db_path = os.path.abspath(db_path)
+    if not os.path.exists(db_path):
+        return jsonify({"error": "db_not_found", "db_path": db_path}), 200
+    try:
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        def safe(sql: str, params=()):
+            try:
+                cur.execute(sql, params)
+                return cur.fetchall()
+            except sqlite3.Error:
+                return []
+        out = {}
+        rows = safe("SELECT kind, COUNT(1) FROM ar_project_rules GROUP BY kind")
+        rules_by_kind = {k: int(c) for k, c in rows}
+        out["rules_by_kind"] = rules_by_kind
+        out["rules_total"] = sum(rules_by_kind.values())
+        rows = safe("SELECT COUNT(1) FROM sales_invoices")
+        invoices_total = int(rows[0][0]) if rows else 0
+        out["invoices_total"] = invoices_total
+        rows = safe("SELECT COUNT(1) FROM sales_invoices WHERE TRIM(COALESCE(project_id,''))<>''")
+        invoices_with_project = int(rows[0][0]) if rows else 0
+        out["invoices_with_project"] = invoices_with_project
+        out["project_assign_rate"] = round(invoices_with_project / invoices_total, 4) if invoices_total else None
+        rows = safe("SELECT COUNT(DISTINCT TRIM(COALESCE(customer_name,''))) FROM sales_invoices WHERE TRIM(COALESCE(customer_name,''))<>''")
+        distinct_names = int(rows[0][0]) if rows else 0
+        out["distinct_customer_names"] = distinct_names
+        rows = safe("""
+            SELECT COUNT(DISTINCT si.customer_name)
+              FROM sales_invoices si
+              JOIN ar_project_rules r
+                ON r.kind='customer_name_like' AND r.pattern=si.customer_name
+             WHERE TRIM(COALESCE(si.customer_name,''))<>'')
+        """)
+        covered_names = int(rows[0][0]) if rows else 0
+        out["customer_names_with_rule"] = covered_names
+        out["customer_name_rule_coverage"] = round(covered_names / distinct_names, 4) if distinct_names else None
+        cutoff = (datetime.utcnow() - timedelta(days=30)).isoformat(timespec="seconds")
+        rows = safe("SELECT COUNT(1) FROM ar_map_events WHERE created_at >= ?", (cutoff,))
+        out["recent_events_30d"] = int(rows[0][0]) if rows else 0
+        out["generated_at"] = datetime.utcnow().isoformat() + "Z"
+        conn.close()
+        return jsonify(out)
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"error": "stats_failed", "detail": str(e)}), 200

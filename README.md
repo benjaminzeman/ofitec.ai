@@ -1,6 +1,8 @@
 # ofitec.ai
 
 ![CI Tests](https://github.com/ofitec-ai/ofitec.ai/actions/workflows/tests.yml/badge.svg)
+![AR Rules](badges/ar_rules_coverage.svg)
+![AR Trend 7d](badges/ar_rules_trend.svg)
 
 Frontend (Next.js 15) en 3001 y Backend (Flask) en 5555. Datos en `data/chipax_data.db`.
 Todas las decisiones se alinean a `docs/docs_oficiales/` (Ley de Puertos, Ley de BD, Estrategias y Mapeos).
@@ -160,7 +162,7 @@ Workflow principal: `.github/workflows/tests.yml` (trigger: push, pull_request, 
 | perf | Benchmark p95 conciliación | No | `run_perf` |
 | stress | Saturación cola async / `drop_ratio` | No | `run_stress` |
 
-### Inputs (workflow_dispatch)
+### Inputs del Workflow (dispatch)
 
 - `run_perf` (bool, default false)
 - `run_stress` (bool, default false)
@@ -250,6 +252,140 @@ Puedes lanzar el workflow manual con un umbral distinto, por ejemplo 75%, ajusta
 - `scripts/smoke_ar_map.ps1`: Smoke del endpoint de sugerencias AR.
 - `scripts/smoke_ar_auto_assign.ps1`: Smoke del auto-asignador AR (usa `-DryRun` por defecto en la tarea).
 - `scripts/promote_ar_rules.ps1`: Promueve reglas de mapeo AR aprendidas. Usa `-DryRun` para previsualizar.
+
+## Promoción de Reglas AR (Automatizada / Manual)
+
+Existe un workflow opcional de GitHub Actions para promover patrones frecuentes de asignación de proyectos en cuentas por cobrar (AR) a reglas persistentes en `ar_project_rules`.
+
+Archivo: `.github/workflows/ar-promote-rules.yml`
+
+### ¿Qué hace?
+
+1. Ejecuta un dry‑run de `tools/promote_ar_rules.py` para mostrar cuántos pares `customer_name -> project_id` se detectan y cuántas reglas se crearían.
+2. (Opcional) Ejecuta la promoción real (inserciones) si `dry_run_only` es `false`.
+3. Publica artefactos: `promote_dry_run.json` y `promote_real_run.json` (si corresponde) y un resumen en el job Summary.
+
+### Inputs (workflow_dispatch)
+
+| Input | Default | Descripción |
+|-------|---------|-------------|
+| `min_count` | `3` | Frecuencia mínima para promover un patrón (nombre cliente + proyecto dominante). |
+| `dry_run_only` | `false` | Si `true`, se salta la promoción real y sólo genera salida dry‑run. |
+
+### Ejecución Manual
+
+1. Ir a pestaña *Actions* → *AR Project Rule Promotion (Optional)*.
+2. Click en *Run workflow* → ajustar inputs → *Run*.
+3. Ver resultados en: Summary del job y artefactos descargables.
+
+### Habilitar Ejecución Programada
+
+El bloque `schedule` está comentado. Para ejecución diaria por ejemplo a las 03:17 UTC:
+
+```yaml
+schedule:
+   - cron: '17 3 * * *'
+```
+
+Después de editar, haz commit y push; GitHub activará la programación.
+
+### Script Local (sin CI)
+
+Dry‑run:
+
+```bash
+python tools/promote_ar_rules.py --db data/chipax_data.db --min-count 3 --dry-run
+```
+
+Real:
+
+```bash
+python tools/promote_ar_rules.py --db data/chipax_data.db --min-count 3
+```
+
+PowerShell helper:
+
+```powershell
+pwsh scripts/promote_ar_rules.ps1 -MinCount 3 -DryRun
+pwsh scripts/promote_ar_rules.ps1 -MinCount 3
+```
+
+### Notas y Seguridad
+
+- El workflow CI opera sobre el SQLite del repo (`data/chipax_data.db`). Si necesitas promover reglas contra una base productiva, deberás montar/copiar ese snapshot antes (por ejemplo descargando un artifact o usando un secret para fetch remoto). El workflow actual **no** contiene lógica para bases externas.
+- Las reglas creadas son de tipo `customer_name_like` (patrón exacto). Para patrones regex o heurísticos más avanzados deben agregarse manualmente (o ampliar el script).
+- Idempotencia: El script evita duplicar una regla existente con el mismo `pattern` y `project_id`.
+- Observa el campo `learned_pairs` en la salida: si es 0 significa que hoy no hay suficiente data confirmada para generar nuevas reglas.
+- Puedes ajustar `--min-count` en ejecuciones manuales para experimentar (ej. bajar a 2 en entornos de prueba con poco volumen). Evita usar valores muy bajos en producción (ruido / overfitting).
+
+### Extensiones Futuras (ideas)
+
+- Soporte para generar reglas `alias_regex` basadas en clustering de nombres.
+- Métrica Prometheus de cobertura de reglas nuevas (ej. `% de facturas futuras directamente clasificadas`).
+- Notificación (Slack / Teams) con diff de reglas promovidas.
+- Integración de badge AR Rules directo vía GitHub Pages (opcional) si se desea exponer fuera del repo.
+
+#### Endpoint de Estadísticas AR
+
+Ahora disponible: `GET /api/ar/rules_stats` devuelve JSON con:
+
+```jsonc
+{
+  "rules_total": 0,
+  "rules_by_kind": {"customer_name_like": 0},
+  "invoices_total": 0,
+  "invoices_with_project": 0,
+  "project_assign_rate": null,
+  "distinct_customer_names": 0,
+  "customer_names_with_rule": 0,
+  "customer_name_rule_coverage": null,
+  "recent_events_30d": 0,
+  "generated_at": "2025-09-20T12:00:00Z"
+}
+```
+
+Prometheus export: agrega gauges `matching_ar_customer_name_rule_coverage` y otros en `/api/matching/metrics/prom`.
+
+##### Alerta de Caída en Asignación de Proyecto (Badge Workflow)
+
+El workflow diario `ar-rules-stats.yml` compara el `project_assign_rate` actual contra el del run anterior.
+
+- Umbral: caída > 5 puntos porcentuales (pp) genera archivo `badge_drop_alert.txt` y se muestra en el Summary del job.
+- Persistencia: el último JSON se copia como `badges/prev_ar_rules_stats.json` tras cada ejecución exitosa.
+- Metadata adicional: `badges/drop_meta.json` con `{ prev, cur, drop_fraction, drop_pp }` para auditoría.
+- No falla el workflow (soft alert); se puede endurecer haciendo `exit 1` dentro del paso si se desea bloquear merges.
+
+Nueva opción en el dispatch manual:
+
+| Input | Default | Descripción |
+|-------|---------|-------------|
+| `fail_on_drop_pp` | (vacío) | Si se indica (ej. `6`), el workflow falla si la caída en `project_assign_rate` ≥ ese número de puntos porcentuales. Vacío = modo sólo alerta. |
+| `fail_on_cov_drop_pp` | (vacío) | Igual que anterior pero aplicado a `customer_name_rule_coverage`. |
+| `fail_on_streak` | (vacío) | N días consecutivos de caída simultánea en assign y coverage (ambos descienden estrictamente). Si se especifica y se detecta, falla. |
+
+Histórico: cada ejecución agrega una línea a `badges/ar_rules_history.csv`:
+
+```csv
+timestamp,project_assign_rate,customer_name_rule_coverage
+2025-09-20T05:00:05Z,0.82,0.76
+```
+
+Esto permite graficar tendencia (importar el CSV en un panel externo o script futuro para generar badge de evolución).
+
+Badge de tendencia: `badges/ar_rules_trend.svg` muestra promedios simples (últimos ≤7 registros) de asignación y cobertura.
+
+Alertas adicionales:
+
+- Cobertura: `cov_drop_alert.txt` y metadata `cov_drop_meta.json` análogo a assign.
+- Racha descendente: archivo `streak_alert.txt` si hay N días (input `fail_on_streak`) con descenso continuo en ambos indicadores.
+
+Extensión futura sugerida:
+
+- Enviar notificación (Slack / correo) cuando la caída supere el umbral.
+- Ajustar umbral dinámico (p.ej. >3pp si `prev` < 40%).
+- Graficar histórico leyendo los JSON de stats como serie temporal.
+
+---
 
 ## Herramientas
 

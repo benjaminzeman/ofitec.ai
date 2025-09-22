@@ -469,6 +469,39 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
     with db_conn() as con:
         ap = _ap_metrics(con, window_days)
         ar = _ar_metrics(con, window_days, top)
+        # Additional AR rules coverage stats (reusing minimal queries inline to avoid importing external script)
+        try:
+            cur = con.cursor()
+            cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ar_project_rules'")
+            has_rules = cur.fetchone() is not None
+            cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sales_invoices'")
+            has_inv = cur.fetchone() is not None
+            names_cov = None
+            names_total = None
+            if has_rules and has_inv:
+                try:
+                    cur.execute("SELECT COUNT(DISTINCT TRIM(COALESCE(customer_name,''))) FROM sales_invoices WHERE TRIM(COALESCE(customer_name,''))<>''")
+                    row = cur.fetchone()
+                    names_total = int(row[0] or 0) if row else 0
+                    cur.execute("""
+                        SELECT COUNT(DISTINCT si.customer_name)
+                          FROM sales_invoices si
+                          JOIN ar_project_rules r
+                            ON r.kind='customer_name_like' AND r.pattern=si.customer_name
+                         WHERE TRIM(COALESCE(si.customer_name,''))<>''
+                    """)
+                    row = cur.fetchone()
+                    names_cov = int(row[0] or 0) if row else 0
+                except Exception:  # noqa: BLE001
+                    pass
+            ar["distinct_customer_names"] = names_total
+            ar["customer_names_with_rule"] = names_cov
+            if names_total and names_total > 0 and names_cov is not None:
+                ar["customer_name_rule_coverage"] = round(names_cov / names_total, 4)
+            else:
+                ar["customer_name_rule_coverage"] = None
+        except Exception:  # noqa: BLE001 - coverage stats optional
+            ar["customer_name_rule_coverage"] = None
     generation_ms = int((datetime.now(UTC) - started).total_seconds() * 1000)
     reg = CollectorRegistry()
 
@@ -593,6 +626,9 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
     g("matching_ar_patterns_distinct", "Distinct rule patterns", ar.get("patterns_distinct") or 0)
     if ar.get("rules_project_coverage") is not None:
         g("matching_ar_rules_project_coverage", "Distinct patterns / total rules", ar["rules_project_coverage"])  # type: ignore[index]
+    # Coverage of customer names by direct rule pattern (customer_name_like)
+    if ar.get("customer_name_rule_coverage") is not None:
+        g("matching_ar_customer_name_rule_coverage", "Distinct customer names covered by customer_name_like rules", ar["customer_name_rule_coverage"])  # type: ignore[index]
 
     # Top projects as labeled gauges
     top_projects = ar.get("top_projects") or []
