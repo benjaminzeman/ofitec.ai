@@ -12,6 +12,19 @@
 Frontend (Next.js 15) en 3001 y Backend (Flask) en 5555. Datos en `data/chipax_data.db`.
 Todas las decisiones se alinean a `docs/docs_oficiales/` (Ley de Puertos, Ley de BD, Estrategias y Mapeos).
 
+## AI (Resumen rápido)
+
+Endpoints experimentales para análisis asistido:
+
+- `POST /api/ai/summary` genera un resumen financiero usando últimos eventos AP/AR (con caché y rate limiting).
+- `POST /api/ai/ask` pregunta libre sobre un contexto ligero.
+- `POST /api/ai/ask/async` + `GET /api/ai/jobs/<id>` flujo asíncrono.
+
+Características: trimming de contexto, caché TTL, rate limiting in‑memory, métricas Prometheus (`ai_endpoint_calls_total`, `ai_endpoint_latency_seconds`).
+
+Documentación completa: [docs/AI_ENDPOINTS.md](docs/AI_ENDPOINTS.md)
+
+
 ## Resumen Rápido: AP ↔ PO Matching
 
 Módulo que sugiere y valida vínculos entre facturas de compra (AP) y líneas de OC (PO):

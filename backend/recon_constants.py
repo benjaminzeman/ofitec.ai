@@ -47,7 +47,7 @@ __all__ = [
 # AP confidence bucket edges (inclusive upper bounds) used for histogram-style distribution.
 # These were originally hard-coded in api_matching_metrics; centralized here for reuse and
 # easier future tuning. Maintain sorted order and final 1.0 upper bound.
-AP_CONFIDENCE_BUCKET_EDGES: list[float] = [0.0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 1.0]
+AP_CONFIDENCE_BUCKET_EDGES: list[float] = [0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 1.0]
 
  
 def ap_confidence_bucket_labels() -> list[str]:

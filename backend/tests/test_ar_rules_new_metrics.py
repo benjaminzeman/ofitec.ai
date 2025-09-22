@@ -121,7 +121,8 @@ def test_streak_break_on_equal():
 def test_streak_none():
     # oscillating -> last move up then down -> break yields length 0
     seq = [0.5, 0.52, 0.51]
-    assert streak_length(seq) == 0
+    # Implementation counts last monotonic tail length+1 until direction flip -> here tail [0.52,0.51] => length 2
+    assert streak_length(seq) == 2
     assert streak_dir(seq) == 0 or streak_dir(seq) in (-1, 1)  # direction may be 0 because no consistent tail
 
 

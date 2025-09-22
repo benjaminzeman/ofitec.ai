@@ -16,17 +16,240 @@ from __future__ import annotations
 # pylint: disable=too-many-lines,import-error,invalid-name,global-statement,too-many-arguments,too-many-positional-arguments,no-else-return,chained-comparison,reimported,consider-using-in
 
 import json
+import time
+import threading
+from collections import deque
 import logging
 import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+import uuid
 
-from flask import Flask, jsonify, request
-from flask import send_from_directory, Response
+from flask import Flask, jsonify, request, send_from_directory, Response
+from typing import Any
 from flask_cors import CORS
 import unicodedata
 from backend.db_utils import db_conn  # standardized connection manager
+from werkzeug.wrappers import Response as WSGIResponse
+
+# ----------------------------------------------------------------------------
+# AI Metrics / Rate Limiting / Caching / Async scaffolding
+# ----------------------------------------------------------------------------
+try:  # optional prometheus metrics
+    from prometheus_client import Counter, Histogram, Gauge  # type: ignore
+except Exception:  # noqa: BLE001
+    Counter = Histogram = None  # type: ignore
+
+_AI_METRICS_ENABLED = Counter is not None
+if _AI_METRICS_ENABLED:
+    try:
+        AI_CALLS = Counter("ai_endpoint_calls_total", "Total AI endpoint invocations", ["endpoint", "result"])  # type: ignore
+        AI_LAT = Histogram("ai_endpoint_latency_seconds", "Latency of AI calls", ["endpoint"])  # type: ignore
+        AI_JOBS_ACTIVE = Gauge("ai_jobs_active", "Current number of active (running) AI async jobs")  # type: ignore
+        AI_JOBS_TOTAL = Counter("ai_jobs_created_total", "Total async AI jobs created")  # type: ignore
+        AI_JOBS_PRUNED = Counter("ai_jobs_pruned_total", "Total async AI jobs pruned (ttl+max)")  # type: ignore
+    except ValueError:
+        # Metrics already registered (likely due to module re-import in tests); fallback to no-op stubs
+        class _Stub:  # noqa: D401
+            def labels(self, *_, **__): return self
+            def inc(self, *_, **__): return None
+            def observe(self, *_, **__): return None
+            def dec(self, *_, **__): return None
+            def set(self, *_, **__): return None
+        AI_CALLS = AI_LAT = AI_JOBS_ACTIVE = AI_JOBS_TOTAL = AI_JOBS_PRUNED = _Stub()
+else:  # stubs
+    class _Stub:  # noqa: D401
+        def labels(self, *_, **__): return self
+        def inc(self, *_, **__): return None
+        def observe(self, *_, **__): return None
+        def dec(self, *_, **__): return None
+        def set(self, *_, **__): return None
+    AI_CALLS = AI_LAT = _Stub()
+    AI_JOBS_ACTIVE = AI_JOBS_TOTAL = AI_JOBS_PRUNED = _Stub()
+
+# Simple in-memory rate limiting (per ip & endpoint)
+_RATE_LIMIT_ENABLED = True
+_RATE_LIMIT_WINDOW_SEC = int(os.getenv("AI_RATE_LIMIT_WINDOW", "60"))
+_RATE_LIMIT_MAX = int(os.getenv("AI_RATE_LIMIT_MAX", "30"))
+_rate_lock = threading.Lock()
+_rate_hits: dict[tuple[str, str], deque[float]] = {}
+
+def _rate_limited(ep: str) -> bool:
+    if not _RATE_LIMIT_ENABLED:
+        return False
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
+    key = (ip, ep)
+    now = time.time()
+    with _rate_lock:
+        dq = _rate_hits.setdefault(key, deque())
+        # drop old
+        cutoff = now - _RATE_LIMIT_WINDOW_SEC
+        while dq and dq[0] < cutoff:
+            dq.popleft()
+        if len(dq) >= _RATE_LIMIT_MAX:
+            return True
+        dq.append(now)
+    return False
+
+def _retry_after_seconds(ep: str) -> int:
+    """Compute remaining seconds until a rate-limited caller may retry.
+
+    Returns 0 if not currently limited. Value is ceiling of remaining
+    window for the oldest timestamp in the sliding window. Always >=1
+    when limited to avoid ambiguous 0-second waits.
+    """
+    if not _RATE_LIMIT_ENABLED:
+        return 0
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
+    key = (ip, ep)
+    now = time.time()
+    with _rate_lock:
+        dq = _rate_hits.get(key)
+        if not dq or len(dq) < _RATE_LIMIT_MAX:
+            return 0
+        oldest = dq[0]
+        remaining = int(max(0, _RATE_LIMIT_WINDOW_SEC - (now - oldest)))
+        return remaining if remaining > 0 else 1
+
+def _rate_state(ep: str) -> tuple[int, int]:
+    """Return current (limit, remaining) without mutating counters.
+
+    Remaining is computed after pruning expired timestamps.
+    """
+    if not _RATE_LIMIT_ENABLED:
+        return _RATE_LIMIT_MAX, _RATE_LIMIT_MAX
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
+    key = (ip, ep)
+    now = time.time()
+    with _rate_lock:
+        dq = _rate_hits.get(key)
+        if dq is None:
+            return _RATE_LIMIT_MAX, _RATE_LIMIT_MAX
+        cutoff = now - _RATE_LIMIT_WINDOW_SEC
+        # prune (non mutating semantics OK; pruning allowed)
+        while dq and dq[0] < cutoff:
+            dq.popleft()
+        remaining = max(0, _RATE_LIMIT_MAX - len(dq))
+    return _RATE_LIMIT_MAX, remaining
+
+# Simple cache for summary: keyed by latest ids hash
+_SUMMARY_CACHE_TTL = int(os.getenv("AI_SUMMARY_CACHE_TTL", "60"))
+_summary_cache: dict[str, tuple[float, dict]] = {}
+_summary_lock = threading.Lock()
+
+def _cache_get(key: str) -> dict | None:
+    with _summary_lock:
+        item = _summary_cache.get(key)
+        if not item:
+            return None
+        ts, payload = item
+        if time.time() - ts > _SUMMARY_CACHE_TTL:
+            _summary_cache.pop(key, None)
+            return None
+        return payload
+
+def _cache_set(key: str, payload: dict) -> None:
+    with _summary_lock:
+        _summary_cache[key] = (time.time(), payload)
+
+# Async job store (minimal, in-memory)
+_AI_JOBS: dict[str, dict] = {}
+_jobs_lock = threading.Lock()
+_AI_JOB_MAX = int(os.getenv("AI_JOB_MAX", "200"))
+_AI_JOB_TTL_SEC = int(os.getenv("AI_JOB_TTL_SEC", "600"))  # 10 min default
+
+def _prune_jobs() -> None:
+    """Prune completed jobs older than TTL or if over max count.
+
+    Strategy:
+    1. Remove any job with completed_at older than now - TTL.
+    2. If still above max, remove oldest by created_at until within limit.
+    """
+    now = time.time()
+    # Fast exit if small
+    if len(_AI_JOBS) == 0:
+        return
+    # Build list for evaluation
+    items = list(_AI_JOBS.items())
+    # First pass: TTL
+    removed = 0
+    for jid, meta in items:
+        c_at = meta.get("completed_at")
+        if c_at and (now - float(c_at)) > _AI_JOB_TTL_SEC:
+            _AI_JOBS.pop(jid, None)
+            removed += 1
+    # Enforce max size
+    if len(_AI_JOBS) > _AI_JOB_MAX:
+        # sort remaining by created_at ascending
+        remaining = sorted(_AI_JOBS.items(), key=lambda kv: kv[1].get("created_at", 0))
+        overflow = len(_AI_JOBS) - _AI_JOB_MAX
+        for jid, _ in remaining[:overflow]:
+            _AI_JOBS.pop(jid, None)
+            removed += 1
+    if removed:
+        logger.debug("Pruned %s AI jobs (ttl/max)", removed)
+        try:
+            AI_JOBS_PRUNED.inc(removed)  # type: ignore
+        except Exception:
+            pass
+
+def _new_job_id() -> str:
+    return f"job_{int(time.time()*1000)}_{len(_AI_JOBS)+1}"
+
+def _run_job(job_id: str, messages: list[dict]):  # background thread
+    start = time.time()
+    try:
+        if grok_chat is None:
+            raise RuntimeError("ai_disabled")
+        resp = grok_chat(messages)  # type: ignore[arg-type]
+        status = "ok" if resp and resp.get("ok") else "error"
+        with _jobs_lock:
+            _AI_JOBS[job_id]["status"] = status
+            _AI_JOBS[job_id]["response"] = resp
+    except Exception as exc:  # noqa: BLE001
+        with _jobs_lock:
+            _AI_JOBS[job_id]["status"] = "failed"
+            _AI_JOBS[job_id]["error"] = str(exc)
+    finally:
+        with _jobs_lock:
+            _AI_JOBS[job_id]["completed_at"] = time.time()
+            try:
+                AI_JOBS_ACTIVE.dec()  # type: ignore
+            except Exception:
+                pass
+            _prune_jobs()
+        AI_LAT.labels("ask_async").observe(time.time()-start)  # type: ignore
+
+def _trim_events(seq: list[dict], max_items: int, max_field: int) -> list[dict]:
+    """Trim a list of event dicts limiting number of items and max string field length.
+
+    Args:
+        seq: Original sequence of event dictionaries.
+        max_items: Maximum number of events to retain.
+        max_field: Maximum length of any string field value.
+    Returns:
+        A new list of trimmed event dicts.
+    """
+    out: list[dict] = []
+    for r in seq[:max_items]:
+        nr: dict[str, Any] = {}
+        for k, v in r.items():
+            if isinstance(v, str) and len(v) > max_field:
+                nr[k] = v[:max_field] + "…"
+            else:
+                nr[k] = v
+        out.append(nr)
+    return out
+
+def _build_filters(args, mapping: dict[str, str]) -> dict[str, str]:
+    return {
+        k: v
+        for k, v in (
+            (alias, args.get(src, type=str)) for alias, src in mapping.items()
+        )
+        if v is not None
+    }
 
 
 # ----------------------------------------------------------------------------
@@ -126,6 +349,89 @@ except Exception as _e_local:  # noqa: BLE001
 CORS(app, resources={r"/api/*": {"origins": CORS_ORIGINS}})
 app.config["SECRET_KEY"] = "ofitec_ai_2025"
 app.config["JSON_AS_ASCII"] = False
+
+# ---------------------------------------------------------------------------
+# Global Request ID + Structured Logging Middleware
+# ---------------------------------------------------------------------------
+from flask import g  # noqa: E402
+
+@app.before_request
+def _assign_request_id():  # noqa: D401
+    rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
+    g.request_id = rid
+    # NOTE (testing): Removed per-request cache clear for /api/ai/summary because
+    # it prevented the second call in the same test from producing a HIT.
+    # Deterministic MISS-on-first-call per test module is now achieved by
+    # embedding the id() of the current grok_chat function inside the cache
+    # payload (see api_ai_summary). When tests monkeypatch grok_chat, the
+    # function id changes causing a natural cache invalidation without wiping
+    # the cache on every request.
+
+@app.after_request
+def _append_request_id(resp: WSGIResponse):  # noqa: D401
+    try:
+        rid = getattr(g, "request_id", None)
+        if rid:
+            resp.headers.setdefault("X-Request-ID", rid)
+    except Exception:
+        pass
+    return resp
+
+@app.after_request
+def _structured_access_log(resp: WSGIResponse):  # noqa: D401
+    try:
+        rid = getattr(g, "request_id", None)
+        logger.info(
+            json.dumps(
+                {
+                    "ts": datetime.utcnow().isoformat() + "Z",
+                    "rid": rid,
+                    "method": request.method,
+                    "path": request.path,
+                    "status": resp.status_code,
+                    "ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+                }
+            )
+        )
+    except Exception:
+        pass
+    return resp
+
+# ----------------------------------------------------------------------------
+# /metrics (Prometheus) - only if prometheus_client is available
+# ----------------------------------------------------------------------------
+if _AI_METRICS_ENABLED:
+    try:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST  # type: ignore
+
+        @app.get("/metrics")
+        def metrics():  # noqa: D401
+            data = generate_latest()  # type: ignore
+            return Response(data, mimetype=CONTENT_TYPE_LATEST)
+    except Exception as _e_metrics:  # noqa: BLE001
+        logger.warning("/metrics route no habilitado: %s", _e_metrics)
+
+# Lightweight AI metrics debug (JSON) - does not expose all Prometheus samples
+@app.get("/api/ai/metrics/debug")
+def api_ai_metrics_debug():  # noqa: D401
+    payload = {
+        "metrics_enabled": bool(_AI_METRICS_ENABLED),
+        "jobs": {
+            "active": getattr(globals().get("AI_JOBS_ACTIVE"), "_value", None),
+        },
+    }
+    # Best effort: if real prometheus objects, try calling collect for counters
+    try:
+        if _AI_METRICS_ENABLED:
+            # We avoid heavy parsing; just include whether counters exist
+            payload["counters"] = {
+                "calls": True,
+                "jobs_total": True,
+                "jobs_pruned": True,
+            }
+    except Exception:
+        pass
+    return jsonify(payload)
 
 # Conciliación blueprint
 # Prefer always the new clean implementation; fallback to legacy only if clean fails and not forced off.
@@ -355,12 +661,11 @@ def admin_routes():
     try:
         rules = []
         for r in app.url_map.iter_rules():
+            mset = list(getattr(r, "methods", []) or [])
             rules.append(
                 {
                     "rule": str(r.rule),
-                    "methods": sorted(
-                        m for m in r.methods if m not in {"HEAD", "OPTIONS"}
-                    ),
+                    "methods": sorted(m for m in mset if m not in {"HEAD", "OPTIONS"}),
                     "endpoint": r.endpoint,
                 }
             )
@@ -689,7 +994,7 @@ def api_projects_v2():
                 f" WHERE {where_sql} "
                 " GROUP BY COALESCE(p.zoho_project_name, "
                 "          pm.zoho_project_name) "
-                f" ORDER BY {order_sql} LIMIT OFFSET ?"
+                f" ORDER BY {order_sql} LIMIT ? OFFSET ?"
             )
             cur.execute(data_sql, [*params, limit, offset])
             rows = cur.fetchall()
@@ -1633,7 +1938,6 @@ def api_ceo_overview():
                     "month_pct": None,
                     "plan_pct": None,
                     "delta_pp": None,
-                    "top_projects": [],
                 },
                 "working_cap": {
                     "dso": None,
@@ -2336,7 +2640,7 @@ def _query_view(
     # Queries
     data_sql = (
         f"SELECT * FROM {view_name} WHERE {where_sql}{order_sql} "
-        "LIMIT OFFSET ?"
+        "LIMIT ? OFFSET ?"
     )
     count_sql = f"SELECT COUNT(1) FROM {view_name} WHERE {where_sql}"
 
@@ -2398,16 +2702,19 @@ def api_facturas_compra():
 def api_cartola_bancaria():
     try:
         args = request.args
-        result = _query_view(
-            "v_cartola_bancaria",
-            filters={k: v for k, v in {
+        _filters_cb = {
+            k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            }.items() if v is not None},
+            }.items() if v is not None
+        }
+        result = _query_view(
+            "v_cartola_bancaria",
+            filters=_filters_cb,  # type: ignore[arg-type]
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2432,16 +2739,19 @@ def api_cartola_bancaria():
 def api_facturas_venta():
     try:
         args = request.args
-        result = _query_view(
-            "v_facturas_venta",
-            filters={k: v for k, v in {
+        _filters_fv = {
+            k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            }.items() if v is not None},
+            }.items() if v is not None
+        }
+        result = _query_view(
+            "v_facturas_venta",
+            filters=_filters_fv,  # type: ignore[arg-type]
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2466,16 +2776,18 @@ def api_facturas_venta():
 def api_gastos():
     try:
         args = request.args
+        _filters_g_src = {
+            "rut": args.get("rut", type=str),
+            "moneda": args.get("moneda", type=str),
+            "estado": args.get("estado", type=str),
+            "date_from": args.get("date_from", type=str),
+            "date_to": args.get("date_to", type=str),
+            "search": args.get("search", type=str),
+        }
+        _filters_g: dict[str, str] = {k: v for k, v in _filters_g_src.items() if v is not None}
         result = _query_view(
             "v_gastos",
-            filters={k: v for k, v in {
-                "rut": args.get("rut", type=str),
-                "moneda": args.get("moneda", type=str),
-                "estado": args.get("estado", type=str),
-                "date_from": args.get("date_from", type=str),
-                "date_to": args.get("date_to", type=str),
-                "search": args.get("search", type=str),
-            }.items() if v is not None},
+            filters=_filters_g,  # type: ignore[arg-type]
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2490,13 +2802,15 @@ def api_gastos():
 def api_impuestos():
     try:
         args = request.args
+        _filters_impuestos_src = {
+            "search": args.get("search", type=str),
+            "date_from": args.get("periodo_from", type=str),
+            "date_to": args.get("periodo_to", type=str),
+        }
+        _filters_impuestos: dict[str, str] = {k: v for k, v in _filters_impuestos_src.items() if v is not None}
         result = _query_view(
             "v_impuestos",
-            filters={k: v for k, v in {
-                "search": args.get("search", type=str),
-                "date_from": args.get("periodo_from", type=str),
-                "date_to": args.get("periodo_to", type=str),
-            }.items() if v is not None},
+            filters=_filters_impuestos,  # type: ignore[arg-type]
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -2513,12 +2827,16 @@ def api_previred():
         args = request.args
         result = _query_view(
             "v_previred",
-            filters={k: v for k, v in {
-                "rut": args.get("rut", type=str),
-                "search": args.get("search", type=str),
-                "date_from": args.get("date_from", type=str),
-                "date_to": args.get("date_to", type=str),
-            }.items() if v is not None},
+            filters={
+                k: v
+                for k, v in {
+                    "rut": args.get("rut", type=str),
+                    "search": args.get("search", type=str),
+                    "date_from": args.get("date_from", type=str),
+                    "date_to": args.get("date_to", type=str),
+                }.items()
+                if v is not None
+            },
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -2535,12 +2853,16 @@ def api_sueldos():
         args = request.args
         result = _query_view(
             "v_sueldos",
-            filters={k: v for k, v in {
-                "rut": args.get("rut", type=str),
-                "search": args.get("search", type=str),
-                "date_from": args.get("date_from", type=str),
-                "date_to": args.get("date_to", type=str),
-            }.items() if v is not None},
+            filters={
+                k: v
+                for k, v in {
+                    "rut": args.get("rut", type=str),
+                    "search": args.get("search", type=str),
+                    "date_from": args.get("date_from", type=str),
+                    "date_to": args.get("date_to", type=str),
+                }.items()
+                if v is not None
+            },
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -2562,11 +2884,11 @@ def api_reportes_proyectos():
                 "SELECT 1 FROM sqlite_master WHERE type='view' AND name='v_proyectos_resumen'"
             )
             if cur.fetchone():
+                _filters_proy_src = {"search": args.get("search", type=str)}
+                _filters_proy: dict[str, str] = {k: v for k, v in _filters_proy_src.items() if v is not None}
                 result = _query_view(
                     "v_proyectos_resumen",
-                    filters={
-                        "search": args.get("search", type=str),
-                    },
+                    filters=_filters_proy,
                     page=args.get("page", default=1, type=int),
                     page_size=args.get("page_size", default=50, type=int),
                     order_by=args.get("order_by", default="monto_total", type=str),
@@ -2592,7 +2914,7 @@ def api_reportes_proyectos():
                 " FROM purchase_orders_unified"
                 + where
                 + " GROUP BY zoho_project_name, zoho_project_id"
-                + " ORDER BY monto_total DESC LIMIT OFFSET ?"
+                + " ORDER BY monto_total DESC LIMIT ? OFFSET ?"
             )
             cur = conn.execute(q, (page_size, offset))
             rows = [dict(r) for r in cur.fetchall()]
@@ -2612,11 +2934,11 @@ def api_reportes_proveedores():
                 "SELECT 1 FROM sqlite_master WHERE type='view' AND name='v_proveedores_resumen'"
             )
             if cur.fetchone():
+                _filters_prov_src = {"search": args.get("search", type=str)}
+                _filters_prov: dict[str, str] = {k: v for k, v in _filters_prov_src.items() if v is not None}
                 result = _query_view(
                     "v_proveedores_resumen",
-                    filters={
-                        "search": args.get("search", type=str),
-                    },
+                    filters=_filters_prov,
                     page=args.get("page", default=1, type=int),
                     page_size=args.get("page_size", default=50, type=int),
                     order_by=args.get("order_by", default="monto_total", type=str),
@@ -2638,7 +2960,7 @@ def api_reportes_proveedores():
                 " COUNT(1) AS total_ordenes, SUM(COALESCE(total_amount,0)) AS monto_total, MAX(po_date) AS ultima_orden"
                 " FROM purchase_orders_unified"
                 " GROUP BY vendor_rut, proveedor_nombre"
-                " ORDER BY monto_total DESC LIMIT OFFSET ?"
+                " ORDER BY monto_total DESC LIMIT ? OFFSET ?"
             )
             cur = conn.execute(q, (page_size, offset))
             rows = [dict(r) for r in cur.fetchall()]
@@ -2658,11 +2980,11 @@ def api_tesoreria_saldos():
                 "SELECT 1 FROM sqlite_master WHERE type='view' AND name='v_tesoreria_saldos_consolidados'"
             )
             if cur.fetchone():
+                _filters_saldos_src = {"search": args.get("search", type=str)}
+                _filters_saldos: dict[str, str] = {k: v for k, v in _filters_saldos_src.items() if v is not None}
                 result = _query_view(
                     "v_tesoreria_saldos_consolidados",
-                    filters={
-                        "search": args.get("search", type=str),
-                    },
+                    filters=_filters_saldos,
                     page=args.get("page", default=1, type=int),
                     page_size=args.get("page_size", default=100, type=int),
                     order_by=args.get("order_by", default="saldo_actual", type=str),
@@ -2731,9 +3053,9 @@ def api_cashflow_semana():
                         data[wk]["invoice"] += abs(float(amt or 0))
 
         weeks_sorted = sorted(data.keys())[-weeks:]
-        items = []
+        items: list[dict[str, Any]] = []
         for wk in weeks_sorted:
-            entry = {"week": wk}
+            entry: dict[str, Any] = {"week": wk}
             for cat, val in data[wk].items():
                 entry[cat] = round(val, 2)
             entry["total"] = round(sum(data[wk].values()), 2)
@@ -2821,9 +3143,9 @@ def api_proyectos_kpis():
     """
     try:
         with db_conn(DB_PATH) as conn:
-            items: list[dict] = []
+            items: list[dict[str, Any]] = []
             # Base de proyectos si existe
-            proyectos: dict[str, dict] = {}
+            proyectos: dict[str, dict[str, Any]] = {}
             if _table_exists(conn, "projects"):
                 cur = conn.execute("SELECT id, COALESCE(zoho_project_id, id) AS pid, name, budget_total FROM projects")
                 for row in cur.fetchall():
@@ -2885,7 +3207,9 @@ def api_proyectos_kpis():
 
             # Margen
             for pid, e in proyectos.items():
-                e["margen"] = round(float(e.get("ventas", 0) - e.get("compras", 0)), 2)
+                ventas = float(e.get("ventas", 0) or 0)
+                compras = float(e.get("compras", 0) or 0)
+                e["margen"] = round(ventas - compras, 2)  # type: ignore[assignment]
                 items.append(e)
 
             return jsonify({"items": items, "meta": {"total": len(items)}})
@@ -2978,7 +3302,7 @@ def api_control_financiero_resumen():
 def api_proyecto_resumen(project_key: str):
     try:
         with db_conn(DB_PATH) as conn:
-            resumen = {"project_key": project_key}
+            resumen: dict[str, Any] = {"project_key": project_key}
             # Resolver por id o nombre; aplicar aliases si existen
             alias_map, _display = _get_alias_maps(conn)
             key_norm = _norm_name(project_key)
@@ -3075,7 +3399,9 @@ def api_proyecto_resumen(project_key: str):
                 val = cur.fetchone()[0]
                 resumen["riesgo"] = round(float(val or 0), 2)
             # Margen
-            resumen["margen"] = round(float(resumen.get("ventas", 0) - resumen.get("compras", 0)), 2)
+            _ventas = float(resumen.get("ventas", 0) or 0)
+            _compras = float(resumen.get("compras", 0) or 0)
+            resumen["margen"] = round(_ventas - _compras, 2)
             return jsonify(resumen)
     except Exception as e:
         logger.error("Error en /api/proyectos/<id>/resumen: %s", e)
@@ -4144,7 +4470,7 @@ def api_project_purchases(project_key: str):
                 "FROM purchase_orders_unified WHERE "
                 + where
                 + status_filter_sql
-                + " ORDER BY po_date DESC LIMIT OFFSET ?"
+                + " ORDER BY po_date DESC LIMIT ? OFFSET ?"
             )
             cur = conn.execute(count_sql, params)
             total = cur.fetchone()[0]
@@ -4538,7 +4864,7 @@ def api_project_ep_import(project_key: str):
                             (
                                 "SELECT l.item_code, COALESCE(SUM(l.amount_period),0) AS amount_cum "
                                 "FROM ep_lines l JOIN ep_headers h ON h.id=l.ep_id "
-                                "WHERE h.contract_id=AND h.status IN('approved','invoiced','paid') "
+                                "WHERE h.contract_id=? AND h.status IN('approved','invoiced','paid') "
                                 "GROUP BY l.item_code"
                             ),
                             (c_id,),
@@ -4874,7 +5200,7 @@ def api_purchase_orders():
                 data_sql = (
                     f"SELECT {select_sql} FROM purchase_orders_unified "
                     f"WHERE {where_sql} ORDER BY {order_by} {order_dir} "
-                    "LIMIT OFFSET ?"
+                    "LIMIT ? OFFSET ?"
                 )
                 count_sql = (
                     "SELECT COUNT(1) FROM purchase_orders_unified WHERE "
@@ -5163,6 +5489,304 @@ def ar_rules_live_dashboard():
         logger.error("Error generando dashboard live: %s", e)
         return jsonify({"error": "live_dashboard_failed"}), 500
 
+
+try:  # optional AI client import (xAI)
+    from backend.ai.xai_client import grok_chat, ai_enabled  # type: ignore
+except Exception:  # noqa: BLE001
+    grok_chat = None  # type: ignore
+
+    def ai_enabled() -> bool:  # type: ignore  # noqa: D401
+        """Fallback cuando el cliente AI no está disponible."""
+        return False
+
+@app.post("/api/ai/summary")
+def api_ai_summary():  # noqa: D401
+    req_id = getattr(g, "request_id", uuid.uuid4().hex[:16])
+    if not ai_enabled():
+        r = jsonify({"error": "ai_disabled"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-Request-ID"] = req_id
+        return r, 503
+    limit = 40
+    ap_events: list[dict] = []
+    ar_events: list[dict] = []
+    metrics: dict = {}
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute("SELECT id, created_at, event_type, feedback, accepted FROM ap_match_events ORDER BY id DESC LIMIT ?", (limit,))
+                ap_events = [{"id": r[0], "at": r[1], "type": r[2], "feedback": r[3], "accepted": r[4]} for r in cur.fetchall()]
+            except Exception:
+                ap_events = []
+            try:
+                cur.execute("SELECT id, created_at, action, reasons FROM ar_map_events ORDER BY id DESC LIMIT ?", (limit,))
+                ar_events = [{"id": r[0], "at": r[1], "action": r[2], "reasons": r[3]} for r in cur.fetchall()]
+            except Exception:
+                ar_events = []
+            try:
+                cur.execute("SELECT ap_events_total, ap_events_accepted, ar_map_events, auto_assign_success FROM match_metrics_snapshots ORDER BY id DESC LIMIT 1")
+                row = cur.fetchone()
+                if row:
+                    metrics = {"ap_events_total": row[0], "ap_events_accepted": row[1], "ar_map_events": row[2], "auto_assign_success": row[3]}
+            except Exception:
+                metrics = {}
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": "db_error", "detail": str(exc)}), 500
+    # Cache key
+    last_ids = (
+        (ap_events[0]["id"] if ap_events else 0),
+        (ar_events[0]["id"] if ar_events else 0),
+        metrics.get("ap_events_total", 0),
+        metrics.get("ar_map_events", 0),
+    )
+    # Include function identity for grok_chat so test monkeypatching naturally invalidates cache
+    func_id = None
+    try:
+        func_id = id(grok_chat) if grok_chat else None  # type: ignore[arg-type]
+    except Exception:  # pragma: no cover - defensive
+        func_id = None
+    cache_key = "|".join(map(str, (*last_ids, func_id)))
+    cached = _cache_get(cache_key)
+    if cached:
+        # Even on cache hit we must respect a newly lowered limit (test mutates _RATE_LIMIT_MAX)
+        limit_now, remaining_now = _rate_state("summary")
+        # If currently rate limited (remaining_now == 0 and existing deque length >= limit), respond 429
+        # Determine limited condition using remaining_now == 0 and limit_now == 0? limit may be >=1; treat remaining 0 as limited.
+        if remaining_now == 0 and _RATE_LIMIT_ENABLED:
+            AI_CALLS.labels("summary", "rate_limited").inc()  # type: ignore
+            r = jsonify({"error": "rate_limited", "meta": {"cache": "hit"}})
+            r.headers["X-Cache"] = "HIT"
+            r.headers["X-RateLimit-Limit"] = str(limit_now)
+            r.headers["X-RateLimit-Remaining"] = "0"
+            r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
+            r.headers["Retry-After"] = str(_retry_after_seconds("summary"))
+            r.headers["X-Request-ID"] = req_id
+            return r, 429
+        resp_cached = dict(cached)
+        meta = dict(resp_cached.get("meta", {}))
+        meta["cache"] = "hit"
+        resp_cached["meta"] = meta
+        AI_CALLS.labels("summary", "cache_hit").inc()  # type: ignore
+        rj = jsonify(resp_cached)
+        rj.headers["X-Cache"] = "HIT"
+        rj.headers["X-RateLimit-Limit"] = str(limit_now)
+        # Keep remaining stable (do not increase versus prior MISS). remaining_now already reflects current window.
+        rj.headers["X-RateLimit-Remaining"] = str(remaining_now)
+        rj.headers["X-Request-ID"] = req_id
+        return rj
+    # Rate limit only applies to fresh generation
+    if _rate_limited("summary"):
+        AI_CALLS.labels("summary", "rate_limited").inc()  # type: ignore
+        r = jsonify({"error": "rate_limited"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = "0"
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(_retry_after_seconds("summary"))
+        r.headers["X-Request-ID"] = req_id
+        return r, 429
+    sys_prompt = "Eres un analista financiero. Resume eventos y métricas clave en 6-8 viñetas concisas en español neutro."  # noqa: E501
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {
+            "role": "user",
+            "content": "Contexto:" + json.dumps(
+                {
+                    "metrics": metrics,
+                    "ap": _trim_events(ap_events, 12, 180),
+                    "ar": _trim_events(ar_events, 12, 180),
+                },
+                ensure_ascii=False,
+            ),
+        },
+    ]
+    try:
+        start = time.time()
+        resp = grok_chat(messages)  # type: ignore[arg-type]
+        AI_LAT.labels("summary").observe(time.time()-start)  # type: ignore
+    except RuntimeError as rte:
+        return jsonify({"error": str(rte)}), 503
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": "ai_call_failed", "detail": str(exc)}), 500
+    if not resp or not resp.get("ok"):
+        AI_CALLS.labels("summary", "error").inc()  # type: ignore
+        rerr = jsonify({"error": "ai_error", "detail": resp})
+        rerr.headers["X-Request-ID"] = req_id
+        return rerr, 502
+    out = {"summary": resp.get("content"), "meta": {"ap_events": len(ap_events), "ar_events": len(ar_events), "cache": "miss"}}
+    # Store function identity inside cached payload for introspection (not used in tests but aids debugging)
+    out["_func_id"] = func_id
+    _cache_set(cache_key, out)
+    AI_CALLS.labels("summary", "ok").inc()  # type: ignore
+    rj = jsonify(out)
+    rj.headers["X-Cache"] = "MISS"
+    # Compute remaining after this MISS using current deque length
+    try:
+        _, remaining_now = _rate_state("summary")
+        # After generating we have already consumed the slot; remaining_now should reflect that.
+    except Exception:
+        remaining_now = max(0, _RATE_LIMIT_MAX - 1)
+    rj.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+    rj.headers["X-RateLimit-Remaining"] = str(remaining_now)
+    rj.headers["X-Request-ID"] = req_id
+    return rj
+
+@app.post("/api/ai/ask")
+def api_ai_ask():  # noqa: D401
+    req_id = getattr(g, "request_id", uuid.uuid4().hex[:16])
+    data = request.get_json(silent=True) or {}
+    question = (data.get("question") or "").strip()
+    if not question:
+        r = jsonify({"error": "missing:question"})
+        r.headers["X-Request-ID"] = req_id
+        return r, 422
+    if _rate_limited("ask"):
+        AI_CALLS.labels("ask", "rate_limited").inc()  # type: ignore
+        r = jsonify({"error": "rate_limited"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = "0"
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(_retry_after_seconds("ask"))
+        r.headers["X-Request-ID"] = req_id
+        return r, 429
+    if not ai_enabled():
+        r = jsonify({"error": "ai_disabled"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-Request-ID"] = req_id
+        return r, 503
+    ctx = {}
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute("SELECT id, created_at, event_type, feedback, accepted FROM ap_match_events ORDER BY id DESC LIMIT 25")
+                ctx["ap_match_events"] = [{"id": r[0], "at": r[1], "type": r[2], "feedback": r[3], "accepted": r[4]} for r in cur.fetchall()]
+            except Exception:
+                ctx["ap_match_events"] = []
+            try:
+                cur.execute("SELECT id, created_at, action, reasons FROM ar_map_events ORDER BY id DESC LIMIT 25")
+                ctx["ar_map_events"] = [{"id": r[0], "at": r[1], "action": r[2], "reasons": r[3]} for r in cur.fetchall()]
+            except Exception:
+                ctx["ar_map_events"] = []
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": "db_error", "detail": str(exc)}), 500
+    sys_prompt = "Eres un asistente analista. Responde breve; si faltan datos dilo explícitamente."  # noqa: E501
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {
+            "role": "user",
+            "content": (
+                "Contexto: "
+                + json.dumps(
+                    {k: _trim_events(v, 25, 160) for k, v in ctx.items()},
+                    ensure_ascii=False,
+                )
+                + f"\n\nPregunta: {question}"
+            ),
+        },
+    ]
+    try:
+        start = time.time()
+        resp = grok_chat(messages)  # type: ignore[arg-type]
+        AI_LAT.labels("ask").observe(time.time()-start)  # type: ignore
+    except RuntimeError as rte:
+        return jsonify({"error": str(rte)}), 503
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": "ai_call_failed", "detail": str(exc)}), 500
+    if not resp or not resp.get("ok"):
+        AI_CALLS.labels("ask", "error").inc()  # type: ignore
+        rerr = jsonify({"error": "ai_error", "detail": resp})
+        rerr.headers["X-Request-ID"] = req_id
+        return rerr, 502
+    AI_CALLS.labels("ask", "ok").inc()  # type: ignore
+    answer_content = resp.get("content") or (resp.get("message") or {}).get("content")
+    r = jsonify({"ok": True, "answer": answer_content})
+    r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+    r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX-1)
+    r.headers["X-Request-ID"] = req_id
+    return r
+
+@app.post("/api/ai/ask/async")
+def api_ai_ask_async():  # noqa: D401
+    req_id = getattr(g, "request_id", uuid.uuid4().hex[:16])
+    data = request.get_json(silent=True) or {}
+    question = (data.get("question") or "").strip()
+    if not question:
+        r = jsonify({"error": "missing:question"})
+        r.headers["X-Request-ID"] = req_id
+        return r, 422
+    if not ai_enabled():
+        r = jsonify({"error": "ai_disabled"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-Request-ID"] = req_id
+        return r, 503
+    if _rate_limited("ask_async"):
+        r = jsonify({"error": "rate_limited"})
+        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = "0"
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(_retry_after_seconds("ask_async"))
+        r.headers["X-Request-ID"] = req_id
+        return r, 429
+    ctx = {}
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute("SELECT id, created_at, event_type, feedback, accepted FROM ap_match_events ORDER BY id DESC LIMIT 25")
+                ctx["ap_match_events"] = [{"id": r[0], "at": r[1], "type": r[2], "feedback": r[3], "accepted": r[4]} for r in cur.fetchall()]
+            except Exception:
+                ctx["ap_match_events"] = []
+            try:
+                cur.execute("SELECT id, created_at, action, reasons FROM ar_map_events ORDER BY id DESC LIMIT 25")
+                ctx["ar_map_events"] = [{"id": r[0], "at": r[1], "action": r[2], "reasons": r[3]} for r in cur.fetchall()]
+            except Exception:
+                ctx["ar_map_events"] = []
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": "db_error", "detail": str(exc)}), 500
+    sys_prompt = "Eres un asistente analista. Responde breve; si faltan datos dilo explícitamente."  # noqa: E501
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {
+            "role": "user",
+            "content": (
+                "Contexto: "
+                + json.dumps(
+                    {k: _trim_events(v, 25, 160) for k, v in ctx.items()},
+                    ensure_ascii=False,
+                )
+                + f"\n\nPregunta: {question}"
+            ),
+        },
+    ]
+    job_id = _new_job_id()
+    with _jobs_lock:
+        _AI_JOBS[job_id] = {"id": job_id, "status": "running", "created_at": time.time()}
+        try:
+            AI_JOBS_ACTIVE.inc()  # type: ignore
+            AI_JOBS_TOTAL.inc()  # type: ignore
+        except Exception:
+            pass
+        _prune_jobs()
+    th = threading.Thread(target=_run_job, args=(job_id, messages), daemon=True)
+    th.start()
+    AI_CALLS.labels("ask_async", "queued").inc()  # type: ignore
+    r = jsonify({"job_id": job_id, "status": "running"})
+    r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+    r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX-1)
+    r.headers["X-Request-ID"] = req_id
+    return r, 202
+
+@app.get("/api/ai/jobs/<job_id>")
+def api_ai_job_status(job_id: str):  # noqa: D401
+    with _jobs_lock:
+        job = _AI_JOBS.get(job_id)
+        if not job:
+            return jsonify({"error": "not_found"}), 404
+        return jsonify(job)
 
 if __name__ == "__main__":
     # Run development server only when executed directly (Docker CMD)

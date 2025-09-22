@@ -39,6 +39,7 @@ import sqlite3
 import json
 import hashlib
 from typing import Any, Optional
+import os
 from datetime import datetime, UTC
 from backend.db_utils import db_conn  # shared connection manager
 from dataclasses import dataclass
@@ -59,6 +60,22 @@ ep_bp = Blueprint("ep", __name__)
 
 
 def _db_path() -> str:
+    # 1. Reuse server.DB_PATH if server module already loaded (ensures tests referencing server.DB_PATH see same file)
+    try:  # pragma: no cover - best effort
+        from backend import server as _srv  # type: ignore
+        srv_path = getattr(_srv, "DB_PATH", None)
+        if srv_path:
+            return str(srv_path)
+    except Exception:
+        pass
+    # 2. Explicit environment variable DB_PATH (used only if server.DB_PATH was not available)
+    env_db = os.getenv("DB_PATH")
+    if env_db:
+        try:
+            return str(env_db)
+        except Exception:  # pragma: no cover - defensive
+            pass
+    # 3. Legacy helpers from tools.common_db (may resolve dynamic paths)
     if existing_db_path:
         try:
             p = existing_db_path()
@@ -1697,12 +1714,29 @@ def ep_generate_sales_note(ep_id: int):
             ),
         )
         sid = cur.lastrowid
-        _append_sales_note_audit(cur, int(sid), "create_draft", payload={
-            "amount_net": net,
-            "tax_amount": tax,
-            "amount_total": total,
-            "retention_snapshot": retention_snapshot,
-        })
+        # sid always int (lastrowid); assert for type checkers
+        assert sid is not None
+        _append_sales_note_audit(
+            cur,
+            int(sid),
+            "create_draft",
+            payload={
+                "amount_net": net,
+                "tax_amount": tax,
+                "amount_total": total,
+                "retention_snapshot": retention_snapshot,
+            },
+        )
+        # Defensive: if for any reason the audit row was not inserted (e.g., legacy schema race), insert a minimal one.
+        try:
+            chk = cur.execute(
+                "SELECT 1 FROM sales_note_audit WHERE sales_note_id=? AND action='create_draft' LIMIT 1",
+                (sid,),
+            ).fetchone()
+            if not chk:
+                _append_sales_note_audit(cur, int(sid), "create_draft", payload={"fallback": True})
+        except Exception:  # pragma: no cover - best effort
+            pass
         con.commit()
         return jsonify(
             {

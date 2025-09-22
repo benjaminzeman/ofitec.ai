@@ -8,3 +8,4 @@ pytest
 pytest-cov
 rapidfuzz>=3.0.0
 prometheus-client>=0.20.0
+requests  # optional for xAI (ai/xai_client.py) – safe lightweight dependency

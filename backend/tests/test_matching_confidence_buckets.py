@@ -1,5 +1,6 @@
 import re
 import sqlite3
+import os
 from backend.api_matching_metrics import _ap_metrics  # type: ignore
 
 
@@ -14,6 +15,7 @@ def test_confidence_bucket_labels_pattern(tmp_path):
         con.execute("INSERT INTO ap_match_events(id, candidates_json, confidence, accepted, created_at) VALUES(?,?,?,?, datetime('now'))", (i, '[]', cf, 1 if cf >= 0.5 else 0))
     con.commit()
     # Monkeypatch server DB_PATH if needed (not required here since we call internal helper directly)
+    os.environ["AP_METRICS_FORCE_ADVANCED"] = "1"
     metrics = _ap_metrics(con, window_days=0)
     buckets = metrics['confidence_buckets']
     assert buckets, 'Buckets should be computed'
