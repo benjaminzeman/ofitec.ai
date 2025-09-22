@@ -892,8 +892,7 @@ export async function fetchApMatchSuggestions(payload: {
   project_id?: string | number;
   amount_tol?: number;
   days?: number;
-}): Promise<{ items: ApMatchSuggestion[]; invoice_id?: number | string }>
-{
+}): Promise<{ items: ApMatchSuggestion[]; invoice_id?: number | string }> {
   const resp = await fetch(`${API_BASE_URL}/ap-match/suggestions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -905,7 +904,12 @@ export async function fetchApMatchSuggestions(payload: {
 
 export async function previewApMatch(payload: {
   invoice_id: number | string;
-  links: Array<{ po_id: string | number; po_line_id?: string | number; amount: number; qty?: number }>;
+  links: Array<{
+    po_id: string | number;
+    po_line_id?: string | number;
+    amount: number;
+    qty?: number;
+  }>;
   vendor_rut?: string;
   project_id?: string | number;
 }): Promise<any> {
@@ -920,7 +924,12 @@ export async function previewApMatch(payload: {
 
 export async function confirmApMatch(payload: {
   invoice_id: number | string;
-  links: Array<{ po_id: string | number; po_line_id?: string | number; amount: number; qty?: number }>;
+  links: Array<{
+    po_id: string | number;
+    po_line_id?: string | number;
+    amount: number;
+    qty?: number;
+  }>;
   confidence?: number;
   reasons?: string[];
   user_id?: string;
@@ -957,7 +966,10 @@ export async function getApMatchInvoice(invoice_id: number | string): Promise<an
   return await resp.json();
 }
 
-export async function getApMatchConfig(params?: { vendor_rut?: string; project_id?: string | number }) {
+export async function getApMatchConfig(params?: {
+  vendor_rut?: string;
+  project_id?: string | number;
+}) {
   const qs = params
     ? '?' +
       Object.entries(params)

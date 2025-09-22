@@ -9,7 +9,6 @@ import {
   createPurchaseOrder,
   formatCurrency,
   formatDate,
-  formatRUT,
   PagedResponse,
   PurchaseOrderListItem,
 } from '@/lib/api';

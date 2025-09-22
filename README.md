@@ -3,6 +3,11 @@
 ![CI Tests](https://github.com/ofitec-ai/ofitec.ai/actions/workflows/tests.yml/badge.svg)
 ![AR Rules](badges/ar_rules_coverage.svg)
 ![AR Trend 7d](badges/ar_rules_trend.svg)
+![AR Trend WMA](badges/ar_rules_trend_wma.svg)
+![AR Coverage Only](badges/ar_rules_coverage_only.svg)
+![AR Volatility](badges/ar_rules_volatility.svg)
+
+> Dashboard HTML rápido: abre `badges/ar_rules_dashboard.html` (se genera en cada run) para ver JSON actual, weekly agg y últimas filas de historial en una sola página.
 
 Frontend (Next.js 15) en 3001 y Backend (Flask) en 5555. Datos en `data/chipax_data.db`.
 Todas las decisiones se alinean a `docs/docs_oficiales/` (Ley de Puertos, Ley de BD, Estrategias y Mapeos).
@@ -379,11 +384,128 @@ Alertas adicionales:
 - Cobertura: `cov_drop_alert.txt` y metadata `cov_drop_meta.json` análogo a assign.
 - Racha descendente: archivo `streak_alert.txt` si hay N días (input `fail_on_streak`) con descenso continuo en ambos indicadores.
 
-Extensión futura sugerida:
+Salidas adicionales recientes:
 
-- Enviar notificación (Slack / correo) cuando la caída supere el umbral.
+- `badges/ar_rules_coverage_only.svg`: Badge dedicado de cobertura de reglas por nombre de cliente.
+- `badges/ar_rules_trend_wma.svg`: Badge con media móvil ponderada (WMA) lineal (pesos 1..N, N=7 por defecto) para asignación y cobertura (texto `assign X% | cov Y%`). Suaviza ruido diario y da mayor peso a días recientes.
+- `badges/ar_rules_weekly.json`: Agregación rolling (default 7 filas recientes) con min/max/avg de `project_assign_rate` y `customer_name_rule_coverage`. Permite construir panel externo o detectar variabilidad.
+
+Ejemplo `ar_rules_weekly.json`:
+
+```json
+{
+   "window_size": 7,
+   "rows": 7,
+   "assign_min": 0.74,
+   "assign_max": 0.82,
+   "assign_avg": 0.7871,
+   "coverage_min": 0.68,
+   "coverage_max": 0.77,
+   "coverage_avg": 0.7314
+}
+```
+
+Notificaciones (Slack / Teams):
+
+Si existen alertas (`badge_drop_alert.txt`, `cov_drop_alert.txt`, `streak_alert.txt`) el workflow intentará publicar un mensaje consolidado a los webhooks definidos vía secrets:
+
+| Secret | Descripción |
+|--------|-------------|
+| `SLACK_WEBHOOK_URL` | Incoming Webhook Slack (JSON `{text: ...}`) |
+| `TEAMS_WEBHOOK_URL` | Incoming Webhook Microsoft Teams |
+
+Si no se definen los secrets simplemente se omite el envío (log: `No alerts to notify` o `Alerts detected, attempting notifications`).
+
+Extensiones futuras sugeridas:
+
 - Ajustar umbral dinámico (p.ej. >3pp si `prev` < 40%).
 - Graficar histórico leyendo los JSON de stats como serie temporal.
+- Badge de volatilidad (desviación estándar 7d) para priorizar investigación cuando aumenta la dispersión.
+
+### Nuevas extensiones implementadas
+
+Desde la última iteración se añadieron varias mejoras al workflow `ar-rules-stats.yml`:
+
+1. Umbrales Dinámicos (`dynamic_threshold_mode`):
+   - Input nuevo en el dispatch manual: `dynamic_threshold_mode` (`off|sensitive|lenient`).
+   - Calcula thresholds adaptativos (puntos porcentuales de caída permitida) basados en el valor previo:
+     - `sensitive`: si `prev < 40%` → 3pp, `<60%` → 4pp, else 5pp.
+     - `lenient`: si `prev < 40%` → 6pp, `<60%` → 7pp, else 8pp.
+     - `off` (default) mantiene 5pp (estático). Si se proporcionan inputs explícitos `fail_on_drop_pp` / `fail_on_cov_drop_pp` estos tienen prioridad sobre el modo dinámico.
+2. Badge WMA (`ar_rules_trend_wma.svg`): media móvil ponderada (pesos lineales) para asignación y cobertura – ya mencionado arriba pero ahora integrado al dashboard.
+3. Weekly Aggregation JSON (`ar_rules_weekly.json`): min/max/avg rolling ventana configurable (default 7 filas) para análisis de rango y estabilidad.
+4. Badge de Volatilidad (`ar_rules_volatility.svg`): muestra desviación estándar (sample, ventana 7) en puntos porcentuales para asignación y cobertura (`sd assign X.Ypp | cov Z.Wpp`). Colores según volatilidad de asignación:
+   - <2pp verde (#2ECC71)
+   - <4pp amarillo (#F1C40F)
+   - <6pp naranja (#E67E22)
+   - ≥6pp rojo (#E74C3C)
+5. Dashboard HTML (`ar_rules_dashboard.html`): página estática que embebe badges, JSON actual, weekly aggregation y últimas N filas (default 30). Sin dependencias externas → se puede abrir directamente desde GitHub (vista raw) o servir vía Pages.
+6. Script de Historia Sintética (`tools/gen_ar_rules_fake_history.py`): genera un CSV de historial plausible para experimentar localmente con los badges sin esperar múltiples días.
+
+#### Uso rápido: Historia Sintética
+
+Ejemplos para poblar `badges/ar_rules_history.csv`:
+
+```bash
+python tools/gen_ar_rules_fake_history.py --out badges/ar_rules_history.csv               # 30 días modo estable
+python tools/gen_ar_rules_fake_history.py --out badges/ar_rules_history.csv --days 60 --mode improving --seed 42
+python tools/gen_ar_rules_fake_history.py --out badges/ar_rules_history.csv --mode volatile --append
+```
+
+Modos soportados: `stable`, `improving`, `declining`, `volatile`. Ajustan drift y ruido. Formato resultante coincide con el producido por el workflow real, por lo que inmediatamente se pueden regenerar badges localmente:
+
+```bash
+python tools/gen_ar_rules_trend_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_trend.svg
+python tools/gen_ar_rules_wma_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_trend_wma.svg
+python tools/gen_ar_rules_volatility_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_volatility.svg
+python tools/gen_ar_rules_weekly_agg.py --history badges/ar_rules_history.csv --out badges/ar_rules_weekly.json
+python tools/gen_ar_rules_dashboard.py --stats badges/ar_rules_stats.json --history badges/ar_rules_history.csv --weekly badges/ar_rules_weekly.json --out badges/ar_rules_dashboard.html
+```
+
+#### Resumen Rápido de Artefactos AR
+
+| Archivo / Badge | Propósito |
+|-----------------|-----------|
+| `ar_rules_coverage.svg` | Asignación vs Cobertura instantánea (principal) |
+| `ar_rules_coverage_only.svg` | Cobertura de reglas por nombre cliente |
+| `ar_rules_trend.svg` | Promedio simple 7d (assign & coverage) |
+| `ar_rules_trend_wma.svg` | Media móvil ponderada 7d (más peso a días recientes) |
+| `ar_rules_volatility.svg` | Desviación estándar 7d (pp) asignación/cobertura |
+| `ar_rules_volatility.json` | Volatilidad numérica (std dev fraccional y en pp) + percentiles p10/p90, rango (p90-p10) e IQR (p75-p25) para asignación y cobertura |
+| `ar_rules_thresholds.svg` | Badge de thresholds dinámicos actuales (si modo != off) |
+| `ar_rules_weekly.json` | min/max/avg ventana reciente (default 7 filas) |
+| `ar_rules_sparkline.svg` | Mini serie temporal (últimos N valores) con polylines asignación (verde) y cobertura (morado) |
+| `ar_rules_streak.svg` | Racha actual (↑ / ↓ / sin) y longitud para asignación y cobertura (colores: rojo caída ≥3, verde subida ≥3) |
+| `ar_rules_dashboard.html` | Vista combinada (badges + JSON + historial) |
+| `ar_rules_history.csv` | Serie temporal cruda (append diario o sintética) |
+| `prev_ar_rules_stats.json` | Último snapshot para detección de caídas |
+| `drop_meta.json` / `cov_drop_meta.json` | Metadata de caída detectada |
+| `badge_drop_alert.txt` / `cov_drop_alert.txt` / `streak_alert.txt` | Alertas generadas (si aplica) |
+
+Para activar thresholds dinámicos en un run manual: seleccionar workflow → *Run workflow* → `dynamic_threshold_mode: sensitive` (u `lenient`).
+
+#### Nuevos inputs de seeding (sólo para experimentación)
+
+El workflow ahora acepta inputs opcionales para generar un bloque de historia sintética antes de agregar la fila del día real. Útil para poblar un repo recién clonado o probar badges sin esperar días reales.
+
+| Input | Default | Descripción |
+|-------|---------|-------------|
+| `seed_fake_history` | `false` | Si `true`, genera historial sintético previo al append diario. |
+| `seed_days` | `30` | Número de días sintéticos a crear. |
+| `seed_mode` | `stable` | Patrón de evolución (`stable`, `improving`, `declining`, `volatile`). |
+| `seed_seed` | (vacío) | Semilla RNG para reproducibilidad (ej. `42`). |
+
+Ejemplo run manual rápido (poblar + métricas reales del día):
+
+```text
+seed_fake_history: true
+seed_days: 45
+seed_mode: improving
+seed_seed: 123
+```
+
+La generación crea/reescribe `badges/ar_rules_history.csv` antes de que el paso normal agregue la fila del día actual. No usar en entornos productivos (sólo exploración / demos).
+
 
 ---
 
@@ -457,6 +579,90 @@ backups/
 ```
 
 Rotación: se conservan los N más recientes (`-Keep`, default 7).
+
+## Auto-Confirmación (responder automáticamente "sí" a prompts)
+
+En algunos flujos (instalaciones, migraciones, regeneraciones) necesitamos contestar repetidamente "y" / "yes" a prompts interactivos. Para acelerar pruebas locales se añadieron varios scripts multi‑plataforma que automatizan esta interacción. Úsalos con cuidado: aceptar todo a ciegas puede provocar sobre‑escrituras o ejecuciones peligrosas.
+
+### Opciones disponibles
+
+| Script | Plataforma | Uso principal | Notas de seguridad |
+|--------|------------|---------------|--------------------|
+| `scripts/yes.sh` | Bash (WSL / Git Bash) | Generar un stream infinito del token (default `y`) | No inspecciona la salida; siempre responde `y`. |
+| `scripts/yes.ps1` | PowerShell | Equivalente a `yes.sh` en entorno Windows nativo | Igual que anterior; se puede parametrizar con `-Token`. |
+| `scripts/auto_yes.js` | Node.js | Responder sólo cuando se detecta un prompt (heurística) | Detecta patrones tipo `? (y/N)` / `Overwrite` / `Replace` / `Proceed`; reduce respuestas erróneas. |
+| `scripts/auto_yes.py` | Python (pexpect) | Matching robusto de prompts interactivos | Requiere librería `pexpect` (`pip install pexpect`). |
+| `scripts/whitelisted_yes.sh` | Bash | Sólo permite auto‑confirmar comandos benignos (lista blanca) | Rechaza comandos fuera de la whitelist para mitigar abuso. |
+
+### Ejemplos de uso rápido
+
+Siempre revisa primero el comando que vas a automatizar.
+
+```bash
+# Bash / WSL
+bash scripts/yes.sh | <comando_que_pide_confirmacion>
+
+# Forzar token distinto (ej: "yes")
+Y_TOKEN=yes bash scripts/yes.sh | <comando>
+
+# PowerShell (Windows)
+pwsh scripts/yes.ps1 | <comando>
+pwsh scripts/yes.ps1 -Token yes | <comando>
+
+# Node (responde sólo si detecta prompt)
+node scripts/auto_yes.js -- <comando>
+
+# Python robusto (regex, timeout configurable)
+python scripts/auto_yes.py -- <comando>
+
+# Whitelist (ej: instalar dependencias sin escribir en rutas peligrosas)
+bash scripts/whitelisted_yes.sh "npm install"
+bash scripts/whitelisted_yes.sh "pip install -r requirements.txt"
+```
+
+### ¿Cuándo usar cada uno?
+
+- Rápido y simple (entorno controlado): `yes.sh` / `yes.ps1`.
+- Quieres evitar responder "y" donde no corresponde: `auto_yes.js`.
+- Necesitas mayor control (timeouts, logging detallado): `auto_yes.py`.
+- Necesitas una barrera de seguridad adicional: `whitelisted_yes.sh`.
+
+### Parámetros y variables
+
+| Herramienta | Parámetros / Vars | Descripción |
+|-------------|-------------------|-------------|
+| `yes.sh` | `Y_TOKEN` env | Token a repetir (default `y`). |
+| `yes.ps1` | `-Token <str>` | Token a repetir (default `y`). |
+| `auto_yes.js` | `--delay-ms <n>` | Delay antes de responder (default 50ms). |
+| `auto_yes.py` | `--timeout <s>` | Timeout global ejecución (default 0 = sin). |
+| `auto_yes.py` | `--expect-regex <r>` | Regex personalizada para prompts (repite). |
+| `whitelisted_yes.sh` | `ALLOWED_CMDS` env | Lista (separada por `\|`) de comandos permitidos. |
+
+### Seguridad y buenas prácticas
+
+1. Nunca combines estos scripts con comandos destructivos (`rm -rf`, migraciones productivas, alteraciones irreversibles) sin supervisión.
+2. Prefiere `auto_yes.js` / `auto_yes.py` sobre la versión básica para reducir respuestas falsas positivas.
+3. Usa `whitelisted_yes.sh` en pipelines donde quieras garantizar que sólo ciertos comandos reciben respuestas automáticas.
+4. Añade logs / `set -x` en entornos CI para auditar qué comandos fueron auto‑confirmados.
+5. Si un proceso se queda colgado, cancela y ejecuta manualmente para inspeccionar el prompt real (posible regex faltante).
+
+### Instalación de dependencias (sólo Python)
+
+El script `auto_yes.py` requiere `pexpect`:
+
+```bash
+pip install pexpect
+```
+
+Puedes opcionalmente añadirlo a un requirements de herramientas internas si se extiende su uso.
+
+### Extensiones futuras sugeridas
+
+- Flag `--dry-run` en `auto_yes.js` para loggear prompts detectados sin responder.
+- Modo JSON log (`--log-json`) para auditoría en CI.
+- Integrar lista negra (palabras que cancelan en lugar de confirmar).
+
+---
 
 ## Health Check de la Base de Datos
 
@@ -714,6 +920,100 @@ Objeto `ar`:
 | `rules_project_coverage` | float/null | `patterns_distinct / rules_total` (4 dec) o null si 0 reglas. |
 | `top_projects` | lista/null | Lista de objetos `{project_id, count, share}` o null si `top=0` o sin datos. |
 
+### Endpoint ligero `/api/metrics/matching_summary`
+
+Endpoint recién añadido para dashboards que sólo requieren números gruesos y muy baratos de calcular (evita cargar toda la lógica avanzada de `api_matching_metrics.py`).
+
+Propósito:
+
+- Obtener en una sola llamada un snapshot mínimo de actividad AP (matching de compras) y AR (asignaciones / auto‑assign) sin costo acumulado por lecturas repetidas.
+
+Campos retornados:
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `cached` | bool | Indica si la respuesta proviene de snapshot persistido (<15 min). |
+| `generated_at` | str | Timestamp del snapshot (ISO o formato SQLite). |
+| `ap_events_total` | int | Total filas en `ap_match_events`. |
+| `ap_events_accepted` | int | Subconjunto con `accepted=1` (si la columna existe; 0 si no). |
+| `ap_acceptance_rate` | float/null | `ap_events_accepted / ap_events_total` (4 dec) o null si no hay eventos. |
+| `ar_map_events` | int | Total de filas en `ar_map_events`. |
+| `auto_assign_success` | int | Eventos AR cuyo campo `reasons` contiene `auto_assign`. |
+
+Caching / Snapshot:
+
+- Se materializa en tabla `match_metrics_snapshots` (creada on‑demand) con los últimos conteos.
+- Si el snapshot más reciente tiene menos de 15 minutos, se reutiliza (campo `cached=true`).
+- Nuevo snapshot sólo se genera si han pasado ≥15 minutos o si no existe ninguno.
+- Esto permite que dashboards con refresh frecuente (ej. cada 10s) no impacten la base.
+
+Tolerancia a despliegues graduales:
+
+- Si alguna tabla no existe (primera migración, entorno limpio) ese conteo retorna `0` en lugar de error.
+- Errores inesperados retornan `500` con `{ "error": "server_error" }` y se loggean.
+
+Uso recomendado:
+
+- Panel de estado rápido / card numérica de overview.
+- Health dashboards donde sólo interesa detectar actividad (crecimiento de eventos) sin granularidad avanzada.
+- No usar para métricas históricas: no guarda serie, sólo snapshots acumulativos puntuales.
+
+Relación con endpoint avanzado:
+
+- Cuando necesitas distribuciones, percentiles, proyectos top o exportación Prometheus usa `/api/matching/metrics`.
+- `matching_summary` es un complemento ultra‑ligero (sólo 4 SELECT COUNT). Complementa, no reemplaza.
+
+Evolución futura (no breaking):
+
+- Posibles campos: `ap_last_event_at`, `ar_last_event_at` y conteo incremental desde último snapshot.
+- Persistir cascada de snapshots para construir mini‑historial (guardado rápido sin recomputar).
+
+Ejemplo de respuesta (cache hit):
+
+```json
+{
+   "cached": true,
+   "generated_at": "2025-09-21 12:10:00",
+   "ap_events_total": 1204,
+   "ap_events_accepted": 845,
+   "ar_map_events": 432,
+   "auto_assign_success": 210,
+   "ap_acceptance_rate": 0.7012
+}
+```
+
+---
+
+### Utilidad Centralizada de RUT (`backend/utils/chile.py`)
+
+Se consolidó la normalización y validación de RUT para evitar implementaciones divergentes.
+
+Funciones:
+
+- `rut_normalize(val) -> str | None`: Retorna RUT en formato `########-D` (sin puntos, DV en mayúscula) o `None` si input vacío / inválido básico.
+- `rut_is_valid(val) -> bool`: Aplica algoritmo estándar de módulo 11 (maneja DV `K` y `0`).
+
+Ventajas:
+
+- Eliminación de duplicación `_rut_normalize` en múltiples scripts.
+- Punto único para endurecer validaciones (largo mínimo, DV, blacklist especiales) sin tocar cada endpoint.
+- Facilita pruebas unitarias a futuro (un sólo módulo importable).
+
+Fallback temporal:
+
+- El servidor (`server.py`) intenta importar `rut_normalize`; si falla (deploy parcial) usa un fallback simple (strip + upper DV). Esto evita romper despliegues donde el nuevo módulo aún no se ha sincronizado.
+
+Próximas mejoras (sugeridas):
+
+- Exponer `rut_split(val) -> (body, dv)` para reutilización en reportes.
+- Aceptar inputs con DV en minúscula o con guiones múltiples (normalización robusta ya contemplada).
+- Añadir métricas de validación (conteo de RUT inválidos recibidos por endpoint crítico) para monitoreo de calidad de datos.
+
+Para más detalle ver `docs/RUT_UTILS.md` (se añadirá en esta iteración).
+
+Nota de refactor: si encuentras helpers locales `_rut_normalize` en scripts antiguos, migra a `from backend.utils.chile import rut_normalize` para asegurar consistencia y permitir endurecer validaciones sin cambios múltiples.
+
+
 ### Respuesta `/api/matching/metrics/projects`
 
 | Campo | Tipo | Descripción |
@@ -807,7 +1107,6 @@ Compresión: forzada si `RECON_LATENCY_PERSIST_COMPRESS=1` o si el tamaño sin c
 - Variables de entorno documentadas y gating del módulo limpio (`RECONCILIACION_CLEAN`).
 - Añadidos contadores de flush internos (`flushes`) y metadata de compresión al payload.
 - Exportadas métricas de persistencia como gauges (`recon_persist_*`).
-- Añadido guard script `scripts/guard_conciliacion_stub.py` + hook local pre-commit para prevenir reaparición del legacy.
 - Nuevos percentiles p50/p99, métricas de tamaño/compresión y error counter de persistencia.
 - Endpoint debug `/api/conciliacion/metrics/json` y script `scripts/smoke_conciliacion_flow.py`.
 
@@ -858,10 +1157,10 @@ Potenciales futuras mejoras (no implementadas aún):
 - Normalización negativa: montos negativos se convierten a valor absoluto para reproducir comportamiento legacy previo en `confirmar`.
 - Alias truncation: cualquier alias >120 caracteres incrementa contador de violaciones y se almacena truncado, igual que antes.
 - Métricas de compatibilidad agregadas al payload texto (`/api/conciliacion/metrics`) para no romper parsers existentes:
-   - `recon_reconciliations_total`
-   - `recon_links_total`
-   - `recon_alias_max_len`
-   - `recon_alias_length_violation_count`
+      - `recon_reconciliations_total`
+      - `recon_links_total`
+      - `recon_alias_max_len`
+      - `recon_alias_length_violation_count`
 - Código nuevo expone status code 422 en payloads inválidos (antes 400 en ciertos caminos); se añadieron tests que fijan este contrato.
 - Nueva batería smoke interna: `backend/tests/test_conciliacion_smoke_internal.py` valida: (1) inserción de fila combinada, (2) normalización de montos negativos, (3) respuesta 422 en payload inválido.
 
@@ -917,5 +1216,108 @@ Salida esperada incluye percentiles y gauges de persistencia.
 ### Nota sobre lint futuro
 
 Se planea introducir `ruff` para homogeneizar estilo Python (reglas básicas: import order, unused, complejidad). Aún no se agrega config para no frenar flujo local; adoptar en una próxima iteración.
+
+---
+
+## Nuevas Funcionalidades (Sept 2025 Sprint)
+
+### 1. Pesos Dinámicos AP y Versionado
+
+- Tabla: `ap_weight_versions` con `version_tag`, pesos (`weight_vendor`, `weight_amount`, `weight_3way`), `active`.
+- Endpoints:
+  - `POST /api/ap-match/weights/version` (crear + activar opcional)
+  - `GET  /api/ap-match/weights/versions` (listar)
+  - Aplicación automática del último activo en cálculo de score.
+
+### 2. Feedback & Cadena de Integridad (Hash Chain)
+
+- Eventos AP: tabla `ap_match_events` ahora incluye `prev_hash` y `event_hash` (SHA-256 encadenado sobre representación canónica).
+- Inserciones en `/api/ap-match/confirm` y `/api/ap-match/feedback` generan hashes.
+- Endpoints:
+  - `GET  /api/ap-match/hash_audit` (verifica últimos N o todos; devuelve rupturas)
+  - `POST /api/ap-match/hash_backfill` (reconstrucción para filas antiguas sin hash)
+- Métricas Prometheus añadidas:
+  - `matching_hash_chain_recent_breaks`
+  - `matching_hash_chain_last_ok_id`
+  - `matching_hash_chain_sample_size`
+
+### 3. Auto-Learning AR (Alias / Reglas)
+
+- Tablas: `ar_rule_candidates` (acumulación) -> promoción a `ar_project_rules`.
+- Estadísticas vía `/api/ar/rules_stats` y gauges Prom en `/api/matching/metrics/prom`.
+
+### 4. p@k y Métricas Avanzadas Matching
+
+- AP: `p_at_1`, `p_at_5`, buckets de confianza, p50/p95/p99, ratio high-confidence.
+- AR: `auto_assign_precision_p1` expuesto como `p_at_1`.
+- Snapshots históricos: ver punto 6.
+
+### 5. 3-Way Deep Matching (Placeholder)
+
+- Tablas: `ap_three_way_candidates`, `ap_three_way_rules`, `ap_three_way_events`.
+- Endpoints:
+  - `POST /api/ap-match/threeway/candidates`
+  - `GET  /api/ap-match/threeway/candidates`
+  - `POST /api/ap-match/threeway/promote/<id>`
+  - `POST /api/ap-match/threeway/reject/<id>`
+- Propósito: preparar extensión futura para conciliación con recepciones logísticas.
+- Métricas Prometheus: `matching_threeway_candidates_pending|promoted|rejected`.
+
+### 6. Snapshots Históricos de Calidad
+
+- Tabla: `match_quality_snapshots`.
+- Endpoints:
+  - `POST /api/matching/metrics/snapshot` (toma instantánea p@k + aceptación)
+  - `GET  /api/matching/metrics/snapshots?limit=100`
+- Métrica total: `matching_quality_snapshots_total`.
+
+### 7. Gobierno y Observabilidad Unificada
+
+- Prometheus (`/api/matching/metrics/prom`) ahora expone además:
+  - Active weight version: `matching_weight_version_active{version_tag="..."} 1`
+  - Hash integrity y 3-way stats (ver arriba).
+  - Cobertura de nombres cliente con reglas AR: `matching_ar_customer_name_rule_coverage`.
+
+### 8. Maker-Checker (AP Pending Actions)
+
+- Tabla: `ap_pending_actions` para acciones sujetas a aprobación (estado `pending|approved|rejected`).
+- Endpoints (resumen, prefijo `/api/ap-match/pending/...`) implementados en blueprint AP.
+
+### 9. Reconciliación: Acciones Split/Merge (Placeholder)
+
+- Tabla: `recon_actions` con logging de acciones planeadas.
+- Endpoints: `/api/conciliacion/action`, `/api/conciliacion/actions`.
+
+### 10. Endpoints Clave (Resumen Rápido)
+
+| Dominio | Endpoint | Descripción |
+|---------|----------|-------------|
+| AP Matching | `/api/ap-match/confirm` | Confirma links y genera evento hasheado |
+| AP Matching | `/api/ap-match/feedback` | Feedback aceptación/rechazo evento hasheado |
+| AP Hash | `/api/ap-match/hash_audit` | Verificación integridad cadena |
+| AP Hash | `/api/ap-match/hash_backfill` | Reconstrucción hashes faltantes |
+| 3-Way | `/api/ap-match/threeway/candidates` | Alta / listado candidatos 3-way |
+| 3-Way | `/api/ap-match/threeway/promote/<id>` | Promoción candidato a regla |
+| 3-Way | `/api/ap-match/threeway/reject/<id>` | Rechazo candidato |
+| Metrics | `/api/matching/metrics` | JSON unificado KPIs AP/AR |
+| Metrics | `/api/matching/metrics/prom` | Export Prometheus (incl. gobierno) |
+| Snapshots | `/api/matching/metrics/snapshot` | Crear snapshot histórico |
+| Snapshots | `/api/matching/metrics/snapshots` | Listar snapshots |
+| AR Rules | `/api/ar/rules_stats` | Estadísticas reglas y cobertura |
+| Governance | `/api/ap-match/weights/versions` | Versiones de pesos AP |
+
+### 11. Consideraciones de Integridad
+
+- El hash se calcula sobre representación canónica (JSON ordenado + `prev_hash`).
+- Cualquier alteración posterior rompe la cadena y será detectada en `hash_audit`.
+- Auditoría parcial (últimas 200 filas) se exporta a Prom para monitoreo continuo.
+
+### 12. Próximos Pasos Sugeridos
+
+- Job programado (cron) que llame al snapshot endpoint y archive métricas.
+- Ampliar 3-way con validación real contra recepciones (`goods_receipts` / WMS).
+- Badge de integridad (0 rupturas) generado desde métricas Prom.
+
+---
 
 

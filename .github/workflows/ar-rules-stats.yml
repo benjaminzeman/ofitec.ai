@@ -15,6 +15,26 @@ on:
         description: 'Fail if N-day downward streak in assignment AND coverage (empty=ignore)'
         required: false
         default: ''
+      dynamic_threshold_mode:
+        description: 'Dynamic drop threshold mode (off|sensitive|lenient). Adjusts pp threshold based on previous level.'
+        required: false
+        default: 'off'
+      seed_fake_history:
+        description: 'true para generar historia sintética antes de append (solo para experimentación)'
+        required: false
+        default: 'false'
+      seed_days:
+        description: 'Días sintéticos a generar si seed_fake_history=true'
+        required: false
+        default: '30'
+      seed_mode:
+        description: 'Modo de generación (stable|improving|declining|volatile)'
+        required: false
+        default: 'stable'
+      seed_seed:
+        description: 'Semilla RNG para reproducibilidad (vacío = aleatorio)'
+        required: false
+        default: ''
   schedule:
     - cron: '0 5 * * *'  # Daily at 05:00 UTC
 
@@ -57,11 +77,53 @@ jobs:
         run: |
           python tools/gen_ar_rules_badge.py --stats badges/ar_rules_stats.json --out badges/ar_rules_coverage.svg --emit-github-output "$GITHUB_OUTPUT"
 
+      - name: Compute dynamic thresholds
+        id: dyn_thresholds
+        run: |
+          MODE="${{ github.event.inputs.dynamic_threshold_mode }}"
+          if [ -z "$MODE" ] || [ "$MODE" = "off" ]; then
+            echo "Dynamic threshold mode off";
+            echo "DYN_ASSIGN_DROP_PP=5" >> $GITHUB_ENV
+            echo "DYN_COV_DROP_PP=5" >> $GITHUB_ENV
+            echo "assign_drop_pp=5" >> $GITHUB_OUTPUT
+            echo "cov_drop_pp=5" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Default baselines
+          ASSIGN_PREV=""
+          COV_PREV=""
+          if [ -f badges/prev_ar_rules_stats.json ]; then
+            ASSIGN_PREV=$(jq -r '.project_assign_rate // empty' badges/prev_ar_rules_stats.json)
+            COV_PREV=$(jq -r '.customer_name_rule_coverage // empty' badges/prev_ar_rules_stats.json)
+          fi
+          # Fallback if empty
+            [ -z "$ASSIGN_PREV" ] && ASSIGN_PREV=0
+            [ -z "$COV_PREV" ] && COV_PREV=0
+          calc_thr() {
+            local prev=$1; local mode=$2; local thr=5; local pc=$(awk -v v="$prev" 'BEGIN{printf("%0.1f", v*100)}')
+            if [ "$mode" = "sensitive" ]; then
+              # Tighter thresholds when lower performance to trigger earlier
+              awk -v p="$prev" 'BEGIN{if(p<0.40)print 3; else if(p<0.60)print 4; else print 5}'
+            elif [ "$mode" = "lenient" ]; then
+              # Allow larger drops before alerting
+              awk -v p="$prev" 'BEGIN{if(p<0.40)print 6; else if(p<0.60)print 7; else print 8}'
+            else
+              echo 5
+            fi
+          }
+          A_THR=$(calc_thr "$ASSIGN_PREV" "$MODE")
+          C_THR=$(calc_thr "$COV_PREV" "$MODE")
+          echo "Computed dynamic thresholds (mode=$MODE): assign=$A_THR pp, coverage=$C_THR pp (prev assign=$ASSIGN_PREV, prev cov=$COV_PREV)"
+          echo "DYN_ASSIGN_DROP_PP=$A_THR" >> $GITHUB_ENV
+          echo "DYN_COV_DROP_PP=$C_THR" >> $GITHUB_ENV
+          echo "assign_drop_pp=$A_THR" >> $GITHUB_OUTPUT
+          echo "cov_drop_pp=$C_THR" >> $GITHUB_OUTPUT
+
       - name: Detect assignment rate drop
         id: drop_check
         run: |
           set -e
-          THRESH_PP=5
+          THRESH_PP=${DYN_ASSIGN_DROP_PP:-5}
           FAIL_FLAG=""
           if [ -n "${{ github.event.inputs.fail_on_drop_pp }}" ]; then
             THRESH_PP=${{ github.event.inputs.fail_on_drop_pp }}
@@ -75,6 +137,16 @@ jobs:
             --threshold-pp $THRESH_PP $FAIL_FLAG || CODE=$?; \
             if [ "${CODE:-0}" = "2" ]; then echo "Failing due to drop threshold"; exit 2; fi; \
             cp badges/ar_rules_stats.json badges/prev_ar_rules_stats.json || true
+
+      - name: Seed synthetic history (optional)
+        if: ${{ github.event.inputs.seed_fake_history == 'true' }}
+        run: |
+          mkdir -p badges
+          python tools/gen_ar_rules_fake_history.py \
+            --out badges/ar_rules_history.csv \
+            --days ${{ github.event.inputs.seed_days }} \
+            --mode ${{ github.event.inputs.seed_mode }} \
+            $( [ -n "${{ github.event.inputs.seed_seed }}" ] && echo --seed ${{ github.event.inputs.seed_seed }} )
 
       - name: Append history CSV
         run: |
@@ -102,12 +174,42 @@ jobs:
         run: |
           python tools/gen_ar_rules_wma_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_trend_wma.svg || true
 
+      - name: Generate volatility badge
+        id: volatility_badge
+        run: |
+          python tools/gen_ar_rules_volatility_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_volatility.svg --emit-github-output "$GITHUB_OUTPUT" || true
+
+      - name: Generate volatility JSON
+        run: |
+          python tools/gen_ar_rules_volatility_json.py --history badges/ar_rules_history.csv --out badges/ar_rules_volatility.json || true
+
+      - name: Generate thresholds badge (if dynamic mode)
+        if: ${{ github.event.inputs.dynamic_threshold_mode && github.event.inputs.dynamic_threshold_mode != 'off' }}
+        run: |
+          python tools/gen_ar_rules_thresholds_badge.py \
+            --assign ${{ steps.dyn_thresholds.outputs.assign_drop_pp }} \
+            --coverage ${{ steps.dyn_thresholds.outputs.cov_drop_pp }} \
+            --mode ${{ github.event.inputs.dynamic_threshold_mode }} \
+            --out badges/ar_rules_thresholds.svg || true
+
+      - name: Generate sparkline badge
+        run: |
+          python tools/gen_ar_rules_sparkline_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_sparkline.svg || true
+
+      - name: Generate streak badge
+        run: |
+          python tools/gen_ar_rules_streak_badge.py --history badges/ar_rules_history.csv --out badges/ar_rules_streak.svg || true
+
+      - name: Generate dashboard HTML
+        run: |
+          python tools/gen_ar_rules_dashboard.py --stats badges/ar_rules_stats.json --history badges/ar_rules_history.csv --weekly badges/ar_rules_weekly.json --out badges/ar_rules_dashboard.html || true
+
       - name: Detect coverage drop
         id: cov_drop
         run: |
           set -e
           THRESH="${{ github.event.inputs.fail_on_cov_drop_pp }}"
-          if [ -z "$THRESH" ]; then THRESH=5; FI_FLAG=""; else FI_FLAG="--fail"; fi
+          if [ -z "$THRESH" ]; then THRESH=${DYN_COV_DROP_PP:-5}; FI_FLAG=""; else FI_FLAG="--fail"; fi
           python tools/ar_rules_drop_check.py \
             --field customer_name_rule_coverage \
             --current badges/ar_rules_stats.json \
@@ -163,6 +265,12 @@ jobs:
               badges/ar_rules_coverage_only.svg \
               badges/ar_rules_trend.svg \
               badges/ar_rules_trend_wma.svg \
+              badges/ar_rules_volatility.svg \
+              badges/ar_rules_thresholds.svg \
+              badges/ar_rules_volatility.json \
+              badges/ar_rules_sparkline.svg \
+              badges/ar_rules_streak.svg \
+              badges/ar_rules_dashboard.html \
               badges/ar_rules_weekly.json \
               badges/prev_ar_rules_stats.json \
               badges/drop_meta.json \
@@ -192,6 +300,16 @@ jobs:
           echo "### AR Rules Stats Badge" >> $GITHUB_STEP_SUMMARY
           echo "Project Assign Rate (%): ${{ steps.create_badge.outputs.project_assign_rate_pct }}" >> $GITHUB_STEP_SUMMARY || true
           echo "Customer Name Rule Coverage (%): ${{ steps.create_badge.outputs.customer_name_rule_coverage_pct }}" >> $GITHUB_STEP_SUMMARY || true
+          if [ -n "${{ github.event.inputs.dynamic_threshold_mode }}" ] && [ "${{ github.event.inputs.dynamic_threshold_mode }}" != "off" ]; then
+            echo "Dynamic Thresholds (mode=${{ github.event.inputs.dynamic_threshold_mode }}): assign=${{ steps.dyn_thresholds.outputs.assign_drop_pp }}pp, coverage=${{ steps.dyn_thresholds.outputs.cov_drop_pp }}pp" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -n "${{ steps.volatility_badge.outputs.assignment_volatility_pp }}" ]; then
+            echo "Volatility 7d: assign=${{ steps.volatility_badge.outputs.assignment_volatility_pp }}pp | coverage=${{ steps.volatility_badge.outputs.coverage_volatility_pp }}pp" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f badges/ar_rules_streak.svg ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Streak badge generado (ver artifact / repo)." >> $GITHUB_STEP_SUMMARY
+          fi
           if [ -f badges/ar_rules_weekly.json ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Weekly Aggregation (rolling window):" >> $GITHUB_STEP_SUMMARY
@@ -223,18 +341,23 @@ jobs:
           MESSAGE=""
           for f in $ALERT_FILES; do
             if [ -f "$f" ]; then
-              CONTENT=$(sed 's/"/\"/g' "$f")
-              MESSAGE+="$CONTENT\n"
+              # Use jq to safely escape file content as raw string then strip surrounding quotes
+              CONTENT=$(jq -Rs . < "$f" | sed 's/^"//; s/"$//')
+              MESSAGE+="${CONTENT}\n"
             fi
           done
           if [ -z "$MESSAGE" ]; then
             echo "No alerts to notify"; exit 0; fi
           echo "Alerts detected, attempting notifications";
-          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
-            curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"$MESSAGE\"}" ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification failed";
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            payload=$(jq -n --arg text "$MESSAGE" '{text:$text}')
+            curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" || echo "Slack notification failed";
           fi
-          if [ -n "${{ secrets.TEAMS_WEBHOOK_URL }}" ]; then
-            # Teams expects a simple JSON with text field
-            curl -H 'Content-Type: application/json' -d "{\"text\": \"$MESSAGE\"}" ${{ secrets.TEAMS_WEBHOOK_URL }} || echo "Teams notification failed";
+          if [ -n "$TEAMS_WEBHOOK_URL" ]; then
+            payload=$(jq -n --arg text "$MESSAGE" '{text:$text}')
+            curl -H 'Content-Type: application/json' -d "$payload" "$TEAMS_WEBHOOK_URL" || echo "Teams notification failed";
           fi
           exit 0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}

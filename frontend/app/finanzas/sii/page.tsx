@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 
 function buildApiUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5555";
-  return `${base.replace(/\/$/, "")}${path}`;
+  const base = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5555';
+  return `${base.replace(/\/$/, '')}${path}`;
 }
 
 interface ImportSummary {
@@ -23,9 +23,18 @@ const guideSections = [
     content: (
       <ul className="list-disc pl-6 space-y-1 text-slate-700">
         <li>Certificado digital SII en formato .p12/.pfx y clave asociada.</li>
-        <li>Variables de entorno: <code>SII_RUT</code>, <code>SII_AMBIENTE</code>, <code>SII_CERT_P12_PATH</code>, <code>SII_CERT_P12_PASS</code>, <code>FERNET_KEY</code>.</li>
-        <li>Dependencias backend instaladas: <code>requests</code>, <code>lxml</code>, <code>cryptography</code>, <code>signxml</code>.</li>
-        <li>Conectividad HTTPS hacia <code>palena.sii.cl</code> o <code>maullin.sii.cl</code> segun ambiente.</li>
+        <li>
+          Variables de entorno: <code>SII_RUT</code>, <code>SII_AMBIENTE</code>,{' '}
+          <code>SII_CERT_P12_PATH</code>, <code>SII_CERT_P12_PASS</code>, <code>FERNET_KEY</code>.
+        </li>
+        <li>
+          Dependencias backend instaladas: <code>requests</code>, <code>lxml</code>,{' '}
+          <code>cryptography</code>, <code>signxml</code>.
+        </li>
+        <li>
+          Conectividad HTTPS hacia <code>palena.sii.cl</code> o <code>maullin.sii.cl</code> segun
+          ambiente.
+        </li>
       </ul>
     ),
   },
@@ -33,10 +42,21 @@ const guideSections = [
     title: 'Como operarlo en Ofitec',
     content: (
       <ol className="list-decimal pl-6 space-y-1 text-slate-700">
-        <li><strong>Probar token:</strong> obtiene el Bearer desde el certificado y muestra su expiracion estimada.</li>
-        <li><strong>Importar RCV:</strong> con anno/mes se traen ventas y compras, quedando en <code>sii_rcv_*</code> y en la bitacora.</li>
-        <li><strong>Resumen global:</strong> consulta los totales acumulados.</li>
-        <li><strong>SSE en vivo:</strong> "Escuchar SSE" abre un stream con nuevos eventos o errores del SII.</li>
+        <li>
+          <strong>Probar token:</strong> obtiene el Bearer desde el certificado y muestra su
+          expiracion estimada.
+        </li>
+        <li>
+          <strong>Importar RCV:</strong> con anno/mes se traen ventas y compras, quedando en{' '}
+          <code>sii_rcv_*</code> y en la bitacora.
+        </li>
+        <li>
+          <strong>Resumen global:</strong> consulta los totales acumulados.
+        </li>
+        <li>
+          <strong>SSE en vivo:</strong> &quot;Escuchar SSE&quot; abre un stream con nuevos eventos o
+          errores del SII.
+        </li>
       </ol>
     ),
   },
@@ -44,9 +64,13 @@ const guideSections = [
     title: 'Modo demo vs produccion',
     content: (
       <ul className="list-disc pl-6 space-y-1 text-slate-700">
-        <li><code>SII_FAKE_MODE=1</code> genera datos deterministas para QA.</li>
+        <li>
+          <code>SII_FAKE_MODE=1</code> genera datos deterministas para QA.
+        </li>
         <li>En produccion elimina el modo demo y usa las credenciales oficiales.</li>
-        <li>Verifica la tabla <code>sii_eventos</code> y la bitacora de esta pagina para auditoria.</li>
+        <li>
+          Verifica la tabla <code>sii_eventos</code> y la bitacora de esta pagina para auditoria.
+        </li>
       </ul>
     ),
   },
@@ -56,7 +80,7 @@ export default function SiiFinanzasPage() {
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState<number>(today.getFullYear());
   const [month, setMonth] = useState<number>(today.getMonth() + 1);
-  const [log, setLog] = useState<string>("Listo para consultar el SII.");
+  const [log, setLog] = useState<string>('Listo para consultar el SII.');
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [sse, setSse] = useState<EventSource | null>(null);
 
@@ -75,7 +99,7 @@ export default function SiiFinanzasPage() {
 
   async function testToken() {
     try {
-      const res = await fetch(buildApiUrl("/api/sii/token"));
+      const res = await fetch(buildApiUrl('/api/sii/token'));
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         appendLog(`Token error: ${err.detail || res.statusText}`);
@@ -92,9 +116,9 @@ export default function SiiFinanzasPage() {
 
   async function runImport() {
     try {
-      const res = await fetch(buildApiUrl("/api/sii/rcv/import"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(buildApiUrl('/api/sii/rcv/import'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ year, month }),
       });
       const data = await res.json();
@@ -114,7 +138,7 @@ export default function SiiFinanzasPage() {
 
   async function refreshSummary() {
     try {
-      const res = await fetch(buildApiUrl("/api/sii/rcv/summary"));
+      const res = await fetch(buildApiUrl('/api/sii/rcv/summary'));
       if (!res.ok) {
         appendLog(`Resumen no disponible (${res.status})`);
         return;
@@ -130,19 +154,19 @@ export default function SiiFinanzasPage() {
     if (sse) {
       sse.close();
       setSse(null);
-      appendLog("SSE desconectado");
+      appendLog('SSE desconectado');
       return;
     }
-    const source = new EventSource(buildApiUrl("/api/sii/events"));
+    const source = new EventSource(buildApiUrl('/api/sii/events'));
     source.onmessage = (event) => {
       appendLog(`Evento: ${event.data}`);
     };
     source.onerror = () => {
-      appendLog("SSE error/desconectado");
+      appendLog('SSE error/desconectado');
       source.close();
       setSse(null);
     };
-    appendLog("SSE conectado");
+    appendLog('SSE conectado');
     setSse(source);
   }
 
@@ -151,7 +175,8 @@ export default function SiiFinanzasPage() {
       <header>
         <h1 className="text-2xl font-semibold text-slate-900">Integración SII</h1>
         <p className="text-slate-600">
-          Consulta token, importa RCV y monitorea eventos en tiempo real. Modo demo usa SII_FAKE_MODE.
+          Consulta token, importa RCV y monitorea eventos en tiempo real. Modo demo usa
+          SII_FAKE_MODE.
         </p>
       </header>
 
@@ -203,7 +228,7 @@ export default function SiiFinanzasPage() {
             Resumen global
           </button>
           <button onClick={toggleEvents} className="px-3 py-2 rounded border border-slate-200">
-            {sse ? "Detener SSE" : "Escuchar SSE"}
+            {sse ? 'Detener SSE' : 'Escuchar SSE'}
           </button>
         </div>
       </section>

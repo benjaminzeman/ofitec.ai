@@ -48,7 +48,10 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
 
   const loadConfig = useCallback(async () => {
     try {
-      const cfg = await getApMatchConfig({ vendor_rut: invoice.vendor_rut, project_id: invoice.project_id });
+      const cfg = await getApMatchConfig({
+        vendor_rut: invoice.vendor_rut,
+        project_id: invoice.project_id,
+      });
       setConfig(cfg);
     } catch (e: any) {
       // silent
@@ -59,12 +62,14 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
     try {
       const existing = await getApMatchInvoice(invoiceId);
       if (Array.isArray(existing.links) && existing.links.length > 0) {
-        setSelectedLinks(existing.links.map((l: any) => ({
-          po_id: l.po_id,
-          po_line_id: l.po_line_id,
-          amount: Number(l.amount || 0),
-          qty: l.qty ? Number(l.qty) : undefined,
-        })));
+        setSelectedLinks(
+          existing.links.map((l: any) => ({
+            po_id: l.po_id,
+            po_line_id: l.po_line_id,
+            amount: Number(l.amount || 0),
+            qty: l.qty ? Number(l.qty) : undefined,
+          })),
+        );
       }
     } catch (e) {
       // ignore
@@ -109,7 +114,9 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
       const merged: LinkDraft[] = [...selectedLinks];
       cand.candidate.lines.forEach((ln: any) => {
         merged.push({
-          po_id: Array.isArray(cand.candidate.po_id) ? cand.candidate.po_id[0] : cand.candidate.po_id,
+          po_id: Array.isArray(cand.candidate.po_id)
+            ? cand.candidate.po_id[0]
+            : cand.candidate.po_id,
           po_line_id: ln.po_line_id,
           amount: Number((ln.unit_price ?? 0) * 1) || Number(cand.candidate.coverage?.amount || 0),
         });
@@ -203,7 +210,9 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <aside className="absolute right-0 top-0 h-full w-full max-w-3xl bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl flex flex-col">
         <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Asociar OC a Factura</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Asociar OC a Factura
+          </h2>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => setViewMode('suggestions')}>
               Sugerencias
@@ -211,10 +220,21 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
             <Button variant="secondary" size="sm" onClick={() => setViewMode('links')}>
               Links ({selectedLinks.length})
             </Button>
-            <Button variant="secondary" size="sm" onClick={runPreview} disabled={!selectedLinks.length}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={runPreview}
+              disabled={!selectedLinks.length}
+            >
               Preview
             </Button>
-            <IconButton variant="ghost" size="sm" onClick={onClose} title="Cerrar" icon={<span>✕</span>} />
+            <IconButton
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              title="Cerrar"
+              icon={<span>✕</span>}
+            />
           </div>
         </div>
         <div className="p-4 overflow-auto flex-1 space-y-4 text-sm">
@@ -226,7 +246,8 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
           </div>
           {config && (
             <div className="text-xs text-slate-500">
-              Tolerancia monto: {(config.effective?.amount_tol_pct * 100).toFixed(1)}% · capas: {config.effective?.source_layers?.join('>')}
+              Tolerancia monto: {(config.effective?.amount_tol_pct * 100).toFixed(1)}% · capas:{' '}
+              {config.effective?.source_layers?.join('>')}
             </div>
           )}
           {error && <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>}
@@ -247,7 +268,8 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
                           <span>Conf {Math.round((sug.confidence || 0) * 100)}%</span>
                           {sug.candidate?.coverage && (
                             <span className="text-xs text-slate-500">
-                              Cobertura {Math.round((sug.candidate.coverage.pct || 0) * 100)}% ({formatCurrency(sug.candidate.coverage.amount)})
+                              Cobertura {Math.round((sug.candidate.coverage.pct || 0) * 100)}% (
+                              {formatCurrency(sug.candidate.coverage.amount)})
                             </span>
                           )}
                         </div>
@@ -293,10 +315,13 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
                       <div>
                         <div className="text-slate-800 dark:text-slate-100 font-medium">
                           PO {ln.po_id}{' '}
-                          {ln.po_line_id && <span className="text-xs text-slate-500">· línea {ln.po_line_id}</span>}
+                          {ln.po_line_id && (
+                            <span className="text-xs text-slate-500">· línea {ln.po_line_id}</span>
+                          )}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {formatCurrency(ln.amount)}{ln.qty !== undefined && <> · qty {ln.qty}</>}
+                          {formatCurrency(ln.amount)}
+                          {ln.qty !== undefined && <> · qty {ln.qty}</>}
                         </div>
                       </div>
                       <IconButton
@@ -321,12 +346,15 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
               {hasViolations && (
                 <ul className="text-xs space-y-1 text-red-600 dark:text-red-400">
                   {preview.violations.map((v: any, i: number) => (
-                    <li key={i}>{v.reason} {v.po_id || v.po_line_id ? `(${v.po_id || v.po_line_id})` : ''}</li>
+                    <li key={i}>
+                      {v.reason} {v.po_id || v.po_line_id ? `(${v.po_id || v.po_line_id})` : ''}
+                    </li>
                   ))}
                 </ul>
               )}
               <div className="text-xs text-slate-500">
-                Tolerancias: monto {Math.round((preview.tolerances?.amount_tol_pct || 0) * 1000) / 10}%
+                Tolerancias: monto{' '}
+                {Math.round((preview.tolerances?.amount_tol_pct || 0) * 1000) / 10}%
               </div>
             </div>
           )}
@@ -334,7 +362,12 @@ export default function APMatchDrawer({ open, onClose, invoice, userId }: APMatc
         <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             {viewMode !== 'preview' && (
-              <Button size="sm" variant="secondary" disabled={!selectedLinks.length} onClick={runPreview}>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!selectedLinks.length}
+                onClick={runPreview}
+              >
                 Validar
               </Button>
             )}

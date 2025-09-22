@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import KpiCard from '@/components/ui/KpiCard';
-import Sparkline from '@/components/ui/Sparkline';
 import StackedBar from '@/components/ui/StackedBar';
 import ActionsList from '@/components/ui/ActionsList';
 import { fetchProjectsOverview, ProjectsOverview } from '@/lib/api';

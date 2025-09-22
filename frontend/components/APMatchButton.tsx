@@ -26,15 +26,14 @@ export default function APMatchButton({
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className={className} title="Asociar Orden(es) de Compra">
+      <button
+        onClick={() => setOpen(true)}
+        className={className}
+        title="Asociar Orden(es) de Compra"
+      >
         {label}
       </button>
-      <APMatchDrawer
-        open={open}
-        onClose={() => setOpen(false)}
-        invoice={invoice}
-        userId={userId}
-      />
+      <APMatchDrawer open={open} onClose={() => setOpen(false)} invoice={invoice} userId={userId} />
     </>
   );
 }

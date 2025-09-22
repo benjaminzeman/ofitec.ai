@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchProjects } from '@/lib/api';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { PageLoading, TableSkeleton } from '@/components/ui/LoadingSpinner';
+import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { ErrorDisplay, EmptyState } from '@/components/ui/ErrorStates';
 import Link from 'next/link';
 

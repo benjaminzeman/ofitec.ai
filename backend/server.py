@@ -23,6 +23,7 @@ from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, jsonify, request
+from flask import send_from_directory, Response
 from flask_cors import CORS
 import unicodedata
 from backend.db_utils import db_conn  # standardized connection manager
@@ -71,6 +72,7 @@ PROJECT_ROOT = BASE_DIR.parent
 DOCS_OFICIALES_DIR = PROJECT_ROOT / "docs"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 REPORTES_DIR = BASE_DIR / "reportes"
+BADGES_DIR = PROJECT_ROOT / "badges"
 
 _raw_db = os.getenv("DB_PATH")
 if _raw_db:
@@ -127,7 +129,7 @@ app.config["JSON_AS_ASCII"] = False
 
 # Conciliación blueprint
 # Prefer always the new clean implementation; fallback to legacy only if clean fails and not forced off.
-_FORCE_CLEAN = os.getenv("RECONCILIACION_CLEAN", "").strip().lower() in {"1","true","yes","on"}
+_FORCE_CLEAN = os.getenv("RECONCILIACION_CLEAN", "").strip().lower() in {"1", "true", "yes", "on"}
 try:
     import sys as _sys  # local path ensure
     if str(BASE_DIR) not in _sys.path:
@@ -1737,6 +1739,226 @@ def api_treasury_forecast():
         return jsonify({"items": []}), 200
 
 
+@app.post("/api/conciliacion/feedback")
+def api_conciliacion_feedback():
+    """Registrar evento de feedback de conciliación.
+
+    Acciones soportadas: accept, reject, missing_link.
+    Campos opcionales: reconciliation_id, reason, source.
+    """
+    data = request.get_json(silent=True) or {}
+    action = (data.get("action") or "").strip().lower()
+    if action not in {"accept", "reject", "missing_link"}:
+        return jsonify({"error": "invalid_action"}), 422
+    rec_id = data.get("reconciliation_id")
+    reason = (data.get("reason") or "").strip() or None
+    source = (data.get("source") or "manual").strip() or "manual"
+    source = source[:32]
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS recon_feedback_events (
+                  id INTEGER PRIMARY KEY,
+                  created_at TEXT DEFAULT (datetime('now')),
+                  reconciliation_id INTEGER,
+                  action TEXT NOT NULL,
+                  reason TEXT,
+                  source TEXT
+                )
+                """
+            )
+            cur.execute(
+                "INSERT INTO recon_feedback_events(reconciliation_id, action, reason, source) VALUES(?,?,?,?)",
+                (rec_id, action, reason, source),
+            )
+            rid = cur.lastrowid
+            conn.commit()
+            return jsonify({"id": rid, "stored": True})
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error en conciliacion feedback: %s", e)
+        return jsonify({"error": "server_error"}), 500
+
+
+@app.post("/api/conciliacion/action")
+def api_conciliacion_action():
+    """Registrar acción placeholder de split / merge (no ejecuta lógica todavía).
+
+    JSON Body:
+      action: 'split' | 'merge'
+      reconciliation_id (int opcional)
+      payload (obj) campos libres (por ejemplo cuentas a dividir, ids a unir)
+      user_id (str opcional)
+    Respuesta: {id, stored}
+    """
+    data = request.get_json(silent=True) or {}
+    action = (data.get("action") or "").strip().lower()
+    if action not in {"split", "merge"}:
+        return jsonify({"error": "invalid_action"}), 422
+    rec_id = data.get("reconciliation_id")
+    user_id = data.get("user_id")
+    payload = data.get("payload") or {}
+    try:
+        payload_json = json.dumps(payload, ensure_ascii=False)
+    except Exception:  # noqa: BLE001
+        return jsonify({"error": "invalid_payload"}), 400
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS recon_actions (
+                  id INTEGER PRIMARY KEY,
+                  created_at TEXT DEFAULT (datetime('now')),
+                  reconciliation_id INTEGER,
+                  action TEXT NOT NULL,
+                  payload_json TEXT,
+                  user_id TEXT
+                )
+                """
+            )
+            cur.execute(
+                "INSERT INTO recon_actions(reconciliation_id, action, payload_json, user_id) VALUES(?,?,?,?)",
+                (rec_id, action, payload_json, user_id),
+            )
+            rid = cur.lastrowid
+            conn.commit()
+            return jsonify({"id": rid, "stored": True})
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error en conciliacion action: %s", e)
+        return jsonify({"error": "server_error"}), 500
+
+
+@app.get("/api/conciliacion/actions")
+def api_conciliacion_actions():
+    """Listar acciones split/merge registradas (limit=100 por defecto)."""
+    try:
+        limit = int(request.args.get("limit", "100"))
+    except ValueError:
+        limit = 100
+    limit = max(1, min(limit, 500))
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS recon_actions (
+                  id INTEGER PRIMARY KEY,
+                  created_at TEXT DEFAULT (datetime('now')),
+                  reconciliation_id INTEGER,
+                  action TEXT NOT NULL,
+                  payload_json TEXT,
+                  user_id TEXT
+                )
+                """
+            )
+            cur.execute(
+                "SELECT id, created_at, reconciliation_id, action, payload_json, user_id FROM recon_actions ORDER BY id DESC LIMIT ?",
+                (limit,),
+            )
+            rows = []
+            for r in cur.fetchall():
+                try:
+                    payload_obj = json.loads(r[4]) if r[4] else None
+                except Exception:  # noqa: BLE001
+                    payload_obj = None
+                rows.append({
+                    "id": r[0],
+                    "created_at": r[1],
+                    "reconciliation_id": r[2],
+                    "action": r[3],
+                    "payload": payload_obj,
+                    "user_id": r[5],
+                })
+            return jsonify({"items": rows, "count": len(rows)})
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error listando recon actions: %s", e)
+        return jsonify({"items": [], "error": "server_error"}), 500
+
+
+@app.route("/api/metrics/matching_summary")
+def api_matching_summary():
+    """Resumen ligero de métricas AP y AR.
+
+    Reúne:
+      - ap_events_total: filas en ap_match_events
+      - ap_events_accepted: accepted=1
+      - ar_map_events: filas en ar_map_events
+      - auto_assign_success: eventos AR con reason que contenga 'auto_assign'
+
+    Cache simple vía snapshot table (match_metrics_snapshots) para evitar
+    costo reiterado cuando se consulta desde dashboard: si el último snapshot
+    es <15 minutos se devuelve ese.
+    """
+    try:
+        with db_conn(DB_PATH) as conn:
+            cur = conn.cursor()
+            # Ensure snapshot table
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS match_metrics_snapshots (
+                  id INTEGER PRIMARY KEY,
+                  created_at TEXT DEFAULT (datetime('now')),
+                  ap_events_total INTEGER,
+                  ap_events_accepted INTEGER,
+                  ar_map_events INTEGER,
+                  auto_assign_success INTEGER
+                )
+                """
+            )
+            # Reuse recent snapshot (<15 min)
+            row = cur.execute(
+                "SELECT id, created_at, ap_events_total, ap_events_accepted, ar_map_events, auto_assign_success "
+                "FROM match_metrics_snapshots ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            if row:
+                try:
+                    # Compare minutes difference
+                    created = datetime.fromisoformat(row[1].replace("Z", "")) if "T" in row[1] else datetime.strptime(row[1], "%Y-%m-%d %H:%M:%S")
+                    delta_min = (datetime.now() - created).total_seconds() / 60.0
+                except Exception:
+                    delta_min = 999
+                if delta_min < 15:
+                    return jsonify({
+                        "cached": True,
+                        "generated_at": row[1],
+                        "ap_events_total": row[2],
+                        "ap_events_accepted": row[3],
+                        "ar_map_events": row[4],
+                        "auto_assign_success": row[5],
+                        "ap_acceptance_rate": (round(row[3] / row[2], 4) if row[2] else None),
+                    })
+            # Fresh calculation (tables may not exist yet)
+            def _count(sql: str) -> int:
+                try:
+                    r = cur.execute(sql).fetchone()
+                    return int(r[0] or 0)
+                except Exception:
+                    return 0
+            ap_events_total = _count("SELECT COUNT(1) FROM ap_match_events")
+            ap_events_accepted = _count("SELECT COUNT(1) FROM ap_match_events WHERE accepted=1")
+            ar_map_events = _count("SELECT COUNT(1) FROM ar_map_events")
+            auto_assign_success = _count("SELECT COUNT(1) FROM ar_map_events WHERE reasons LIKE '%auto_assign%'")
+            cur.execute(
+                "INSERT INTO match_metrics_snapshots(ap_events_total, ap_events_accepted, ar_map_events, auto_assign_success) VALUES(?,?,?,?)",
+                (ap_events_total, ap_events_accepted, ar_map_events, auto_assign_success),
+            )
+            conn.commit()
+            return jsonify({
+                "cached": False,
+                "generated_at": datetime.now().isoformat() + "Z",
+                "ap_events_total": ap_events_total,
+                "ap_events_accepted": ap_events_accepted,
+                "ar_map_events": ar_map_events,
+                "auto_assign_success": auto_assign_success,
+                "ap_acceptance_rate": (round(ap_events_accepted / ap_events_total, 4) if ap_events_total else None),
+            })
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error en matching_summary: %s", e)
+        return jsonify({"error": "server_error"}), 500
+
+
 @app.route("/api/threeway/violations")
 def api_threeway_violations():
     """Three-way match violations placeholder.
@@ -1789,16 +2011,15 @@ def api_sync_chipax():
 
 # Utilidades locales: RUT normalize usando tools/rut_utils si está disponible
 def _rut_normalize(val: str | None) -> str | None:
+    """Delegar a backend.utils.chile.rut_normalize si existe, fallback simple."""
     try:
-        import sys as _sys
-        tools_dir = str((PROJECT_ROOT / "tools").resolve())
-        if tools_dir not in _sys.path:
-            _sys.path.append(tools_dir)
-        from rut_utils import normalize_rut as _norm  # type: ignore
+        from backend.utils.chile import rut_normalize as _rn  # type: ignore
 
-        return _norm(val)
-    except Exception:
-        return val
+        return _rn(val)  # type: ignore
+    except Exception:  # pragma: no cover - fallback
+        if not val:
+            return val
+        return val.strip().upper().replace(".", "")
 
 
 def _norm_name(val: str | None) -> str:
@@ -2144,14 +2365,14 @@ def api_facturas_compra():
         args = request.args
         result = _query_view(
             "v_facturas_compra",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2179,14 +2400,14 @@ def api_cartola_bancaria():
         args = request.args
         result = _query_view(
             "v_cartola_bancaria",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2213,14 +2434,14 @@ def api_facturas_venta():
         args = request.args
         result = _query_view(
             "v_facturas_venta",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2247,14 +2468,14 @@ def api_gastos():
         args = request.args
         result = _query_view(
             "v_gastos",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "moneda": args.get("moneda", type=str),
                 "estado": args.get("estado", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
                 "search": args.get("search", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="fecha", type=str),
@@ -2271,11 +2492,11 @@ def api_impuestos():
         args = request.args
         result = _query_view(
             "v_impuestos",
-            filters={
+            filters={k: v for k, v in {
                 "search": args.get("search", type=str),
                 "date_from": args.get("periodo_from", type=str),
                 "date_to": args.get("periodo_to", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -2292,12 +2513,12 @@ def api_previred():
         args = request.args
         result = _query_view(
             "v_previred",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "search": args.get("search", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -2314,12 +2535,12 @@ def api_sueldos():
         args = request.args
         result = _query_view(
             "v_sueldos",
-            filters={
+            filters={k: v for k, v in {
                 "rut": args.get("rut", type=str),
                 "search": args.get("search", type=str),
                 "date_from": args.get("date_from", type=str),
                 "date_to": args.get("date_to", type=str),
-            },
+            }.items() if v is not None},
             page=args.get("page", default=1, type=int),
             page_size=args.get("page_size", default=50, type=int),
             order_by=args.get("order_by", default="periodo", type=str),
@@ -4834,6 +5055,113 @@ def api_purchase_order_detail(item_id: int):
     except Exception as e:  # noqa: BLE001
         logger.error("Error en detalle de purchase_order: %s", e)
         return jsonify({"error": "server_error"}), 500
+
+
+# ---------------------------------------------------------------------------
+# AR Rules / Matching progress quick dashboards (serve badges & simple HTML)
+# ---------------------------------------------------------------------------
+
+@app.route("/dash/ar-rules/badges/<path:filename>")
+def ar_rules_badge_file(filename: str):  # noqa: D401
+    """Sirve archivos dentro de la carpeta 'badges' (SVG / JSON / CSV)."""
+    try:
+        if not BADGES_DIR.exists():  # pragma: no cover - defensive
+            return jsonify({"error": "badges_dir_not_found"}), 404
+        # Seguridad básica: impedir path traversal
+        if ".." in filename or filename.startswith("/"):
+            return jsonify({"error": "invalid_path"}), 400
+        full = BADGES_DIR / filename
+        if not full.exists():
+            return jsonify({"error": "not_found"}), 404
+        # Usar send_from_directory para delegar mime-type
+        return send_from_directory(str(BADGES_DIR), filename)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error sirviendo badge %s: %s", filename, e)
+        return jsonify({"error": "serve_failed"}), 500
+
+
+@app.route("/dash/ar-rules")
+def ar_rules_static_dashboard():
+    """Retorna el HTML estático generado por el workflow (`ar_rules_dashboard.html`)."""
+    try:
+        html_path = BADGES_DIR / "ar_rules_dashboard.html"
+        if not html_path.exists():
+            return jsonify({"error": "dashboard_not_generated"}), 404
+        return html_path.read_text(encoding="utf-8")
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error leyendo dashboard estatico: %s", e)
+        return jsonify({"error": "dashboard_read_failed"}), 500
+
+
+@app.route("/dash/ar-rules/live")
+def ar_rules_live_dashboard():
+    """Genera una vista ligera en vivo listando badges presentes y links a JSON/CSV.
+
+    No depende del HTML pre-generado y refleja el estado actual del directorio.
+    """
+    try:
+        if not BADGES_DIR.exists():
+            return jsonify({"error": "badges_dir_not_found"}), 404
+        badge_names = [
+            "ar_rules_coverage.svg",
+            "ar_rules_coverage_only.svg",
+            "ar_rules_trend.svg",
+            "ar_rules_trend_wma.svg",
+            "ar_rules_volatility.svg",
+            "ar_rules_thresholds.svg",
+            "ar_rules_sparkline.svg",
+            "ar_rules_streak.svg",
+        ]
+        existing_badges = [b for b in badge_names if (BADGES_DIR / b).exists()]
+        data_files = [
+            "ar_rules_stats.json",
+            "prev_ar_rules_stats.json",
+            "ar_rules_weekly.json",
+            "ar_rules_volatility.json",
+            "ar_rules_history.csv",
+            "drop_meta.json",
+            "cov_drop_meta.json",
+        ]
+        existing_data = [f for f in data_files if (BADGES_DIR / f).exists()]
+        def img_tag(name: str) -> str:
+            return f"<div class='badge'><img src='/dash/ar-rules/badges/{name}' alt='{name}' loading='lazy'/><div class='cap'>{name}</div></div>"
+        badges_html = "".join(img_tag(n) for n in existing_badges) or "<p>(No hay badges aún)</p>"
+        links_html = "".join(
+            f"<li><a href='/dash/ar-rules/badges/{n}' target='_blank' rel='noopener'>{n}</a></li>" for n in existing_data
+        ) or "<li>(Sin archivos de datos)</li>"
+        html = f"""
+<!DOCTYPE html>
+<html lang='es'>
+  <head>
+    <meta charset='utf-8'/>
+    <title>AR Rules Progress</title>
+    <style>
+      body {{ font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin: 18px; background:#fafafa; }}
+      h1 {{ margin-top:0; }}
+      .grid {{ display:flex; flex-wrap:wrap; gap:12px; }}
+      .badge {{ border:1px solid #ddd; background:#fff; padding:6px 8px; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.08); text-align:center; }}
+      .badge img {{ display:block; max-width:100%; height:auto; }}
+      .cap {{ font-size:11px; margin-top:4px; color:#555; word-break:break-all; }}
+      ul {{ line-height:1.5; }}
+      footer {{ margin-top:32px; font-size:12px; color:#777; }}
+      .note {{ background:#eef6ff; padding:8px 12px; border:1px solid #b5d6ff; border-radius:4px; margin-bottom:16px; }}
+    </style>
+  </head>
+  <body>
+    <h1>AR Rules - Progreso & Métricas</h1>
+    <div class='note'>Vista dinámica generada al vuelo. Para la versión estática del workflow usa <code>/dash/ar-rules</code>.</div>
+    <h2>Badges</h2>
+    <div class='grid'>{badges_html}</div>
+    <h2>Archivos de Datos</h2>
+    <ul>{links_html}</ul>
+    <footer>Actualizado en tiempo real al recargar. Directorio: {BADGES_DIR}</footer>
+  </body>
+</html>
+        """
+        return Response(html, mimetype="text/html")
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error generando dashboard live: %s", e)
+        return jsonify({"error": "live_dashboard_failed"}), 500
 
 
 if __name__ == "__main__":

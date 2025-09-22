@@ -4,10 +4,10 @@ import { useState } from 'react';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
-  sidebarOpen: boolean;
+  sidebarOpen: boolean; // keep in API for future usage
 }
 
-export default function Topbar({ onSidebarToggle, sidebarOpen }: TopbarProps) {
+export default function Topbar({ onSidebarToggle, sidebarOpen: _sidebarOpen }: TopbarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);

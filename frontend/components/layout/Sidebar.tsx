@@ -133,10 +133,10 @@ const navigation = [
 
 interface SidebarProps {
   isOpen?: boolean;
-  onToggle?: () => void;
+  // Removed onToggle (unused) to silence ESLint warning
 }
 
-export function Sidebar({ isOpen = true, onToggle }: SidebarProps) {
+export function Sidebar({ isOpen = true }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});

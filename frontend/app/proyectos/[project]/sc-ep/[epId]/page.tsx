@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 type ScHeader = {
   id: number;
@@ -36,9 +37,10 @@ type ScDeduction = {
   amount: number;
 };
 
-export default function ScEPEditPage({ params }: { params: { project: string; epId: string } }) {
-  const projectKey = decodeURIComponent(params.project);
-  const epId = Number(params.epId);
+export default function ScEPEditPage(..._args: any[]) {
+  const routeParams = useParams() as { project?: string; epId?: string };
+  const projectKey = decodeURIComponent(routeParams.project || '');
+  const epId = Number(routeParams.epId); // keep epId (used in JSX) but ensure any additional params would be prefixed if unused
   const apiBase = useMemo(
     () => process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5555/api',
     [],
@@ -305,26 +307,26 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {lines.map((ln, idx) => (
-                    <tr key={idx}>
+                  {lines.map((ln, _idx) => (
+                    <tr key={_idx}>
                       <td className="py-2 px-3">
                         <input
                           value={ln.item_code || ''}
-                          onChange={(e) => updateLine(idx, { item_code: e.target.value })}
+                          onChange={(e) => updateLine(_idx, { item_code: e.target.value })}
                           className="w-full border rounded px-2 py-1"
                         />
                       </td>
                       <td className="py-2 px-3">
                         <input
                           value={ln.description || ''}
-                          onChange={(e) => updateLine(idx, { description: e.target.value })}
+                          onChange={(e) => updateLine(_idx, { description: e.target.value })}
                           className="w-full border rounded px-2 py-1"
                         />
                       </td>
                       <td className="py-2 px-3">
                         <input
                           value={ln.unit || ''}
-                          onChange={(e) => updateLine(idx, { unit: e.target.value })}
+                          onChange={(e) => updateLine(_idx, { unit: e.target.value })}
                           className="w-full border rounded px-2 py-1"
                         />
                       </td>
@@ -334,7 +336,7 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                           step="0.01"
                           value={ln.qty_period ?? ''}
                           onChange={(e) =>
-                            updateLine(idx, {
+                            updateLine(_idx, {
                               qty_period:
                                 e.target.value === '' ? undefined : Number(e.target.value),
                             })
@@ -348,7 +350,7 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                           step="0.01"
                           value={ln.unit_price ?? ''}
                           onChange={(e) =>
-                            updateLine(idx, {
+                            updateLine(_idx, {
                               unit_price:
                                 e.target.value === '' ? undefined : Number(e.target.value),
                             })
@@ -359,7 +361,7 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                       <td className="py-2 px-3 text-right">{fmt(ln.amount_period)}</td>
                       <td className="py-2 px-3 text-right">
                         <button
-                          onClick={() => removeLine(idx)}
+                          onClick={() => removeLine(_idx)}
                           className="px-2 py-1 text-xs rounded bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100"
                         >
                           Quitar
@@ -401,12 +403,12 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {deductions.map((d, idx) => (
-                    <tr key={idx}>
+                  {deductions.map((d, _idx) => (
+                    <tr key={_idx}>
                       <td className="py-2 px-3">
                         <select
                           value={d.type}
-                          onChange={(e) => updateDeduction(idx, { type: e.target.value as any })}
+                          onChange={(e) => updateDeduction(_idx, { type: e.target.value as any })}
                           className="w-full border rounded px-2 py-1"
                         >
                           {['retention', 'advance_amortization', 'penalty', 'other'].map((t) => (
@@ -419,7 +421,7 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                       <td className="py-2 px-3">
                         <input
                           value={d.description || ''}
-                          onChange={(e) => updateDeduction(idx, { description: e.target.value })}
+                          onChange={(e) => updateDeduction(_idx, { description: e.target.value })}
                           className="w-full border rounded px-2 py-1"
                         />
                       </td>
@@ -429,14 +431,14 @@ export default function ScEPEditPage({ params }: { params: { project: string; ep
                           step="0.01"
                           value={d.amount ?? 0}
                           onChange={(e) =>
-                            updateDeduction(idx, { amount: Number(e.target.value || 0) })
+                            updateDeduction(_idx, { amount: Number(e.target.value || 0) })
                           }
                           className="w-32 border rounded px-2 py-1 text-right"
                         />
                       </td>
                       <td className="py-2 px-3 text-right">
                         <button
-                          onClick={() => removeDeduction(idx)}
+                          onClick={() => removeDeduction(_idx)}
                           className="px-2 py-1 text-xs rounded bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100"
                         >
                           Quitar

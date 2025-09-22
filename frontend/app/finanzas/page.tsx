@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchFinancialData, FinancialData as APIFinancialData } from '@/lib/api';
+import { fetchFinancialData, FinancialData as _APIFinancialData } from '@/lib/api';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';

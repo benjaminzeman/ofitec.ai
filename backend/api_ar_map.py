@@ -331,7 +331,8 @@ def _gather_suggestions(
         if cur.fetchone() and inv.get("invoice_id"):
             inv_id = None
             try:
-                inv_id = int(inv.get("invoice_id"))
+                raw_inv_id = inv.get("invoice_id")
+                inv_id = int(raw_inv_id) if raw_inv_id is not None and str(raw_inv_id).isdigit() else None
             except (TypeError, ValueError):
                 inv_id = None
             if inv_id is not None:
@@ -483,6 +484,92 @@ def _gather_suggestions(
     return _aggregate(items)[:10]
 
 
+def _ensure_alias_candidates(cur: sqlite3.Cursor):
+    """Ensure auxiliary tables/columns for alias auto-learning exist.
+
+    We maintain a lightweight candidate accumulator table. When a pattern
+    (regex or literal) repeatedly succeeds (auto_assign) we promote it to a
+    persistent rule.
+    """
+    # Candidate accumulator
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS ar_rule_candidates(
+          id INTEGER PRIMARY KEY,
+          pattern TEXT NOT NULL,
+          project_id TEXT NOT NULL,
+          hits INTEGER DEFAULT 0,
+          last_hit TEXT,
+          promoted_at TEXT,
+          UNIQUE(pattern, project_id)
+        );
+        """
+    )
+    # Try to extend rules table with optional columns (idempotent)
+    try:
+        cur.execute("PRAGMA table_info(ar_project_rules)")
+        cols = {r[1] for r in cur.fetchall()}
+        if "rule_type" not in cols:
+            cur.execute("ALTER TABLE ar_project_rules ADD COLUMN rule_type TEXT")
+        if "confidence" not in cols:
+            cur.execute("ALTER TABLE ar_project_rules ADD COLUMN confidence REAL")
+    except sqlite3.Error:
+        pass
+
+
+def _track_alias_candidate(cur: sqlite3.Cursor, pattern: str, project_id: str, threshold: int = 3) -> dict:
+    """Increment hits for (pattern, project_id) and promote to rule when threshold reached.
+
+    Returns a dict with tracking info.
+    """
+    if not pattern or not project_id:
+        return {"skipped": True}
+    _ensure_alias_candidates(cur)
+    # Upsert style increment
+    cur.execute(
+        """
+        INSERT INTO ar_rule_candidates(pattern, project_id, hits, last_hit)
+        VALUES(?,?,1, datetime('now'))
+        ON CONFLICT(pattern, project_id) DO UPDATE SET
+          hits = hits + 1,
+          last_hit = datetime('now')
+        """,
+        (pattern, project_id),
+    )
+    cur.execute(
+        "SELECT id, hits, promoted_at FROM ar_rule_candidates WHERE pattern=? AND project_id=?",
+        (pattern, project_id),
+    )
+    row = cur.fetchone()
+    promoted = False
+    if row and (row[1] or 0) >= threshold and not row[2]:
+        # Promote: insert into ar_project_rules if not exists with alias_regex rule_type
+        try:
+            cur.execute(
+                "SELECT 1 FROM ar_project_rules WHERE pattern=? AND project_id=? AND COALESCE(rule_type,'')='alias_regex' LIMIT 1",
+                (pattern, project_id),
+            )
+            if not cur.fetchone():
+                cur.execute(
+                    "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by, rule_type, confidence) VALUES(?,?,?,?,?,?)",
+                    ("customer_name_like", pattern, project_id, "auto", "alias_regex", 0.88),
+                )
+            cur.execute(
+                "UPDATE ar_rule_candidates SET promoted_at = datetime('now') WHERE id = ?",
+                (row[0],),
+            )
+            promoted = True
+        except sqlite3.Error:
+            promoted = False
+    return {
+        "pattern": pattern,
+        "project_id": project_id,
+        "hits": row[1] if row else 1,
+        "promoted": promoted,
+        "threshold": threshold,
+    }
+
+
 @bp.post("/api/ar-map/suggestions")
 def api_ar_map_suggestions():
     body = request.get_json(force=True) or {}
@@ -524,44 +611,34 @@ def api_ar_map_confirm():
             );
             """
         )
-        # Persist audit event
+        _ensure_alias_candidates(cur)
         cur.execute(
             "INSERT INTO ar_map_events(user_id, payload) VALUES(?,?)",
             (user, json.dumps(body, ensure_ascii=False)),
         )
-        # Upsert simple rules set
         for r in rules:
+            if not isinstance(r, dict):
+                continue
             kind = (r.get("kind") or "").strip() or "customer_name_like"
             pattern = (r.get("pattern") or "").strip()
             project_id = (r.get("project_id") or "").strip()
             if not pattern or not project_id:
                 continue
             cur.execute(
-                "INSERT INTO ar_project_rules("
-                "kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
+                "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
                 (kind, pattern, project_id, user),
             )
-
-        # Optional: assign project to a specific sales invoice
+            try:
+                _track_alias_candidate(cur, pattern, project_id)
+            except sqlite3.Error:
+                pass
         assignment = body.get("assignment") or {}
         invoice_id = (
-            assignment.get("invoice_id")
-            if isinstance(assignment, dict)
-            else None
-        ) or body.get("invoice_id") or (
-            body.get("invoice") or {}
-        ).get("invoice_id")
+            assignment.get("invoice_id") if isinstance(assignment, dict) else None
+        ) or body.get("invoice_id") or (body.get("invoice") or {}).get("invoice_id")
         assign_project_id = (
-            (
-                assignment.get("project_id")
-                if isinstance(assignment, dict)
-                else None
-            )
-            or (
-                rules[0].get("project_id")
-                if rules and isinstance(rules[0], dict)
-                else None
-            )
+            (assignment.get("project_id") if isinstance(assignment, dict) else None)
+            or (rules[0].get("project_id") if rules and isinstance(rules[0], dict) else None)
             or body.get("project_id")
         )
         updated_invoices = 0
@@ -573,17 +650,13 @@ def api_ar_map_confirm():
                 )
                 updated_invoices = cur.rowcount or 0
             except sqlite3.Error:
-                # Silently ignore if table/columns are missing; event still
-                # captured
                 updated_invoices = 0
         con.commit()
-        return jsonify(
-            {
-                "ok": True,
-                "saved_rules": len(rules),
-                "updated_invoices": updated_invoices,
-            }
-        ), 201
+        return jsonify({
+            "ok": True,
+            "saved_rules": len(rules),
+            "updated_invoices": updated_invoices,
+        }), 201
     finally:
         con.close()
 
@@ -627,13 +700,14 @@ def api_ar_map_auto_assign():
             if inv_id_int is not None:
                 try:
                     cur = con.cursor()
-                    cur.execute(
-                        (
-                            "UPDATE sales_invoices SET project_id = ? "
-                            "WHERE id = ?"
-                        ),
-                        (str(chosen.get("project_id")), inv_id_int),
-                    )
+                    if chosen is not None:
+                        cur.execute(
+                            (
+                                "UPDATE sales_invoices SET project_id = ? "
+                                "WHERE id = ?"
+                            ),
+                            (str(chosen.get("project_id")), inv_id_int),
+                        )
                     updated = cur.rowcount or 0
                     # Log event
                     cur.executescript(
@@ -658,6 +732,29 @@ def api_ar_map_auto_assign():
                         ),
                         ("auto", json.dumps(payload, ensure_ascii=False)),
                     )
+                    # Alias candidate tracking (if reason includes alias:'pattern')
+                    try:
+                        if chosen is None:
+                            reasons = []
+                        else:
+                            reasons = chosen.get("reasons") or []
+                        if isinstance(reasons, str):
+                            reasons = [reasons]
+                        alias_patterns = []
+                        for rs in reasons:
+                            m = re.match(r"alias:'([^']+)'", rs)
+                            if m:
+                                alias_patterns.append(m.group(1))
+                        if alias_patterns and chosen is not None:
+                            cur2 = con.cursor()
+                            _ensure_alias_candidates(cur2)
+                            for ap in alias_patterns:
+                                try:
+                                    _track_alias_candidate(cur2, ap, str(chosen.get("project_id")))
+                                except sqlite3.Error:
+                                    continue
+                    except (sqlite3.Error, ValueError):
+                        pass
                     con.commit()
                 except sqlite3.Error:
                     updated = 0
@@ -673,6 +770,54 @@ def api_ar_map_auto_assign():
         con.close()
 
 
+@bp.get("/api/ar-map/alias_candidates")
+def api_ar_map_alias_candidates():  # pragma: no cover - simple listing
+    """List alias candidate patterns with hit counts and promotion state.
+
+    Accepts optional query params:
+      - min_hits (int): filter by minimum hits (default 1)
+      - promoted (0/1): filter by promoted state
+    """
+    args = request.args
+    min_hits = 1
+    try:
+        raw_min = args.get("min_hits")
+        if raw_min is not None and str(raw_min).strip():
+            min_hits = max(1, int(raw_min))
+    except (TypeError, ValueError):
+        min_hits = 1
+    promoted_filter = args.get("promoted")
+    con = _db(_get_db_path())
+    try:
+        cur = con.cursor()
+        _ensure_alias_candidates(cur)
+        sql = "SELECT pattern, project_id, hits, last_hit, promoted_at FROM ar_rule_candidates WHERE hits >= ?"
+        params: List[Any] = [min_hits]
+        if promoted_filter == "1":
+            sql += " AND promoted_at IS NOT NULL"
+        elif promoted_filter == "0":
+            sql += " AND promoted_at IS NULL"
+        sql += " ORDER BY hits DESC, last_hit DESC LIMIT 200"
+        try:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+        except sqlite3.Error:
+            rows = []
+        out = [
+            {
+                "pattern": r[0],
+                "project_id": r[1],
+                "hits": r[2],
+                "last_hit": r[3],
+                "promoted_at": r[4],
+            }
+            for r in rows
+        ]
+        return jsonify({"items": out, "count": len(out)})
+    finally:
+        con.close()
+
+
 @bp.get("/api/ar/rules_stats")
 def api_ar_rules_stats():  # pragma: no cover
     """Lightweight AR rules & coverage stats (JSON).
@@ -681,7 +826,6 @@ def api_ar_rules_stats():  # pragma: no cover
     avoid heavy startup cost. Returns 0 / null values if tables missing.
     """
     import os
-    import sqlite3
     from datetime import datetime, timedelta
 
     db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "chipax_data.db")
@@ -689,45 +833,44 @@ def api_ar_rules_stats():  # pragma: no cover
         db_path = os.path.abspath(db_path)
     if not os.path.exists(db_path):
         return jsonify({"error": "db_not_found", "db_path": db_path}), 200
-    try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        def safe(sql: str, params=()):
-            try:
-                cur.execute(sql, params)
-                return cur.fetchall()
-            except sqlite3.Error:
-                return []
-        out = {}
-        rows = safe("SELECT kind, COUNT(1) FROM ar_project_rules GROUP BY kind")
-        rules_by_kind = {k: int(c) for k, c in rows}
-        out["rules_by_kind"] = rules_by_kind
-        out["rules_total"] = sum(rules_by_kind.values())
-        rows = safe("SELECT COUNT(1) FROM sales_invoices")
-        invoices_total = int(rows[0][0]) if rows else 0
-        out["invoices_total"] = invoices_total
-        rows = safe("SELECT COUNT(1) FROM sales_invoices WHERE TRIM(COALESCE(project_id,''))<>''")
-        invoices_with_project = int(rows[0][0]) if rows else 0
-        out["invoices_with_project"] = invoices_with_project
-        out["project_assign_rate"] = round(invoices_with_project / invoices_total, 4) if invoices_total else None
-        rows = safe("SELECT COUNT(DISTINCT TRIM(COALESCE(customer_name,''))) FROM sales_invoices WHERE TRIM(COALESCE(customer_name,''))<>''")
-        distinct_names = int(rows[0][0]) if rows else 0
-        out["distinct_customer_names"] = distinct_names
-        rows = safe("""
-            SELECT COUNT(DISTINCT si.customer_name)
-              FROM sales_invoices si
-              JOIN ar_project_rules r
-                ON r.kind='customer_name_like' AND r.pattern=si.customer_name
-             WHERE TRIM(COALESCE(si.customer_name,''))<>'')
-        """)
-        covered_names = int(rows[0][0]) if rows else 0
-        out["customer_names_with_rule"] = covered_names
-        out["customer_name_rule_coverage"] = round(covered_names / distinct_names, 4) if distinct_names else None
-        cutoff = (datetime.utcnow() - timedelta(days=30)).isoformat(timespec="seconds")
-        rows = safe("SELECT COUNT(1) FROM ar_map_events WHERE created_at >= ?", (cutoff,))
-        out["recent_events_30d"] = int(rows[0][0]) if rows else 0
-        out["generated_at"] = datetime.utcnow().isoformat() + "Z"
-        conn.close()
-        return jsonify(out)
-    except Exception as e:  # noqa: BLE001
-        return jsonify({"error": "stats_failed", "detail": str(e)}), 200
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    def safe(sql: str, params=()):
+        try:
+            cur.execute(sql, params)
+            return cur.fetchall()
+        except sqlite3.Error:
+            return []
+
+    out = {}
+    rows = safe("SELECT kind, COUNT(1) FROM ar_project_rules GROUP BY kind")
+    rules_by_kind = {k: int(c) for k, c in rows}
+    out["rules_by_kind"] = rules_by_kind
+    out["rules_total"] = sum(rules_by_kind.values())
+    rows = safe("SELECT COUNT(1) FROM sales_invoices")
+    invoices_total = int(rows[0][0]) if rows else 0
+    out["invoices_total"] = invoices_total
+    rows = safe("SELECT COUNT(1) FROM sales_invoices WHERE TRIM(COALESCE(project_id,''))<>''")
+    invoices_with_project = int(rows[0][0]) if rows else 0
+    out["invoices_with_project"] = invoices_with_project
+    out["project_assign_rate"] = round(invoices_with_project / invoices_total, 4) if invoices_total else None
+    rows = safe("SELECT COUNT(DISTINCT TRIM(COALESCE(customer_name,''))) FROM sales_invoices WHERE TRIM(COALESCE(customer_name,''))<>''")
+    distinct_names = int(rows[0][0]) if rows else 0
+    out["distinct_customer_names"] = distinct_names
+    rows = safe("""
+        SELECT COUNT(DISTINCT si.customer_name)
+          FROM sales_invoices si
+          JOIN ar_project_rules r
+            ON r.kind='customer_name_like' AND r.pattern=si.customer_name
+         WHERE TRIM(COALESCE(si.customer_name,''))<>'')
+    """)
+    covered_names = int(rows[0][0]) if rows else 0
+    out["customer_names_with_rule"] = covered_names
+    out["customer_name_rule_coverage"] = round(covered_names / distinct_names, 4) if distinct_names else None
+    cutoff = (datetime.utcnow() - timedelta(days=30)).isoformat(timespec="seconds")
+    rows = safe("SELECT COUNT(1) FROM ar_map_events WHERE created_at >= ?", (cutoff,))
+    out["recent_events_30d"] = int(rows[0][0]) if rows else 0
+    out["generated_at"] = datetime.utcnow().isoformat() + "Z"
+    conn.close()
+    return jsonify(out)

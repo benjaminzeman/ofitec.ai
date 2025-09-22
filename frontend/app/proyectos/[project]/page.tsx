@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { KPICard, formatCLP } from '@/components/KPI';
 import { BudgetTable } from '@/components/BudgetTable';
@@ -8,7 +9,6 @@ import { Waterfall } from '@/components/Waterfall';
 import {
   getProjectSummary,
   getProjectBudget,
-  getProjectFinance,
   getProjectPurchases,
   getProjectContract,
   saveProjectContract,
@@ -18,13 +18,15 @@ import {
   addProjectExtra,
 } from '@/lib/projectsApi';
 
-export default function Proyecto360Page({ params }: { params: { project: string } }) {
-  const projectKey = decodeURIComponent(params.project);
+// Use rest param to keep first argument type as 'any' for Next.js PageProps compatibility,
+// and derive the project route param via useParams (client-side) instead of typed prop.
+export default function Proyecto360Page(..._args: any[]) {
+  const routeParams = useParams() as { project?: string };
+  const projectKey = decodeURIComponent(routeParams.project || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<any>(null);
   const [budget, setBudget] = useState<any>(null);
-  const [finance, setFinance] = useState<any>(null);
   const [purchases, setPurchases] = useState<any>({
     items: [],
     meta: { total: 0, page: 1, page_size: 10, pages: 1 },
@@ -45,10 +47,9 @@ export default function Proyecto360Page({ params }: { params: { project: string 
       try {
         setLoading(true);
         setError(null);
-        const [s, b, f, po, co, pay, ex] = await Promise.all([
+        const [s, b, po, co, pay, ex] = await Promise.all([
           getProjectSummary(projectKey),
           getProjectBudget(projectKey),
-          getProjectFinance(projectKey, { months: 6 }),
           getProjectPurchases(projectKey, { page: 1, page_size: 5 }),
           getProjectContract(projectKey),
           getProjectPayments(projectKey),
@@ -57,7 +58,6 @@ export default function Proyecto360Page({ params }: { params: { project: string 
         if (!mounted) return;
         setSummary(s);
         setBudget(b);
-        setFinance(f);
         setPurchases(po);
         setContract(co);
         setPayments(pay);

@@ -2,45 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 
-type ScHeader = {
-  id: number;
-  project_id: number;
-  subcontract_id?: number;
-  ep_number?: string;
-  period_start?: string;
-  period_end?: string;
-  submitted_at?: string;
-  approved_at?: string;
-  status?: string;
-  retention_pct?: number;
-  notes?: string;
-};
+// Removed unused type declarations (ScHeader, ScLine, ScDeduction) to silence ESLint warnings.
 
-type ScLine = {
-  id?: number;
-  ep_id?: number;
-  item_code?: string;
-  description?: string;
-  unit?: string;
-  qty_period?: number;
-  unit_price?: number;
-  amount_period?: number;
-  qty_cum?: number;
-  amount_cum?: number;
-  chapter?: string;
-};
-
-type ScDeduction = {
-  id?: number;
-  ep_id?: number;
-  type: 'retention' | 'advance_amortization' | 'penalty' | 'other';
-  description?: string;
-  amount: number;
-};
-
-export default function ProjectScEPListPage({ params }: { params: { project: string } }) {
-  const projectKey = decodeURIComponent(params.project);
+export default function ProjectScEPListPage(..._args: any[]) {
+  const routeParams = useParams() as { project?: string };
+  const projectKey = decodeURIComponent(routeParams.project || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<any[]>([]);

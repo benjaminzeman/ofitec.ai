@@ -40,7 +40,7 @@ from __future__ import annotations
 
 from datetime import datetime, UTC
 import os
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional
 import sqlite3
 import json
 import statistics
@@ -145,12 +145,16 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
     confidence_high_ratio = None  # ratio of events with confidence >= 0.9
     confidence_stddev = None  # population std deviation across all confidences
     confidence_buckets: dict[str, int] = {}
+    # p@k (precision at 1 and 5) over events with candidate ranking available
+    ap_correct_at_1 = 0
+    ap_correct_at_5 = 0
+    ap_events_with_candidates = 0
     advanced_enabled = os.getenv("MATCHING_AP_ADVANCED", "1").lower() not in {"0", "false", "no", "off"}
     if has_events and events_total > 0 and advanced_enabled:
         try:
             # Fetch subset (limit 5000 to avoid heavy loads)
             cur.execute(
-                f"SELECT candidates_json, confidence, accepted FROM ap_match_events{window_where} ORDER BY id DESC LIMIT 5000",
+                f"SELECT candidates_json, chosen_json, confidence, accepted FROM ap_match_events{window_where} ORDER BY id DESC LIMIT 5000",
                 tuple(params),
             )
             conf_all: list[float] = []
@@ -160,13 +164,43 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
             # Use centralized bucket edges constant for confidence distribution
             from backend.recon_constants import AP_CONFIDENCE_BUCKET_EDGES as bucket_edges  # type: ignore
             bucket_counts = [0 for _ in bucket_edges]
-            for cjson, conf, acc in cur.fetchall():
+            for cjson, chosen_json, conf, acc in cur.fetchall():
                 # Parse candidates_json length (robust against malformed JSON / wrong types)
                 try:
                     arr = json.loads(cjson or "[]")
                     cand_counts.append(len(arr) if isinstance(arr, list) else 0)
                 except (json.JSONDecodeError, TypeError, ValueError):
                     cand_counts.append(0)
+                    arr = []
+                # p@k evaluation (best effort): if accepted=1 and chosen appears among first k candidates
+                try:
+                    chosen = json.loads(chosen_json or "{}") if chosen_json else {}
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    chosen = {}
+                # Heuristic: derive a comparable key set from chosen (links list) and candidates
+                chosen_keys = set()
+                if isinstance(chosen, dict) and "links" in chosen and isinstance(chosen["links"], list):
+                    for ln in chosen["links"]:
+                        if isinstance(ln, dict):
+                            pk = f"{ln.get('po_id')}|{ln.get('po_line_id')}"
+                            chosen_keys.add(pk)
+                # Build ranked candidate keys (first candidate first)
+                cand_keys: list[str] = []
+                if isinstance(arr, list):
+                    for c in arr:
+                        if isinstance(c, dict):
+                            pk = f"{c.get('po_id')}|{c.get('po_line_id')}"
+                            cand_keys.append(pk)
+                if cand_keys:
+                    ap_events_with_candidates += 1
+                    if acc == 1 and chosen_keys:
+                        # If any chosen key equals first candidate key -> correct@1
+                        if cand_keys[0] in chosen_keys:
+                            ap_correct_at_1 += 1
+                        # If appears within first 5 -> correct@5
+                        top5 = set(cand_keys[:5])
+                        if top5 & chosen_keys:
+                            ap_correct_at_5 += 1
                 # Normalize confidence to float
                 try:
                     cf = float(conf or 0)
@@ -208,7 +242,7 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
                 try:
                     high_count = sum(1 for v in conf_all if v >= 0.9)
                     confidence_high_ratio = round(high_count / len(conf_all), 4)
-                except Exception:  # noqa: BLE001 - defensive
+                except (ZeroDivisionError, ValueError, TypeError):
                     confidence_high_ratio = None
                 # Std deviation (population) for dispersion insight
                 try:
@@ -216,7 +250,7 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
                         confidence_stddev = round(statistics.pstdev(conf_all), 4)
                     else:
                         confidence_stddev = 0.0 if conf_all else None
-                except Exception:  # noqa: BLE001
+                except (statistics.StatisticsError, ValueError, TypeError):
                     confidence_stddev = None
             # Build bucket map labels scaled by 10000 (4 digits) without dot for deterministic sorting
             # Example: 0.20 becomes 02000 (0.2 * 10000=2000 -> 02000 with 5 width) producing label '00000_02000'
@@ -235,6 +269,8 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
         except sqlite3.Error:
             pass
 
+    p_at_1 = round(ap_correct_at_1 / ap_events_with_candidates, 4) if ap_events_with_candidates else None
+    p_at_5 = round(ap_correct_at_5 / ap_events_with_candidates, 4) if ap_events_with_candidates else None
     return {
         "events_total": events_total,
         "accepted_total": accepted_total,
@@ -255,6 +291,9 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
         "confidence_buckets": confidence_buckets or None,
         "confidence_sum": round(confidence_sum, 4) if confidence_sum is not None else None,
         "advanced_enabled": bool(advanced_enabled),
+        "p_at_1": p_at_1,
+        "p_at_5": p_at_5,
+        "p_at_k_sample": ap_events_with_candidates,
     }
 
 
@@ -340,6 +379,27 @@ def _ar_metrics(con: sqlite3.Connection, window_days: int, top: int) -> Dict[str
         except sqlite3.Error:
             pass
 
+    # Auto-assign precision@1: ratio of successful auto assigns (updated flag) over attempts
+    auto_assign_attempts: int = 0
+    auto_assign_success: int = 0
+    try:
+        cur.execute("SELECT payload FROM ar_map_events WHERE payload LIKE '%auto_assign%' ORDER BY id DESC LIMIT 5000")
+        rows = cur.fetchall()
+        for (payload,) in rows:
+            try:
+                data = json.loads(payload or '{}')
+            except (json.JSONDecodeError, ValueError, TypeError):
+                continue
+            if isinstance(data, dict) and data.get('action') == 'auto_assign':
+                auto_assign_attempts += 1
+                if data.get('updated') in (1, True, '1', 'true'):
+                    auto_assign_success += 1
+    except sqlite3.Error:
+        pass
+    auto_assign_precision_p1: Optional[float] = None
+    if auto_assign_attempts > 0:
+        auto_assign_precision_p1 = round(auto_assign_success / auto_assign_attempts, 4)
+
     return {
         "events_total": events_total,
         "rules_total": rules_total,
@@ -350,6 +410,11 @@ def _ar_metrics(con: sqlite3.Connection, window_days: int, top: int) -> Dict[str
         "patterns_distinct": patterns_distinct,
         "rules_project_coverage": round(patterns_distinct / rules_total, 4) if rules_total else None,
         "top_projects": top_projects or None,
+        "auto_assign_attempts": auto_assign_attempts,
+        "auto_assign_success": auto_assign_success,
+        "auto_assign_precision_p1": auto_assign_precision_p1,
+        "p_at_1": auto_assign_precision_p1,  # alias for consistency
+        "p_at_5": None,
     }
 
 
@@ -453,7 +518,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
     """
     try:
         from prometheus_client import CollectorRegistry, Gauge, generate_latest, CONTENT_TYPE_LATEST  # type: ignore
-    except Exception:
+    except (ImportError, RuntimeError):
         return jsonify({"error": "prometheus_client not installed"}), 500
 
     # Parse params similar to summary endpoint
@@ -492,7 +557,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                     """)
                     row = cur.fetchone()
                     names_cov = int(row[0] or 0) if row else 0
-                except Exception:  # noqa: BLE001
+                except (sqlite3.Error, ValueError, TypeError):
                     pass
             ar["distinct_customer_names"] = names_total
             ar["customer_names_with_rule"] = names_cov
@@ -500,7 +565,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                 ar["customer_name_rule_coverage"] = round(names_cov / names_total, 4)
             else:
                 ar["customer_name_rule_coverage"] = None
-        except Exception:  # noqa: BLE001 - coverage stats optional
+        except sqlite3.Error:  # coverage stats optional
             ar["customer_name_rule_coverage"] = None
     generation_ms = int((datetime.now(UTC) - started).total_seconds() * 1000)
     reg = CollectorRegistry()
@@ -508,7 +573,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
     def g(name: str, desc: str, value: float):
         try:
             Gauge(name, desc, registry=reg).set(float(value))
-        except Exception:  # noqa: BLE001 - defensive gauge registration
+        except (ValueError, TypeError, RuntimeError):
             pass
 
     # AP gauges
@@ -583,7 +648,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                                     right_raw = rng.split('_')[1]
                                     try:
                                         return int(right_raw) / 10000.0
-                                    except Exception:  # noqa: BLE001
+                                    except (ValueError, TypeError):
                                         return None
                             return None
                         p95_bucket_val = _derive_bucket_percentile(0.95)
@@ -592,7 +657,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                         p99_bucket_val = _derive_bucket_percentile(0.99)
                         if p99_bucket_val is not None:
                             g("matching_ap_confidence_p99_bucket", "Approximate p99 confidence from bucket upper bound", p99_bucket_val)
-                except Exception:  # noqa: BLE001 - percentile derivation optional
+                except (ValueError, TypeError, ZeroDivisionError):
                     pass
                 # Count & sum (exact if captured in advanced metrics, else midpoint approximation)
                 total_events = ap.get("events_total") or 0
@@ -611,9 +676,9 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                     exact_sum = round(s, 4)
                 g("matching_ap_confidence_count", "Total events considered for confidence histogram", total_events)
                 g("matching_ap_confidence_sum", "Exact (or approximated) sum of confidence values", round(exact_sum, 4))
-            except Exception:  # noqa: BLE001 - histogram optional, any registration or calc error is non-fatal
+            except (ValueError, TypeError, RuntimeError):
                 pass
-    except Exception:  # noqa: BLE001 - optional confidence buckets
+    except (ValueError, TypeError, RuntimeError):
         pass
 
     # AR gauges
@@ -645,7 +710,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
             share = float(item.get("share") or 0.0)
             tp_count.labels(project_id=pid).set(cnt)
             tp_share.labels(project_id=pid).set(share)
-    except Exception:  # noqa: BLE001 - labeled top project gauges
+    except (ValueError, TypeError, RuntimeError):
         pass
 
     # Provide a cache_hit gauge relative to immediate repeated call (optional quick cache check)
@@ -656,6 +721,80 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
     if cached and (datetime.now(UTC).timestamp() - cached[0]) <= _CACHE_TTL_SECONDS:
         cache_hit = 1
     g("matching_cache_hit", "Was (would) cache hit for this param set?", cache_hit)
+
+    # Governance & integrity metrics (Todo 12): hash chain, weight version, 3-way placeholders, snapshots
+    try:
+        with db_conn() as con_gov:
+            cgov = con_gov.cursor()
+            # Hash chain integrity quick scan (sample last 200 events)
+            try:
+                cgov.execute("PRAGMA table_info(ap_match_events)")
+                cols_ev = {r[1] for r in cgov.fetchall()}
+                if {"event_hash", "prev_hash"}.issubset(cols_ev):
+                    cgov.execute(
+                        "SELECT id, prev_hash, event_hash, invoice_id, source_json, candidates_json, chosen_json, confidence, reasons, accepted, created_at, user_id "
+                        "FROM ap_match_events WHERE event_hash IS NOT NULL ORDER BY id DESC LIMIT 200"
+                    )
+                    rows = [dict(r) for r in cgov.fetchall()]
+                    last_ok = 1
+                    breaks = 0
+                    prev = ""
+                    # Iterate reverse order (oldest to newest) by sorting
+                    rows_sorted = sorted(rows, key=lambda r: r["id"])  # ascending
+                    for r in rows_sorted:
+                        # Recompute hash
+                        from backend.api_ap_match import _compute_event_hash  # type: ignore
+                        test_row = dict(r)
+                        test_row["prev_hash"] = prev
+                        recomputed = _compute_event_hash(test_row)
+                        if r.get("prev_hash") != prev or r.get("event_hash") != recomputed:
+                            breaks += 1
+                        else:
+                            last_ok = r.get("id", last_ok)
+                        prev = r.get("event_hash") or prev
+                    g("matching_hash_chain_recent_breaks", "Breaks detected in last 200 events hash chain", breaks)
+                    g("matching_hash_chain_last_ok_id", "Last consecutive ok event id in sampled window", last_ok)
+                    if rows_sorted:
+                        g("matching_hash_chain_sample_size", "Sample size for hash chain audit", len(rows_sorted))
+            except sqlite3.Error:
+                pass
+            # Active weight version
+            try:
+                cgov.execute("SELECT version_tag FROM ap_weight_versions WHERE active=1 ORDER BY id DESC LIMIT 1")
+                row = cgov.fetchone()
+                if row and row[0]:
+                    # Expose a labeled gauge (1) with version tag
+                    from prometheus_client import Gauge as _GV  # type: ignore
+                    gv = _GV("matching_weight_version_active", "Active AP matching weight version", ["version_tag"], registry=reg)
+                    gv.labels(version_tag=str(row[0])).set(1)
+            except sqlite3.Error:
+                pass
+            # 3-way candidates counts
+            try:
+                cgov.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ap_three_way_candidates'")
+                if cgov.fetchone():
+                    for st in ["pending", "promoted", "rejected"]:
+                        try:
+                            cgov.execute(
+                                "SELECT COUNT(*) FROM ap_three_way_candidates WHERE status=?",
+                                (st,),
+                            )
+                            cnt = cgov.fetchone()[0] or 0
+                            g(f"matching_threeway_candidates_{st}", f"3-way candidates with status {st}", cnt)
+                        except sqlite3.Error:
+                            continue
+            except sqlite3.Error:
+                pass
+            # Snapshot count (match_quality_snapshots)
+            try:
+                cgov.execute("SELECT COUNT(*) FROM match_quality_snapshots")
+                row = cgov.fetchone()
+                if row:
+                    g("matching_quality_snapshots_total", "Total stored historical matching quality snapshots", row[0] or 0)
+            except sqlite3.Error:
+                pass
+    except (sqlite3.Error, RuntimeError, ImportError):  # pragma: no cover - optional metrics
+        pass
 
     output = generate_latest(reg)
     return current_app.response_class(output, mimetype=CONTENT_TYPE_LATEST)
@@ -689,3 +828,78 @@ def matching_metrics_mini():  # pragma: no cover - thin convenience endpoint
         },
     }
     return jsonify(out)
+
+
+# ---------------------------------------------------------------------------
+# Historical precision/recall snapshot endpoints
+# ---------------------------------------------------------------------------
+
+@matching_metrics_bp.post("/api/matching/metrics/snapshot")
+def matching_metrics_snapshot_create():
+    """Persist a historical snapshot of core AP/AR precision metrics.
+
+    Body optional JSON: { tag: str }
+    Creates table match_quality_snapshots lazily if absent.
+    Columns: id, tag, ap_events_total, ap_events_accepted, ap_p_at_1, ap_p_at_5,
+             ar_auto_assign_p1, created_at
+    """
+    body = request.get_json(silent=True) or {}
+    tag = (body.get("tag") or "auto").strip()[:50]
+    try:
+        with db_conn() as con:
+            con.execute(
+                """
+                CREATE TABLE IF NOT EXISTS match_quality_snapshots (
+                  id INTEGER PRIMARY KEY,
+                  tag TEXT,
+                  ap_events_total INTEGER,
+                  ap_events_accepted INTEGER,
+                  ap_p_at_1 REAL,
+                  ap_p_at_5 REAL,
+                  ar_auto_assign_p1 REAL,
+                  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_mq_snap_created ON match_quality_snapshots(created_at);
+                """
+            )
+            # Get fresh metrics (window_days=0, top=5 defaults) by calling internal helpers
+            ap = _ap_metrics(con, 0)
+            ar = _ar_metrics(con, 0, 5)
+            con.execute(
+                "INSERT INTO match_quality_snapshots(tag, ap_events_total, ap_events_accepted, ap_p_at_1, ap_p_at_5, ar_auto_assign_p1) VALUES(?,?,?,?,?,?)",
+                (
+                    tag,
+                    ap.get("events_total"),
+                    ap.get("accepted_total"),
+                    ap.get("p_at_1"),
+                    ap.get("p_at_5"),
+                    ar.get("p_at_1"),
+                ),
+            )
+            snap_id = con.execute("SELECT last_insert_rowid()").fetchone()[0]
+            con.commit()
+            return jsonify({"ok": True, "snapshot_id": snap_id, "tag": tag})
+    except sqlite3.Error as e:  # noqa: BLE001
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@matching_metrics_bp.get("/api/matching/metrics/snapshots")
+def matching_metrics_snapshots_list():
+    """List historical metric snapshots (?limit=, default 100)."""
+    try:
+        limit = int(request.args.get("limit", 100))
+    except (TypeError, ValueError):
+        limit = 100
+    if limit <= 0:
+        limit = 100
+    try:
+        with db_conn() as con:
+            cur = con.execute(
+                "SELECT id, tag, ap_events_total, ap_events_accepted, ap_p_at_1, ap_p_at_5, ar_auto_assign_p1, created_at "
+                "FROM match_quality_snapshots ORDER BY id DESC LIMIT ?",
+                (limit,),
+            )
+            rows = [dict(r) for r in cur.fetchall()]
+            return jsonify({"ok": True, "snapshots": rows, "limit": limit})
+    except sqlite3.Error as e:  # noqa: BLE001
+        return jsonify({"ok": False, "error": str(e)}), 500

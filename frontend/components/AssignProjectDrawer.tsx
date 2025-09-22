@@ -65,7 +65,7 @@ export default function AssignProjectDrawer({
       setConfirming(true);
       setMessage(null);
       const rules = [{ kind: 'customer_name_like', pattern: invoice.customer_name, project_id }];
-      const res = await confirmMapping({
+      const _res = await confirmMapping({
         rules,
         assignment: { invoice_id: invoice.invoice_id, project_id },
         metadata: { user_id: 'ui' },

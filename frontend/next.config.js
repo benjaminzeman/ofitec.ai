@@ -4,7 +4,8 @@ const backendUrl =
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  // Silence workspace root inference warning (multiple lockfiles in monorepo style)
+  outputFileTracingRoot: require('path').join(__dirname, '..'),
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || backendUrl,
     NEXT_PUBLIC_APP_NAME: 'ofitec.ai',

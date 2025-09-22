@@ -60,7 +60,7 @@ export function ChartsGrid() {
             {ordersChart.length > 0 ? (
               <div className="w-full h-full p-4">
                 <div className="flex items-end justify-between h-full space-x-2">
-                  {ordersChart.slice(-6).map((data, index) => (
+                  {ordersChart.slice(-6).map((data, _index) => (
                     <div key={data.month} className="flex-1 flex flex-col items-center">
                       <div
                         className="bg-lime-500 rounded-t w-full transition-all duration-300 hover:bg-lime-600"
