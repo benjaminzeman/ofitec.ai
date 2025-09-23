@@ -29,7 +29,14 @@ XAI_DEFAULT_MODEL = os.getenv("XAI_MODEL", "grok-2-latest")
 
 def ai_enabled() -> bool:
     """Return True if the integration is usable (key + requests installed)."""
-    return bool(XAI_API_KEY and requests is not None)
+    # Exclude known dummy/test keys that won't work with the real API
+    if not XAI_API_KEY or not requests:
+        return False
+    # Filter out dummy keys used in tests
+    dummy_keys = {"TU_KEY", "test", "dummy", "fake"}
+    if XAI_API_KEY.strip() in dummy_keys:
+        return False
+    return True
 
 
 def _headers() -> Dict[str, str]:
