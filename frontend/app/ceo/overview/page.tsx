@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import KpiCard from '@/components/ui/KpiCard';
 import ActionsList from '@/components/ui/ActionsList';
 import { fetchCeoOverview, CeoOverview } from '@/lib/api';
+import { EstadoBadge } from '@/lib/icons';
 
 const peso = (n: number) =>
   new Intl.NumberFormat('es-CL', {
@@ -65,20 +66,49 @@ export default function CeoOverviewPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-3">
             Resumen Ejecutivo (CEO)
+            <EstadoBadge estado="activo" size="sm" />
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
             Caja, facturación, proyectos y riesgos
           </p>
         </div>
+        <div className="flex gap-2">
+          <EstadoBadge estado="vigente" showLabel={true} />
+          <EstadoBadge estado="pendiente" showLabel={false} size="xs" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Caja Hoy" value={peso(cash.today)} icon={'💵'} accent="lime" />
-        <KpiCard title="Facturación Mes" value={peso(revenue.month)} icon={'🧾'} accent="blue" />
-        <KpiCard title="Proyectos" value={projects.total} icon={'🏗️'} accent="amber" />
-        <KpiCard title="Riesgo (score)" value={risk.high} icon={'⚠️'} accent="red" />
+        <KpiCard 
+          title="Caja Hoy" 
+          value={peso(cash.today)} 
+          icon="balance" 
+          accent="lime"
+          trend={{ value: 5.2, direction: 'up' }}
+        />
+        <KpiCard 
+          title="Facturación Mes" 
+          value={peso(revenue.month)} 
+          icon="revenue" 
+          accent="blue"
+          trend={{ value: 12.5, direction: 'up' }}
+        />
+        <KpiCard 
+          title="Proyectos Activos" 
+          value={projects.total} 
+          icon="presupuesto" 
+          accent="amber"
+          subtitle="proyectos en ejecución"
+        />
+        <KpiCard 
+          title="Score de Riesgo" 
+          value={`${risk.high}/100`} 
+          icon="profit" 
+          accent={risk.high > 70 ? "red" : "lime"}
+          trend={{ value: risk.high > 70 ? -5 : 3, direction: risk.high > 70 ? "down" : "up" }}
+        />
       </div>
 
       {/* Working Capital */}
@@ -87,10 +117,10 @@ export default function CeoOverviewPage() {
           Working Capital
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard title="DSO" value={working_cap?.dso ?? 0} icon={'📅'} />
-          <KpiCard title="DPO" value={working_cap?.dpo ?? 0} icon={'📆'} />
-          <KpiCard title="DIO" value={working_cap?.dio ?? 0} icon={'📦'} />
-          <KpiCard title="CCC" value={working_cap?.ccc ?? 0} icon={'🔁'} />
+          <KpiCard title="DSO" value={working_cap?.dso ?? 0} />
+          <KpiCard title="DPO" value={working_cap?.dpo ?? 0} />
+          <KpiCard title="DIO" value={working_cap?.dio ?? 0} />
+          <KpiCard title="CCC" value={working_cap?.ccc ?? 0} />
         </div>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -119,26 +149,18 @@ export default function CeoOverviewPage() {
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Backlog</h3>
           <div className="grid grid-cols-2 gap-4">
-            <KpiCard title="Backlog Total" value={backlog?.total ?? 0} icon={'📚'} />
-            <KpiCard title="Cobertura (meses)" value={backlog?.cobertura_meses ?? 0} icon={'🗓️'} />
-            <KpiCard
-              title="Pipeline Weighted"
-              value={backlog?.pipeline_weighted ?? 0}
-              icon={'⚖️'}
-            />
-            <KpiCard
-              title="Pipeline vs Meta"
-              value={backlog?.pipeline_vs_goal_pct ?? 0}
-              icon={'🎯'}
-            />
+            <KpiCard title="Backlog Total" value={backlog?.total ?? 0} />
+            <KpiCard title="Cobertura (meses)" value={backlog?.cobertura_meses ?? 0} />
+            <KpiCard title="Pipeline Weighted" value={backlog?.pipeline_weighted ?? 0} />
+            <KpiCard title="Pipeline vs Meta" value={backlog?.pipeline_vs_goal_pct ?? 0} />
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Margen</h3>
           <div className="grid grid-cols-3 gap-4">
-            <KpiCard title="Mes %" value={margin?.month_pct ?? 0} icon={'📊'} />
-            <KpiCard title="Plan %" value={margin?.plan_pct ?? 0} icon={'📈'} />
-            <KpiCard title="Δ pp" value={margin?.delta_pp ?? 0} icon={'♾️'} />
+            <KpiCard title="Mes %" value={margin?.month_pct ?? 0} />
+            <KpiCard title="Plan %" value={margin?.plan_pct ?? 0} />
+            <KpiCard title="Δ pp" value={margin?.delta_pp ?? 0} />
           </div>
         </div>
       </div>
@@ -150,11 +172,11 @@ export default function CeoOverviewPage() {
             Salud de Proyectos
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <KpiCard title="On Budget" value={projects.on_budget ?? 0} icon={'✅'} />
-            <KpiCard title="Over Budget" value={projects.over_budget ?? 0} icon={'⚠️'} />
-            <KpiCard title="Sin PC" value={projects.without_pc ?? 0} icon={'📦'} />
-            <KpiCard title="3-Way" value={projects.three_way_violations ?? 0} icon={'🔗'} />
-            <KpiCard title="EP→FV" value={projects.wip_ep_to_invoice ?? 0} icon={'🧾'} />
+            <KpiCard title="On Budget" value={projects.on_budget ?? 0} />
+            <KpiCard title="Over Budget" value={projects.over_budget ?? 0} />
+            <KpiCard title="Sin PC" value={projects.without_pc ?? 0} />
+            <KpiCard title="3-Way" value={projects.three_way_violations ?? 0} />
+            <KpiCard title="EP→FV" value={projects.wip_ep_to_invoice ?? 0} />
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
@@ -162,8 +184,8 @@ export default function CeoOverviewPage() {
             Riesgo y Alertas
           </h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <KpiCard title="Riesgo (score)" value={risk.high} icon={'🚨'} accent="red" />
-            <KpiCard title="Riesgo Medio" value={risk.medium} icon={'⚠️'} />
+            <KpiCard title="Riesgo (score)" value={risk.high} accent="red" />
+            <KpiCard title="Riesgo Medio" value={risk.medium} />
           </div>
           {risk.reasons && risk.reasons.length > 0 && (
             <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-400">

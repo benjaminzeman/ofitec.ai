@@ -3,8 +3,7 @@
   "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": ["./tsconfig.json"],
-    "tsconfigRootDir": "./",
+    "project": "./tsconfig.json",
     "ecmaVersion": 2022,
     "sourceType": "module"
   },

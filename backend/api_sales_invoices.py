@@ -7,7 +7,7 @@ from typing import Dict
 
 from flask import Blueprint, jsonify, request
 
-from backend.db_utils import db_conn  # reuse unified connection helper
+from db_utils import db_conn  # reuse unified connection helper
 
 bp = Blueprint("sales", __name__)
 

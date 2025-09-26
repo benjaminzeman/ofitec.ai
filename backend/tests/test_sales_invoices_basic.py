@@ -1,4 +1,4 @@
-from backend import server
+import server
 import sqlite3
 import os
 import pytest

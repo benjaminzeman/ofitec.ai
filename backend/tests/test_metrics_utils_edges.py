@@ -1,6 +1,6 @@
 import random
 
-from backend.metrics_utils import percentile, histogram, compute_latency_summary
+from metrics_utils import percentile, histogram, compute_latency_summary
 
 
 def test_percentile_single_element():

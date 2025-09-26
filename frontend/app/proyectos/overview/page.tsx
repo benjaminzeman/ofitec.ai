@@ -77,15 +77,10 @@ export default function ProjectsOverviewPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Proyectos Activos" value={portfolio.activos} icon={'🏗️'} accent="lime" />
-        <KpiCard
-          title="Presupuesto Total (PC)"
-          value={peso(portfolio.pc_total)}
-          icon={'💰'}
-          accent="blue"
-        />
-        <KpiCard title="OC Emitidas" value={peso(portfolio.po)} icon={'📄'} accent="amber" />
-        <KpiCard title="Disponible" value={peso(portfolio.disponible)} icon={'🪙'} accent="lime" />
+        <KpiCard title="Proyectos Activos" value={portfolio.activos} accent="lime" />
+        <KpiCard title="Presupuesto Total (PC)" value={peso(portfolio.pc_total)} accent="blue" />
+        <KpiCard title="OC Emitidas" value={peso(portfolio.po)} accent="amber" />
+        <KpiCard title="Disponible" value={peso(portfolio.disponible)} accent="lime" />
       </div>
 
       {/* Ejecución */}
@@ -107,10 +102,10 @@ export default function ProjectsOverviewPage() {
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Salud</h3>
           <div className="grid grid-cols-2 gap-4">
-            <KpiCard title="On Budget" value={salud.on_budget} icon={'✅'} accent="lime" />
-            <KpiCard title="Over Budget" value={salud.over_budget} icon={'⚠️'} accent="red" />
-            <KpiCard title="Sin PC" value={salud.without_pc} icon={'📦'} accent="amber" />
-            <KpiCard title="3-Way Match" value={salud.tres_way} icon={'🔗'} accent="blue" />
+            <KpiCard title="On Budget" value={salud.on_budget} accent="lime" />
+            <KpiCard title="Over Budget" value={salud.over_budget} accent="red" />
+            <KpiCard title="Sin PC" value={salud.without_pc} accent="amber" />
+            <KpiCard title="3-Way Match" value={salud.tres_way} accent="blue" />
           </div>
         </div>
 
@@ -119,8 +114,8 @@ export default function ProjectsOverviewPage() {
             WIP y EP
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <KpiCard title="EP Aprobados sin FV" value={wip.ep_aprobados_sin_fv} icon={'🧾'} />
-            <KpiCard title="EP en Revisión" value={wip.ep_en_revision} icon={'🕒'} />
+            <KpiCard title="EP Aprobados sin FV" value={wip.ep_aprobados_sin_fv} />
+            <KpiCard title="EP en Revisión" value={wip.ep_en_revision} />
           </div>
         </div>
       </div>

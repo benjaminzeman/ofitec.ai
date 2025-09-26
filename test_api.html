@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Control Financiero</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .loading { color: #666; }
+        .error { color: red; }
+        .success { color: green; }
+        .data { background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Control Financiero API</h1>
+        
+        <div class="card">
+            <h2>Estado de Conexión</h2>
+            <div id="status" class="loading">Probando conexión...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Datos de Backend</h2>
+            <div id="data" class="loading">Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const statusDiv = document.getElementById('status');
+            const dataDiv = document.getElementById('data');
+            
+            try {
+                statusDiv.innerHTML = '<span class="loading">Conectando a backend...</span>';
+                
+                const response = await fetch('http://127.0.0.1:5555/api/control_financiero/resumen');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                statusDiv.innerHTML = '<span class="success">✅ Conexión exitosa</span>';
+                
+                // Mostrar datos
+                dataDiv.innerHTML = `
+                    <div class="data">
+                        <h3>Sprint 1: Control Financiero 360</h3>
+                        <p><strong>Versión:</strong> ${data.sprint_version}</p>
+                        <p><strong>Proyectos:</strong> ${data.meta.total}</p>
+                        <p><strong>Presupuesto Total:</strong> $${data.totals.presupuesto.toLocaleString()}</p>
+                        
+                        <h4>Proyectos:</h4>
+                        ${Object.entries(data.items).map(([nombre, proyecto]) => `
+                            <div style="margin: 10px 0; padding: 10px; border-left: 3px solid ${proyecto.validations.all_validations_passed ? 'green' : 'red'};">
+                                <strong>${nombre}</strong><br>
+                                Presupuesto: $${proyecto.presupuesto.toLocaleString()}<br>
+                                Salud: ${proyecto.health_score}%<br>
+                                Validaciones: ${proyecto.validations.all_validations_passed ? '✅ OK' : '❌ Issues'}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                dataDiv.innerHTML = `<span class="error">No se pudieron cargar los datos</span>`;
+                console.error('Error:', error);
+            }
+        }
+        
+        // Ejecutar test al cargar la página
+        testAPI();
+    </script>
+</body>
+</html>

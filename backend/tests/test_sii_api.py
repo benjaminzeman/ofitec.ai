@@ -8,10 +8,10 @@ from datetime import datetime, timedelta, UTC
 
 import requests
 
-from backend.db_utils import db_conn
-from backend.sii_service import SiiClient, ensure_schema, log_event
+from db_utils import db_conn
+from sii_service import SiiClient, ensure_schema, log_event
 
-from backend import server
+import server
 
 
 @pytest.fixture(name="client")

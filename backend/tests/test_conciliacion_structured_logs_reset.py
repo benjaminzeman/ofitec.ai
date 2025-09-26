@@ -4,7 +4,7 @@ import uuid
 from pathlib import Path
 import logging
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture(name="client")
@@ -40,7 +40,7 @@ def test_metrics_reset_structured_log(client, caplog):
     r = client.post("/api/conciliacion/metrics/reset", json={"token": "tkn"})
     if r.status_code == 404:  # Fallback: metrics disabled in this environment
         # Use internal helper via import for coverage (no network log expected though)
-        from backend.conciliacion_api_clean import test_reset_internal  # type: ignore
+        from conciliacion_api_clean import test_reset_internal  # type: ignore
         test_reset_internal()
     else:
         assert r.status_code == 200

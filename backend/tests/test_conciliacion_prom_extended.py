@@ -1,4 +1,4 @@
-from backend.server import app
+from server import app
 
 
 def test_prom_extended_persistence_and_percentiles(monkeypatch, tmp_path):

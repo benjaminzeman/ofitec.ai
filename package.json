@@ -1,12 +1,22 @@
 {
-  "name": "ofitec-monorepo-root",
-  "private": true,
+  "name": "ofitec-ai-workspace",
   "version": "1.0.0",
-  "description": "Root wrapper para scripts del frontend",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "lint": "npm --prefix frontend run lint",
-    "lint:fix": "npm --prefix frontend run lint:fix",
-    "format": "npm --prefix frontend run format",
-    "format:check": "npm --prefix frontend run format:check"
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python server.py",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "install:all": "npm install && cd frontend && npm install",
+    "clean": "cd frontend && rm -rf .next && rm -rf node_modules/.cache"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

@@ -1,0 +1,1349 @@
+[
+  {
+    "type": "vendor_alias",
+    "rut": "76232071-1",
+    "primary_name": "INMOBILIARIA BOLOMEY LIMITADA",
+    "aliases": [
+      "NAN",
+      "INMOBILIARIA BOLOMEY LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "79862000-2",
+    "primary_name": "CENTRO COMERCIAL VICUÑA MACKENNA LIMITADA",
+    "aliases": [
+      "NAN",
+      "CENTRO COMERCIAL VICUNA MACKENNA LTDA",
+      "CENTRO COMERCIAL VICUÑA MACKENNA LIMITADA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77716610-7",
+    "primary_name": "SOC COMERCIAL VALDIVIA & VALDIVIA LIMITA",
+    "aliases": [
+      "SOC COMERCIAL VALDIVIA & VALDIVIA LIMITA",
+      "SOC.COM.VALDIVIA Y VALDIVIA LTDA.",
+      "SOC COMERCIAL VALDIVIA Y VALDIVIA LTDA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "70017820-K",
+    "primary_name": "CAMARA DE COMERCIO DE SANTIAGO A.G.",
+    "aliases": [
+      "CAMARA DE COMERCIO DE SANTIAGO A G",
+      "CAMARA DE COMERCIO DE SANTIAGO A.G."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "89005900-7",
+    "primary_name": "SOCIEDAD COMERCIAL ANTUCO LTDA.",
+    "aliases": [
+      "COMERCIAL ANTUCO SPA",
+      "SOCIEDAD COMERCIAL ANTUCO LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "84690000-4",
+    "primary_name": "DROGUETT Y COMPAÏ¿½IA LIMITADA",
+    "aliases": [
+      "DROGUETT Y COMPANIA LIMITADA",
+      "DROGUETT Y COMPAÏ¿½IA LIMITADA",
+      "DROGUETT Y COMPAÑIA LIMITADA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77137860-9",
+    "primary_name": "COMERCIAL K LIMITADA",
+    "aliases": [
+      "COMERCIAL K LIMITADA",
+      "COMERCIAL K SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "79903920-6",
+    "primary_name": "COMERCIAL HISPANO CHILENA LIMITADA",
+    "aliases": [
+      "COMERCIAL HISPANO CHILENA LTDA.",
+      "COMERCIAL HISPANO CHILENA LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "89396900-4",
+    "primary_name": "DISTRIBUIDORA TECNICA ELECTRICA VITEL S.A.",
+    "aliases": [
+      "DISTRIBUIDORA TECNICA ELECTRICA VIT",
+      "DISTRIBUIDORA TECNICA ELECTRICA VITEL S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76896595-1",
+    "primary_name": "INMOBILIARIA ALTO ALEMANIA DOS SPA",
+    "aliases": [
+      "INMOBILIARIA ALTO ALEMANIA DOS SPA",
+      "NAN",
+      "ALTO ALEMANIA DOS SPA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76262934-8",
+    "primary_name": "SICPA GOVERNMENT SECURITY SOLUTIONS LATAM SPA",
+    "aliases": [
+      "SICPA GOVERNMENT SECURITY SOLUTIONS LATAM SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "79706120-4",
+    "primary_name": "ESMAX RED LIMITADA",
+    "aliases": [
+      "ESMAX RED LIMITADA",
+      "ESMAX RED LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76015021-5",
+    "primary_name": "SOLUCIONES CONSTRUCTIVAS DE DRENAJES S.P.A.",
+    "aliases": [
+      "SOLUCIONES CONSTRUCTIVAS DE DRENAJES SPA",
+      "SOLUCIONES CONSTRUCTIVAS DE DRENAJES S.P.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76008937-0",
+    "primary_name": "COMERCIAL E INDUSTRIAL CHILE MADERAS LTDA.",
+    "aliases": [
+      "COMERCIAL E INDUSTRIAL CHILE MADERAS LTDA.",
+      "COMERC. E INDUSTRIAL CHILE MADERAS LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76764263-6",
+    "primary_name": "INTELIGENCIA TÉCNICA CONSULTORES SPA",
+    "aliases": [
+      "INTELIGENCIA TÉCNICA CONSULTORES SPA",
+      "ITERO SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "99584090-1",
+    "primary_name": "SOLUCIONES CONSTRUCTIVAS DESIGN SPA",
+    "aliases": [
+      "SOLUCIONES CONSTRUCTIVAS DESIGN SPA",
+      "SOLUCIONES CONSTRUCTIVAS DESIGN SA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "78101780-9",
+    "primary_name": "COMERCIALIZADORA LARRAIN Y CIA LTDA",
+    "aliases": [
+      "NAN",
+      "COMERCIALIZADORA LARRAIN Y CIA LTDA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96824110-9",
+    "primary_name": "DISAL CHILE SANITARIOS PORTABLES LIMITADA.",
+    "aliases": [
+      "DISAL CHILE SANITARIOS PORTABLES LIMITADA.",
+      "AMBIPAR ENVIRONMENT CHILE LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96562640-9",
+    "primary_name": "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S.A.",
+    "aliases": [
+      "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S A",
+      "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S.A.",
+      "NAN"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "89689900-7",
+    "primary_name": "DE VICENTE PLASTICOS S.A.",
+    "aliases": [
+      "DE VICENTE PLASTICOS S.A.",
+      "DVP S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76037308-7",
+    "primary_name": "AREVALO Y NAVARRO SOCIEDAD LTDA",
+    "aliases": [
+      "NAN",
+      "AREVALO Y NAVARRO SOCIEDAD LTDA",
+      "AREVALO Y NAVARRO SOC LTDA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "99061000-2",
+    "primary_name": "LIBERTY COMPAÑÍA DE SEGUROS GENERALES S.A.",
+    "aliases": [
+      "HDI SEGUROS S.A.",
+      "LIBERTY COMPAÑÍA DE SEGUROS GENERALES S.A.",
+      "LIBERTY COMPAÑIA DE SEGUROS GENERALES S.A.",
+      "LIBERTY COMPAÑIA DE SEGUROS GENERALES S.A"
+    ],
+    "confidence": 0.4
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76775284-9",
+    "primary_name": "CREATIVE CAMPUS SPA",
+    "aliases": [
+      "CREATIVE CAMPUS SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76568660-1",
+    "primary_name": "EASY RETAIL S.A.",
+    "aliases": [
+      "EASY RETAIL S.A.",
+      "EASY RETAIL S A"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "88147600-2",
+    "primary_name": "HORMIGONES TRANSEX LTDA.",
+    "aliases": [
+      "HORMIGONES TRANSEX LTDA",
+      "HORMIGONES TRANSEX LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76451399-1",
+    "primary_name": "COMERCIALIZADORA LARRAIN E HIJOS Y COMPANIA LIMITADA",
+    "aliases": [
+      "COMERCIALIZADORA LARRAIN E HIJOS Y COMPANIA LIMITADA",
+      "COMERCIALIZADORA LARRAIN E HIJOS Y CIA LTDA",
+      "COMERCIALIZADORA LARRAIN E HIJOS Y CIA. LTDA."
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76821330-5",
+    "primary_name": "IMPERIAL S.A.",
+    "aliases": [
+      "IMPERIAL S.A.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "92642000-3",
+    "primary_name": "ARTEL. S.A.I.C.",
+    "aliases": [
+      "ARTEL S.A.",
+      "ARTEL. S.A.I.C.",
+      "ARTEL S.A"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76927160-0",
+    "primary_name": "STUDIO GROUP SPA.",
+    "aliases": [
+      "STUDIO GROUP SPA.",
+      "STUDIO GROUP SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76484630-3",
+    "primary_name": "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY LTDA.",
+    "aliases": [
+      "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY LTDA.",
+      "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY EIRL"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76080240-9",
+    "primary_name": "CORTINAS METALICAS CORMET LIMITADA",
+    "aliases": [
+      "CORTINAS METALICAS CORMET LIMITADA",
+      "CORMET SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "65109841-6",
+    "primary_name": "FUNDACION EDUCACIONAL REGINA MUNDI",
+    "aliases": [
+      "NAN",
+      "FUNDACION EDUCACIONAL REGINA MUNDI"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76278246-4",
+    "primary_name": "ACEROS Y CUBIERTAS NACIONALES S.A.",
+    "aliases": [
+      "ACEROS Y CUBIERTAS NACIONALES S.A.",
+      "ACEROS Y CUBIERTAS NACIONALES SA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96556070-K",
+    "primary_name": "ALUMINIOS ARMADOS S.A.",
+    "aliases": [
+      "ALUMINIOS ARMADOS S A",
+      "ALUMINIOS ARMADOS S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "81201000-K",
+    "primary_name": "CENCOSUD RETAIL S.A.",
+    "aliases": [
+      "CENCOSUD RETAIL S.A",
+      "CENCOSUD RETAIL S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76066593-2",
+    "primary_name": "EUROPERFILES SANTIAGO S.A.",
+    "aliases": [
+      "EUROPERFILES SANTIAGO S.A.",
+      "VENTEKO S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76237019-0",
+    "primary_name": "MAXI MOBILITY CHILE II SPA",
+    "aliases": [
+      "MAXI MOBILITY CHILE II SPA",
+      "MAXI MOBILITY II SPA",
+      "NAN"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "89462400-0",
+    "primary_name": "PLASTICOS BIO BIO S.A.",
+    "aliases": [
+      "PLASTICOS BIO BIO S.A.",
+      "PBB S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76065559-7",
+    "primary_name": "OSSA SISTEMAS CONTRA INCENDIO LIMITADA",
+    "aliases": [
+      "OSSA SISTEMAS CONTRA INCENDIO LIMITADA",
+      "OSSA SISTEMAS CONTRA INCENDIO SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76446431-1",
+    "primary_name": "CENTRAL FRIENDS COFFEE HOUSE S.P.A.",
+    "aliases": [
+      "CENTRAL FRIENDS COFFEE HOUSE S.P.A.",
+      "NAN",
+      "CENTRAL FRIENDS COFFEE HOUSE SPA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77007071-6",
+    "primary_name": "CENTRAL FRIENDS CIUDAD EMPRESARIAL SPA",
+    "aliases": [
+      "NAN",
+      "CENTRAL FRIENDS CIUDAD EMPRESARIAL SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "10037150-2",
+    "primary_name": "CARLOS GUILLERMO HERMOSILLA RIOS",
+    "aliases": [
+      "CARLOS GUILLERMO HERMOSILLA RIOS",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76913034-9",
+    "primary_name": "PESTBUSTERS CONTROL DE PLAGAS SPA",
+    "aliases": [
+      "PESTBUSTERS CONTROL DE PLAGAS SPA",
+      "GRUPO PB SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76991583-4",
+    "primary_name": "FAI PINEDA SPA",
+    "aliases": [
+      "FAI PINEDA SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96800570-7",
+    "primary_name": "ENEL DISTRIBUCIÓN CHILE S.A.",
+    "aliases": [
+      "ENEL DISTRIBUCION CHILE S.A",
+      "ENEL DISTRIBUCIÓN CHILE S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "70200200-1",
+    "primary_name": "COMPANIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+    "aliases": [
+      "COMPANIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+      "CIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+      "NAN"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "71309800-0",
+    "primary_name": "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE MAIPU",
+    "aliases": [
+      "NAN",
+      "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE",
+      "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE MAIPU"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76991587-7",
+    "primary_name": "FAI COLON SPA",
+    "aliases": [
+      "FAI COLON SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77057368-8",
+    "primary_name": "INMOBILIARIA REY ALBERTO SPA",
+    "aliases": [
+      "INMOBILIARIA REY ALBERTO SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76243212-9",
+    "primary_name": "INMOBILIARIA E INVERSIONES VERNON LIMITADA",
+    "aliases": [
+      "NAN",
+      "INMOBILIARIA E INVERSIONES VERNON LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76079342-6",
+    "primary_name": "MASAVAL SAGR",
+    "aliases": [
+      "MASAVAL SAGR",
+      "MASAVAL"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "56014120-3",
+    "primary_name": "560141203",
+    "aliases": [
+      "560141203",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "93278000-3",
+    "primary_name": "CIA COM E IND DE FE Y MET FERROGLOBO S.A.",
+    "aliases": [
+      "CIA COM E IND DE FE Y MET FERROGLOBO S A",
+      "NAN",
+      "CIA COM E IND DE FE Y MET FERROGLOBO S.A."
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76874069-0",
+    "primary_name": "INSURTECH SPA",
+    "aliases": [
+      "INSURTECH SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "65059721-4",
+    "primary_name": "INSTITUTO DE NEUROCIENCIA BIOMEDICA",
+    "aliases": [
+      "INSTITUTO DE NEUROCIENCIA BIOMEDICA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96767460-5",
+    "primary_name": "CIUDAD EMPRESARIAL S.A.",
+    "aliases": [
+      "CIUDAD EMPRESARIAL S.A.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "15639030-5",
+    "primary_name": "PABLO ANDRES THOMPSON LOPEZ",
+    "aliases": [
+      "NAN",
+      "PABLO ANDRES THOMPSON LOPEZ"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "78424310-9",
+    "primary_name": "SOCIEDAD DISTRIBUIDORA Y COMERCIAL PI LIMITADA",
+    "aliases": [
+      "SOCIEDAD DISTRIBUIDORA Y COMERCIAL PI LIMITADA",
+      "SOC DISTRIBUIDORA Y COMERCIAL PI LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76993875-3",
+    "primary_name": "FAI URREJOLA SPA",
+    "aliases": [
+      "NAN",
+      "FAI URREJOLA SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96999930-7",
+    "primary_name": "KITCHEN CENTER SPA",
+    "aliases": [
+      "KITCHEN CENTER",
+      "KITCHEN CENTER SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "99530740-5",
+    "primary_name": "GB INGENIERIA EN FIJACIONES S.A.",
+    "aliases": [
+      "GB INGENIERIA EN FIJACIONES S.A.",
+      "GB INGENIERÍA EN FIJACIONES S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "23697539-8",
+    "primary_name": "QUELER MIRANDA TELLO",
+    "aliases": [
+      "NAN",
+      "QUELER MIRANDA TELLO"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76618549-5",
+    "primary_name": "INMOBILIARIA GENERAL JOFRE SPA",
+    "aliases": [
+      "NAN",
+      "INMOBILIARIA GENERAL JOFRE SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "61107000-4",
+    "primary_name": "61107000-4-INSTITUTO NACIONAL DE DEPORTES",
+    "aliases": [
+      "INSTITUTO NACIONAL DE DEPORTES DE CHILE",
+      "NAN",
+      "INSTITUTO DE DEPORTES DE CHILE",
+      "61107000-4-INSTITUTO NACIONAL DE DEPORTES"
+    ],
+    "confidence": 0.4
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76120063-1",
+    "primary_name": "MULTIAVAL DOS S.A.G.R.",
+    "aliases": [
+      "FINFAST S.A.G.R.",
+      "MULTIAVAL DOS S.A.G.R."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "92745000-3",
+    "primary_name": "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK HNOS S A",
+    "aliases": [
+      "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK HNOS S A",
+      "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK H"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "56068960-8",
+    "primary_name": "COMUNIDAD EDUARDO DE LA BARRA II",
+    "aliases": [
+      "COMUNIDAD EDUARDO DE LA BARRA II",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77122372-9",
+    "primary_name": "FAI RUPANCO SPA",
+    "aliases": [
+      "FAI RUPANCO SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76025649-8",
+    "primary_name": "COMERCIALIZADORA Y DISTRIBUIDORA GEO HIDRAULICA LIMITADA",
+    "aliases": [
+      "GEOHIDRÁULICA LTDA.",
+      "COMERCIALIZADORA Y DISTRIBUIDORA GEO HIDRAULICA LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76376116-9",
+    "primary_name": "COMERCIALIZADORA MIKO LIMITADA",
+    "aliases": [
+      "COMERCIALIZADORA MIKO LIMITADA",
+      "ENKO CHILE SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76230125-3",
+    "primary_name": "CONSTRUCTORA DE VICENTE EDIFICACION SA",
+    "aliases": [
+      "CONSTRUCTORA DE VICENTE EDIFICACION SA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76574030-4",
+    "primary_name": "DINAMMO CONSULTORES LIMITADA",
+    "aliases": [
+      "DINAMMO CONSULTORES LTDA",
+      "DINAMMO CONSULTORES LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77081172-4",
+    "primary_name": "FAI CENTRAL SPA",
+    "aliases": [
+      "FAI CENTRAL SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77081167-8",
+    "primary_name": "FAI FRANKLIN SPA",
+    "aliases": [
+      "NAN",
+      "FAI FRANKLIN SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76171745-6",
+    "primary_name": "BARRIOS Y WURMANN ARQUITECTOS ASOCIADOS LIMITADA",
+    "aliases": [
+      "BARRIOS Y WURMANN ARQUITECTOS ASOCIADOS LIMITADA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "85969100-5",
+    "primary_name": "MANUFACTURAS ELÉCTRICAS BYP LTDA.",
+    "aliases": [
+      "MANUFACTURAS ELÉCTRICAS BYP LTDA.",
+      "MANUFACTURAS ELECTRICAS BYP LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "83162400-0",
+    "primary_name": "EMARESA INGENIEROS Y REPRESENTACIONES S.A.",
+    "aliases": [
+      "EMARESA INGENIEROS Y REPRESENTACIONES S.A.",
+      "EMARESA INGENIEROS Y REPRESENTACIONES S.A"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "9561398-5",
+    "primary_name": "PATRICIO VIDAL AMAYA",
+    "aliases": [
+      "NAN",
+      "PATRICIO VIDAL AMAYA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76761005-K",
+    "primary_name": "INMOBILIARIA SANTA CRISTINA SPA",
+    "aliases": [
+      "INMOBILIARIA SANTA CRISTINA SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76058018-K",
+    "primary_name": "PL EDIFICACIONES LIMITADA",
+    "aliases": [
+      "PL EDIFICACIONES LIMITADA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "65108431-8",
+    "primary_name": "FUNDACION EDUCACIONAL SANTA CATALINA LABOURE",
+    "aliases": [
+      "NAN",
+      "FUNDACION EDUCACIONAL SANTA CATALINA LABOURE"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "78144260-7",
+    "primary_name": "BUSES AHUMADA LTDA",
+    "aliases": [
+      "BUSES AHUMADA LTDA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "9477462-4",
+    "primary_name": "LUIS CARLOS CRISTINO DE WITT",
+    "aliases": [
+      "NAN",
+      "LUIS CARLOS CRISTINO DE WITT"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76028265-0",
+    "primary_name": "COMERCIAL E INMOBILIARIA VISAN LIMITADA",
+    "aliases": [
+      "COMERCIAL E INMOBILIARIA VISAN LIMITADA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "87590300-4",
+    "primary_name": "CARLOS BOLOMEY SPA",
+    "aliases": [
+      "CARLOS BOLOMEY SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "79588870-5",
+    "primary_name": "ESMAX DISTRIBUCION SPA",
+    "aliases": [
+      "NAN",
+      "ESMAX DISTRIBUCION SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77363661-3",
+    "primary_name": "FAI LAS DALIAS SPA",
+    "aliases": [
+      "NAN",
+      "FAI LAS DALIAS SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76882505-K",
+    "primary_name": "INMOBILIARIA QUINCHAMALI SPA",
+    "aliases": [
+      "NAN",
+      "INMOBILIARIA QUINCHAMALI SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96767450-8",
+    "primary_name": "GESTORA DE PATRIMONIOS S.A.",
+    "aliases": [
+      "NAN",
+      "GESTORA DE PATRIMONIOS S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76025260-3",
+    "primary_name": "SOCIEDAD PROFESIONAL BECERRA Y GONZALEZ LTDA.",
+    "aliases": [
+      "SOC PROFESIONAL BECERRA & GONZALEZ LIMITADA",
+      "NAN",
+      "SOCIEDAD PROFESIONAL BECERRA Y GONZALEZ LTDA."
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76812664-K",
+    "primary_name": "COMERCIALIZADORA DE MATERIALES DE CONSTRUCCION, SERVICIO DE TRANSPORTE",
+    "aliases": [
+      "D&C CONCRETE SPA",
+      "COMERCIALIZADORA DE MATERIALES DE CONSTRUCCION, SERVICIO DE TRANSPORTE"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77110413-4",
+    "primary_name": "INVERSIONES Y ASESORIAS CALIFORNIA SPA",
+    "aliases": [
+      "INVERSIONES Y ASESORIAS CALIFORNIA SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76875199-4",
+    "primary_name": "CONSTRUCTORA RODRIGO ALBERTO MENESES MAYER E.I.R.L.",
+    "aliases": [
+      "AV BDO. OHIGGINS 4050 OF",
+      "CONSTRUCTORA RODRIGO ALBERTO MENESES MAYER E.I.R.L."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76546016-6",
+    "primary_name": "IMPORTADORA CONVERTIDORA Y COMERCIALIZADORA DE PRODUCTOS PLASTICOS VALPLAST SPA",
+    "aliases": [
+      "IMPORTADORA CONVERTIDORA Y COMERCIALIZADORA DE PRODUCTOS PLASTICOS VALPLAST SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76207727-2",
+    "primary_name": "BOLOMEY INVERSIONES LTDA",
+    "aliases": [
+      "NAN",
+      "BOLOMEY INVERSIONES LTDA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "80851400-1",
+    "primary_name": "FERRETERIA ANTOFAGASTA LTDA.",
+    "aliases": [
+      "FERRETERIA ANTOFAGASTA LTDA.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "14532347-9",
+    "primary_name": "ANDRES PATRICIO SILVA MUNSTER",
+    "aliases": [
+      "ANDRES PATRICIO SILVA MUNSTER",
+      "NAN",
+      "ANDRES SILVA MUNSTER"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "96973660-8",
+    "primary_name": "INMOBILIARIA LOS TRONCOS",
+    "aliases": [
+      "NAN",
+      "INMOBILIARIA LOS TRONCOS"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76978166-8",
+    "primary_name": "CONSTRUCCIONES LUIS ISAÍAS GAETE NOVOA E.I.R.L.",
+    "aliases": [
+      "CONSTRUCCIONES LGN SPA",
+      "CONSTRUCCIONES LUIS ISAÍAS GAETE NOVOA E.I.R.L."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77558346-0",
+    "primary_name": "ELECTROMECANICA CLAUDIA GOMEZ NAVEA E.I.R.L.",
+    "aliases": [
+      "ELECTROMECANICA CLAUDIA GOMEZ NAVEA E.I.R.L.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76071429-1",
+    "primary_name": "GOMEZ Y COMPANIA LIMITADA",
+    "aliases": [
+      "GOMEZ Y COMPANIA LIMITADA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "70000670-0",
+    "primary_name": "CONGREGACION DEL BUEN PASTOR",
+    "aliases": [
+      "CONGREGACION DEL BUEN PASTOR",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77257623-4",
+    "primary_name": "FAI MIRIARTE SPA",
+    "aliases": [
+      "FAI MIRIARTE SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77608458-1",
+    "primary_name": "INMOBILIARIA MIRADOR LAGUNA SPA",
+    "aliases": [
+      "INMOBILIARIA MIRADOR LAGUNA SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "70012280-8",
+    "primary_name": "FUNDACION DE BENEFICENCIA REGAZO",
+    "aliases": [
+      "FUNDACION DE BENEFICENCIA REGAZO",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76425116-4",
+    "primary_name": "GANO ITOUCH GANO EXCEL SPA",
+    "aliases": [
+      "NAN",
+      "GANO ITOUCH GANO EXCEL SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77147322-9",
+    "primary_name": "ATAM INGENIERIA Y CONSTRUCCION",
+    "aliases": [
+      "ATAM INGENIERIA Y CONSTRUCCION",
+      "NAN",
+      "ATAM DISENO Y CONSTRUCCION SPA"
+    ],
+    "confidence": 0.3
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "65188697-K",
+    "primary_name": "ADMINISTRACION GENERAL CLUB LAGUNA",
+    "aliases": [
+      "ADMINISTRACION GENERAL CLUB LAGUNA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76152061-K",
+    "primary_name": "INVERSIONES E INMOBILIARIA PLAENGE CHILE LIMITADA",
+    "aliases": [
+      "INVERSIONES E INMOBILIARIA PLAENGE CHILE LIMITADA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77114777-1",
+    "primary_name": "SUNGROW POWER CHILE SPA",
+    "aliases": [
+      "NAN",
+      "SUNGROW POWER CHILE SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76449081-9",
+    "primary_name": "ASICS CHILE SPA",
+    "aliases": [
+      "ASICS CHILE SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76061914-0",
+    "primary_name": "GARCIA Y COMPAÑIA LTDA.",
+    "aliases": [
+      "GARCIA Y COMPAÑIA LTDA",
+      "GARCIA Y COMPAÑIA LTDA."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "65175316-3",
+    "primary_name": "CORPORACION EDUCACIONAL REGACITO",
+    "aliases": [
+      "NAN",
+      "CORPORACION EDUCACIONAL REGACITO"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76873710-K",
+    "primary_name": "INSTITUTO JOHN F. KENNEDY CENTRO DE CAPACITACION SA",
+    "aliases": [
+      "INSTITUTO JOHN F. KENNEDY CENTRO DE CAPACITACION SA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "69061500-2",
+    "primary_name": "ILUSTRE MUNICIPALIDAD DE VILLA ALEMANA",
+    "aliases": [
+      "NAN",
+      "ILUSTRE MUNICIPALIDAD DE VILLA ALEMANA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "88213400-8",
+    "primary_name": "EMPRESA CONSTRUCTORA DESCO S.A.",
+    "aliases": [
+      "NAN",
+      "EMPRESA CONSTRUCTORA DESCO S.A."
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76083728-8",
+    "primary_name": "CAI S.A.",
+    "aliases": [
+      "CAI S.A.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77096778-3",
+    "primary_name": "INMOBILIARIA SAN EUGENIO SPA",
+    "aliases": [
+      "INMOBILIARIA SAN EUGENIO SPA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76734336-1",
+    "primary_name": "INMOBILIARIA ANTOFAGASTA LTDA.",
+    "aliases": [
+      "INMOBILIARIA ANTOFAGASTA LTDA.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76497650-9",
+    "primary_name": "CHUNLING WANG IMPORTADORA COMERCIALIZADORA EIRL",
+    "aliases": [
+      "NAN",
+      "CHUNLING WANG IMPORTADORA COMERCIALIZADORA EIRL"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76270229-0",
+    "primary_name": "TCI CHILE SPA",
+    "aliases": [
+      "NAN",
+      "TCI CHILE SPA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76318496-K",
+    "primary_name": "INMOBILIARIA ROSARIO LTDA",
+    "aliases": [
+      "INMOBILIARIA ROSARIO LTDA",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "76350751-3",
+    "primary_name": "INVERSIONES ALVAREZ E HIJOS LIMITADA",
+    "aliases": [
+      "NAN",
+      "INVERSIONES ALVAREZ E HIJOS LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "77535354-6",
+    "primary_name": "CENTRO PADEL LIMITADA",
+    "aliases": [
+      "NAN",
+      "CENTRO PADEL LIMITADA"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "vendor_alias",
+    "rut": "99554390-7",
+    "primary_name": "SABA ESTACIONAMIENTOS DE CHILE S.A.",
+    "aliases": [
+      "SABA ESTACIONAMIENTOS DE CHILE S.A.",
+      "NAN"
+    ],
+    "confidence": 0.2
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Honorario",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Factura compra",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Gasto",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Previred",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 0.72
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Movimiento bancario",
+    "recommended_tolerance": 0.9986249551125003,
+    "max_tolerance": 0.9999880409114932,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Factura venta",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Impuesto",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 0.94
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Remuneración",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": NaN,
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 0.6
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "unknown",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 1.0
+  },
+  {
+    "type": "amount_tolerance",
+    "document_type": "Boleta tercero",
+    "recommended_tolerance": 0.0,
+    "max_tolerance": 0.0,
+    "confidence": 0.06
+  }
+]

@@ -656,7 +656,8 @@ def api_ar_map_confirm():
                 cur.execute("PRAGMA table_info(ar_project_rules)")
                 cols = {c[1] for c in cur.fetchall()}
                 base_conf = 0.9 if kind.startswith("drive_path") else 0.88
-                if "rule_type" in cols and "confidence" in cols:
+                
+                if "rule_type" in cols and "confidence" in cols and "created_by" in cols:
                     rule_type = (
                         "drive_path" if kind.startswith("drive_path") else "alias_regex"
                     )
@@ -664,16 +665,26 @@ def api_ar_map_confirm():
                         "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by, rule_type, confidence) VALUES(?,?,?,?,?,?)",
                         (kind, pattern, project_id, user, rule_type, base_conf),
                     )
-                else:
+                elif "created_by" in cols:
                     cur.execute(
                         "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
                         (kind, pattern, project_id, user),
                     )
+                else:
+                    # Fallback to minimal schema (no created_by)
+                    cur.execute(
+                        "INSERT INTO ar_project_rules(kind, pattern, project_id) VALUES(?,?,?)",
+                        (kind, pattern, project_id),
+                    )
             except sqlite3.Error:
-                cur.execute(
-                    "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
-                    (kind, pattern, project_id, user),
-                )
+                # Ultimate fallback - try minimal schema
+                try:
+                    cur.execute(
+                        "INSERT INTO ar_project_rules(kind, pattern, project_id) VALUES(?,?,?)",
+                        (kind, pattern, project_id),
+                    )
+                except sqlite3.Error:
+                    pass  # Give up on this rule
             try:
                 _track_alias_candidate(cur, pattern, project_id)
             except sqlite3.Error:
@@ -872,7 +883,7 @@ def api_ar_rules_stats():  # pragma: no cover
     avoid heavy startup cost. Returns 0 / null values if tables missing.
     """
     import os
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "chipax_data.db")
     if not os.path.isabs(db_path):
@@ -914,9 +925,183 @@ def api_ar_rules_stats():  # pragma: no cover
     covered_names = int(rows[0][0]) if rows else 0
     out["customer_names_with_rule"] = covered_names
     out["customer_name_rule_coverage"] = round(covered_names / distinct_names, 4) if distinct_names else None
-    cutoff = (datetime.utcnow() - timedelta(days=30)).isoformat(timespec="seconds")
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(timespec="seconds")
     rows = safe("SELECT COUNT(1) FROM ar_map_events WHERE created_at >= ?", (cutoff,))
     out["recent_events_30d"] = int(rows[0][0]) if rows else 0
-    out["generated_at"] = datetime.utcnow().isoformat() + "Z"
+    out["generated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
     conn.close()
     return jsonify(out)
+
+
+@bp.post("/api/ar-map/bulk_assign")
+def api_ar_map_bulk_assign():
+    """
+    Bulk assign projects to multiple sales invoices.
+    
+    Body: {
+        assignments: [{ invoice_id: int, project_id: str }, ...],
+        create_rules?: bool,
+        user_id?: str
+    }
+    
+    Returns: { ok: bool, assigned: int, failed: int, rules_created: int }
+    """
+    body = request.get_json(force=True) or {}
+    assignments = body.get("assignments") or []
+    create_rules = bool(body.get("create_rules", False))
+    user_id = (body.get("user_id") or "system").strip()
+    
+    if not isinstance(assignments, list) or not assignments:
+        return jsonify({"ok": False, "error": "assignments must be non-empty list"}), 400
+    
+    con = _db(_get_db_path())
+    try:
+        cur = con.cursor()
+        
+        # Ensure tables exist
+        cur.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS ar_project_rules(
+              id INTEGER PRIMARY KEY,
+              kind TEXT NOT NULL,
+              pattern TEXT NOT NULL,
+              project_id TEXT NOT NULL,
+              created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+              created_by TEXT
+            );
+            CREATE TABLE IF NOT EXISTS ar_map_events(
+              id INTEGER PRIMARY KEY,
+              created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+              user_id TEXT,
+              payload TEXT
+            );
+            """
+        )
+        
+        assigned = 0
+        failed = 0
+        rules_created = 0
+        customer_patterns = {}  # customer_name -> project_id for rule creation
+        
+        for assignment in assignments:
+            if not isinstance(assignment, dict):
+                failed += 1
+                continue
+                
+            invoice_id = assignment.get("invoice_id")
+            project_id = assignment.get("project_id")
+            
+            if not invoice_id or not project_id:
+                failed += 1
+                continue
+            
+            try:
+                invoice_id_int = int(invoice_id)
+                project_id_str = str(project_id)
+            except (TypeError, ValueError):
+                failed += 1
+                continue
+            
+            # Update invoice
+            try:
+                cur.execute(
+                    "UPDATE sales_invoices SET project_id = ? WHERE id = ?",
+                    (project_id_str, invoice_id_int)
+                )
+                if cur.rowcount > 0:
+                    assigned += 1
+                    
+                    # Collect customer name for rule creation
+                    if create_rules:
+                        cur.execute(
+                            "SELECT customer_name FROM sales_invoices WHERE id = ?",
+                            (invoice_id_int,)
+                        )
+                        row = cur.fetchone()
+                        if row and row[0] and row[0].strip():
+                            customer_name = row[0].strip()
+                            # Only create rule if pattern doesn't exist for this project
+                            if customer_name not in customer_patterns:
+                                customer_patterns[customer_name] = project_id_str
+                else:
+                    failed += 1
+            except sqlite3.Error:
+                failed += 1
+        
+        # Create rules from collected customer patterns
+        if create_rules and customer_patterns:
+            _ensure_alias_candidates(cur)
+            for customer_name, project_id in customer_patterns.items():
+                try:
+                    # Check if rule already exists
+                    cur.execute(
+                        "SELECT 1 FROM ar_project_rules WHERE pattern = ? AND project_id = ? AND kind = ? LIMIT 1",
+                        (customer_name, project_id, "customer_name_like")
+                    )
+                    if not cur.fetchone():
+                        # Extended columns may exist; attempt insertion with rule_type/confidence
+                        try:
+                            cur.execute("PRAGMA table_info(ar_project_rules)")
+                            cols = {c[1] for c in cur.fetchall()}
+                            if "rule_type" in cols and "confidence" in cols:
+                                cur.execute(
+                                    "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by, rule_type, confidence) VALUES(?,?,?,?,?,?)",
+                                    ("customer_name_like", customer_name, project_id, user_id, "alias_regex", 0.88)
+                                )
+                            else:
+                                cur.execute(
+                                    "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
+                                    ("customer_name_like", customer_name, project_id, user_id)
+                                )
+                        except sqlite3.Error:
+                            cur.execute(
+                                "INSERT INTO ar_project_rules(kind, pattern, project_id, created_by) VALUES(?,?,?,?)",
+                                ("customer_name_like", customer_name, project_id, user_id)
+                            )
+                        
+                        rules_created += 1
+                        
+                        # Track alias candidate
+                        try:
+                            _track_alias_candidate(cur, customer_name, project_id)
+                        except sqlite3.Error:
+                            pass
+                            
+                except sqlite3.Error:
+                    pass
+        
+        # Log bulk event
+        payload = {
+            "action": "bulk_assign",
+            "assignments": assignments,
+            "create_rules": create_rules,
+            "results": {
+                "assigned": assigned,
+                "failed": failed,
+                "rules_created": rules_created
+            }
+        }
+        cur.execute(
+            "INSERT INTO ar_map_events(user_id, payload) VALUES(?,?)",
+            (user_id, json.dumps(payload, ensure_ascii=False))
+        )
+        
+        con.commit()
+        return jsonify({
+            "ok": True,
+            "assigned": assigned,
+            "failed": failed,
+            "rules_created": rules_created
+        })
+        
+    except Exception as e:
+        con.close()
+        return jsonify({"ok": False, "error": str(e)}), 500
+    finally:
+        if 'con' in locals():
+            con.close()
+
+
+@bp.get("/api/ar-map/test")
+def test_endpoint():
+    return jsonify({"message": "Test endpoint working"})

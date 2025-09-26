@@ -3,7 +3,7 @@ import gzip
 import time
 from pathlib import Path
 
-from backend.conciliacion_api_clean import _record_latency, _load_persisted
+from conciliacion_api_clean import _record_latency, _load_persisted
 
 
 def test_latency_persistence_gzip_threshold(tmp_path, monkeypatch):

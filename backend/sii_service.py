@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     PrivateFormat = None  # type: ignore
     NoEncryption = None  # type: ignore
 
-from backend.db_utils import db_conn
+from db_utils import db_conn
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS sii_tokens (

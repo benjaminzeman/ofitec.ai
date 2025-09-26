@@ -2,7 +2,7 @@ import os
 import sqlite3
 import tempfile
 
-from backend.server import app
+from server import app
 
 # Cada test obtiene su propia BD temporal
 

@@ -1,8 +1,8 @@
 import os
 import uuid
 from pathlib import Path
-from backend import server
-from backend.db_utils import db_conn
+import server
+from db_utils import db_conn
 
 def _isolated_db():
     data_dir = Path(__file__).resolve().parent.parent.parent / "data"

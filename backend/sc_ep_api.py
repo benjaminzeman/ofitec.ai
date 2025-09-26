@@ -34,19 +34,20 @@ sc_ep_bp = Blueprint("sc_ep", __name__)
 
 
 def _db_path() -> str:
-    if existing_db_path:
+    import os as _os
+    from pathlib import Path as _Path
+
+    raw = _os.getenv("DB_PATH")
+    base = _Path(__file__).resolve().parent.parent
+    if raw:
+        p = _Path(raw)
+        if not p.is_absolute():
+            p = base / p
         try:
-            p = existing_db_path()
-            if p:
-                return p
-        except (OSError, RuntimeError, ValueError, TypeError):
+            return str(p.resolve())
+        except OSError:
             pass
-    if default_db_path:
-        try:
-            return default_db_path()
-        except (OSError, RuntimeError, ValueError, TypeError):
-            pass
-    return "data/chipax_data.db"
+    return str((base / "data" / "chipax_data.db").resolve())
 
 
 def db() -> sqlite3.Connection:

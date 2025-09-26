@@ -1,9 +1,9 @@
-from backend.server import app
+from server import app
 
 
 def test_latency_window_and_reset_metrics(monkeypatch):
     client = app.test_client()
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
 
     # initial metrics capture

@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5555:5555"
+    env_file:
+      - ./backend/.env
+    environment:
+      RECONCILIACION_CLEAN: "1"
+    volumes:
+      - ./data:/app/data
+    depends_on: []
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    environment:
+      # For browser requests - use IPv4 to avoid ::1 resolution issues
+      NEXT_PUBLIC_API_BASE: http://127.0.0.1:5555/api
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5555
+      # For server-side requests (internal Docker network)
+      BACKEND_URL: http://backend:5555
+    depends_on:
+      - backend

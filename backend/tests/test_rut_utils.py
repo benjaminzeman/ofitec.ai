@@ -1,4 +1,4 @@
-from backend.rut_utils import normalize_rut, validate_rut, compute_dv, format_rut
+from rut_utils import normalize_rut, validate_rut, compute_dv, format_rut
 
 
 def test_compute_dv_basic():

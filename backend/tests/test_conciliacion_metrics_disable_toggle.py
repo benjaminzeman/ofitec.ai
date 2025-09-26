@@ -1,7 +1,7 @@
 def test_metrics_disabled_toggle(monkeypatch):
     import os
     os.environ['RECON_DISABLE_METRICS'] = '1'
-    from backend.server import app
+    from server import app
     client = app.test_client()
     # /metrics should 404
     r = client.get('/api/conciliacion/metrics')

@@ -41,15 +41,15 @@ import hashlib
 import atexit
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from backend.metrics_utils import percentile, histogram, compute_latency_summary
-from backend.config_validation import validate_environment  # type: ignore
+from metrics_utils import percentile, histogram, compute_latency_summary
+from config_validation import validate_environment  # type: ignore
 
 from flask import Blueprint, jsonify, request, current_app
-from backend import reconcile_adapter
-from backend import legacy_compat  # new legacy helpers
+import reconcile_adapter
+import legacy_compat  # new legacy helpers
 
-from backend.db_utils import db_conn  # type: ignore
-from backend.recon_constants import (  # type: ignore
+from db_utils import db_conn  # type: ignore
+from recon_constants import (  # type: ignore
     SUGGEST_MIN_LIMIT,
     SUGGEST_MAX_LIMIT,
     SUGGEST_DEFAULT_LIMIT,
@@ -1160,6 +1160,7 @@ def confirmar():
 @bp.get("/api/conciliacion/historial")
 def historial():
     with db_conn() as conn:
+        # Ensure table exists with all required columns
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS recon_reconciliations (
@@ -1171,6 +1172,14 @@ def historial():
             )
             """
         )
+        
+        # Check if movement_id column exists and add it if it doesn't
+        cursor = conn.execute("PRAGMA table_info(recon_reconciliations)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        if 'movement_id' not in columns:
+            conn.execute("ALTER TABLE recon_reconciliations ADD COLUMN movement_id INTEGER")
+        
         rows = conn.execute(
             "SELECT id, context, confidence, movement_id, created_at FROM recon_reconciliations ORDER BY id DESC LIMIT 100"
         ).fetchall()

@@ -30,7 +30,7 @@ def api_client(app_instance):
 def test_ai_summary_success_cache_and_rate_limit(api_client, monkeypatch):
     # First call should be miss; second identical call should hit cache and not invoke fake_grok_chat again.
     call_counter = {"n": 0}
-    import backend.server as srv
+    import server as srv
 
     def counting_grok(messages):  # noqa: D401
         call_counter["n"] += 1
@@ -53,14 +53,14 @@ def test_ai_summary_success_cache_and_rate_limit(api_client, monkeypatch):
     assert call_counter["n"] == 1  # no extra call
 
     # Rate limit: temporarily set low threshold
-    import backend.server as srv2
+    import server as srv2
     monkeypatch.setattr(srv2, "_RATE_LIMIT_MAX", 1, raising=False)
     r3 = api_client.post("/api/ai/summary", json={})
     assert r3.status_code == 429
 
 
 def test_ai_ask_success_and_async(api_client, monkeypatch):
-    import backend.server as srv
+    import server as srv
     # Patch grok_chat
     responses = ["Primera", "Segunda"]
 

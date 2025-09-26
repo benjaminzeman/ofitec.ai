@@ -3,7 +3,7 @@ import re
 import json
 import gzip
 import tempfile
-from backend.server import app
+from server import app
 
 
 def _fetch_metrics_text(client):

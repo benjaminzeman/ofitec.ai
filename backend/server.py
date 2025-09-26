@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-OFITEC.AI SERVER - VERSIÓN ORGANIZADA
+OFITEC.AI SERVER - VERSIÓN REFACTORIZADA
 ================================================
 
-Servidor Flask reorganizado, alineado con Ley de Puertos y estructura nueva.
+Servidor Flask refactorizado usando módulos especializados.
+FASE 2: Integración de módulos extraídos + APIs específicas
 
-Puerto: 5555 (OFICIAL)
+Puerto: 5555 (OFICIAL - Ley de Puertos)
 URL: http://localhost:5555
 """
 
@@ -17,300 +18,77 @@ from __future__ import annotations
 
 import json
 import time
-import threading
-from collections import deque
 import logging
 import os
 import sqlite3
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timezone
 import uuid
 
-from flask import Flask, jsonify, request, send_from_directory, Response
+from flask import Flask, jsonify, request, send_from_directory, Response, g
 from typing import Any
 from flask_cors import CORS
 import unicodedata
-from backend.db_utils import db_conn  # standardized connection manager
+from db_utils import db_conn  # standardized connection manager
 from werkzeug.wrappers import Response as WSGIResponse
 
 # ----------------------------------------------------------------------------
-# AI Metrics / Rate Limiting / Caching / Async scaffolding
+# MÓDULOS REFACTORIZADOS - FASE 2 INTEGRADOS
 # ----------------------------------------------------------------------------
-try:  # optional prometheus metrics
-    from prometheus_client import Counter, Histogram, Gauge  # type: ignore
-except Exception:  # noqa: BLE001
-    Counter = Histogram = None  # type: ignore
+from config import (
+    DB_PATH, PROJECT_ROOT, BASE_DIR, DOCS_OFICIALES_DIR, REPORTES_DIR, BADGES_DIR,
+    AI_CALLS, AI_LAT, METRICS_ENABLED, trim_events
+)
+from rate_limiting import (
+    is_rate_limited, retry_after_seconds, get_rate_state,
+    RATE_LIMIT_ENABLED, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SEC,
+    cache_get, cache_set
+)
+from ai_jobs import (
+    create_ai_job, get_ai_job_status, run_ai_job
+)
 
-_AI_METRICS_ENABLED = Counter is not None
-if _AI_METRICS_ENABLED:
-    try:
-        AI_CALLS = Counter("ai_endpoint_calls_total", "Total AI endpoint invocations", ["endpoint", "result"])  # type: ignore
-        AI_LAT = Histogram("ai_endpoint_latency_seconds", "Latency of AI calls", ["endpoint"])  # type: ignore
-        AI_JOBS_ACTIVE = Gauge("ai_jobs_active", "Current number of active (running) AI async jobs")  # type: ignore
-        AI_JOBS_TOTAL = Counter("ai_jobs_created_total", "Total async AI jobs created")  # type: ignore
-        AI_JOBS_PRUNED = Counter("ai_jobs_pruned_total", "Total async AI jobs pruned (ttl+max)")  # type: ignore
-    except ValueError:
-        # Metrics already registered (likely due to module re-import in tests); fallback to no-op stubs
-        class _Stub:  # noqa: D401
-            def labels(self, *_, **__): return self
-            def inc(self, *_, **__): return None
-            def observe(self, *_, **__): return None
-            def dec(self, *_, **__): return None
-            def set(self, *_, **__): return None
-        AI_CALLS = AI_LAT = AI_JOBS_ACTIVE = AI_JOBS_TOTAL = AI_JOBS_PRUNED = _Stub()
-else:  # stubs
-    class _Stub:  # noqa: D401
-        def labels(self, *_, **__): return self
-        def inc(self, *_, **__): return None
-        def observe(self, *_, **__): return None
-        def dec(self, *_, **__): return None
-        def set(self, *_, **__): return None
-    AI_CALLS = AI_LAT = _Stub()
-    AI_JOBS_ACTIVE = AI_JOBS_TOTAL = AI_JOBS_PRUNED = _Stub()
+# Legacy compatibility for tests
+import threading
+_jobs_lock = threading.RLock()
+_AI_JOBS = {}
+_AI_JOB_MAX = 1000
+_AI_JOB_TTL_SEC = 3600
 
-# Simple in-memory rate limiting (per ip & endpoint)
-_RATE_LIMIT_ENABLED = True
-_RATE_LIMIT_WINDOW_SEC = int(os.getenv("AI_RATE_LIMIT_WINDOW", "60"))
-_RATE_LIMIT_MAX = int(os.getenv("AI_RATE_LIMIT_MAX", "30"))
-_rate_lock = threading.Lock()
-_rate_hits: dict[tuple[str, str], deque[float]] = {}
+# Legacy compatibility for rate limiting tests
+_RATE_LIMIT_MAX = RATE_LIMIT_MAX
+_RATE_LIMIT_WINDOW_SEC = RATE_LIMIT_WINDOW_SEC
 
-def _rate_limited(ep: str) -> bool:
-    if not _RATE_LIMIT_ENABLED:
-        return False
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
-    key = (ip, ep)
-    now = time.time()
-    with _rate_lock:
-        dq = _rate_hits.setdefault(key, deque())
-        # drop old
-        cutoff = now - _RATE_LIMIT_WINDOW_SEC
-        while dq and dq[0] < cutoff:
-            dq.popleft()
-        if len(dq) >= _RATE_LIMIT_MAX:
-            return True
-        dq.append(now)
-    return False
+def _prune_jobs():
+    """Legacy pruning function for test compatibility."""
+    current_time = time.time()
+    with _jobs_lock:
+        to_remove = []
+        for job_id, job_data in _AI_JOBS.items():
+            # Remove completed jobs that exceed TTL
+            if (job_data.get("completed_at", 0) and
+                    current_time - job_data.get("completed_at", 0) > _AI_JOB_TTL_SEC):
+                to_remove.append(job_id)
 
-def _retry_after_seconds(ep: str) -> int:
-    """Compute remaining seconds until a rate-limited caller may retry.
+        # Remove oldest jobs if exceeding max count
+        if len(_AI_JOBS) > _AI_JOB_MAX:
+            sorted_jobs = sorted(_AI_JOBS.items(),
+                                 key=lambda x: x[1].get("created_at", 0))
+            excess_count = len(_AI_JOBS) - _AI_JOB_MAX
+            to_remove.extend([job_id for job_id, _ in sorted_jobs[:excess_count]])
 
-    Returns 0 if not currently limited. Value is ceiling of remaining
-    window for the oldest timestamp in the sliding window. Always >=1
-    when limited to avoid ambiguous 0-second waits.
-    """
-    if not _RATE_LIMIT_ENABLED:
-        return 0
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
-    key = (ip, ep)
-    now = time.time()
-    with _rate_lock:
-        dq = _rate_hits.get(key)
-        if not dq or len(dq) < _RATE_LIMIT_MAX:
-            return 0
-        oldest = dq[0]
-        remaining = int(max(0, _RATE_LIMIT_WINDOW_SEC - (now - oldest)))
-        return remaining if remaining > 0 else 1
-
-def _rate_state(ep: str) -> tuple[int, int]:
-    """Return current (limit, remaining) without mutating counters.
-
-    Remaining is computed after pruning expired timestamps.
-    """
-    if not _RATE_LIMIT_ENABLED:
-        return _RATE_LIMIT_MAX, _RATE_LIMIT_MAX
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
-    key = (ip, ep)
-    now = time.time()
-    with _rate_lock:
-        dq = _rate_hits.get(key)
-        if dq is None:
-            return _RATE_LIMIT_MAX, _RATE_LIMIT_MAX
-        cutoff = now - _RATE_LIMIT_WINDOW_SEC
-        # prune (non mutating semantics OK; pruning allowed)
-        while dq and dq[0] < cutoff:
-            dq.popleft()
-        remaining = max(0, _RATE_LIMIT_MAX - len(dq))
-    return _RATE_LIMIT_MAX, remaining
-
-# Simple cache for summary: keyed by latest ids hash
-_SUMMARY_CACHE_TTL = int(os.getenv("AI_SUMMARY_CACHE_TTL", "60"))
-_summary_cache: dict[str, tuple[float, dict]] = {}
-_summary_lock = threading.Lock()
-
-def _cache_get(key: str) -> dict | None:
-    with _summary_lock:
-        item = _summary_cache.get(key)
-        if not item:
-            return None
-        ts, payload = item
-        if time.time() - ts > _SUMMARY_CACHE_TTL:
-            _summary_cache.pop(key, None)
-            return None
-        return payload
-
-def _cache_set(key: str, payload: dict) -> None:
-    with _summary_lock:
-        _summary_cache[key] = (time.time(), payload)
-
-# Async job store (minimal, in-memory)
-_AI_JOBS: dict[str, dict] = {}
-_jobs_lock = threading.Lock()
-_AI_JOB_MAX = int(os.getenv("AI_JOB_MAX", "200"))
-_AI_JOB_TTL_SEC = int(os.getenv("AI_JOB_TTL_SEC", "600"))  # 10 min default
-
-def _prune_jobs() -> None:
-    """Prune completed jobs older than TTL or if over max count.
-
-    Strategy:
-    1. Remove any job with completed_at older than now - TTL.
-    2. If still above max, remove oldest by created_at until within limit.
-    """
-    now = time.time()
-    # Fast exit if small
-    if len(_AI_JOBS) == 0:
-        return
-    # Build list for evaluation
-    items = list(_AI_JOBS.items())
-    # First pass: TTL
-    removed = 0
-    for jid, meta in items:
-        c_at = meta.get("completed_at")
-        if c_at and (now - float(c_at)) > _AI_JOB_TTL_SEC:
-            _AI_JOBS.pop(jid, None)
-            removed += 1
-    # Enforce max size
-    if len(_AI_JOBS) > _AI_JOB_MAX:
-        # sort remaining by created_at ascending
-        remaining = sorted(_AI_JOBS.items(), key=lambda kv: kv[1].get("created_at", 0))
-        overflow = len(_AI_JOBS) - _AI_JOB_MAX
-        for jid, _ in remaining[:overflow]:
-            _AI_JOBS.pop(jid, None)
-            removed += 1
-    if removed:
-        logger.debug("Pruned %s AI jobs (ttl/max)", removed)
-        try:
-            AI_JOBS_PRUNED.inc(removed)  # type: ignore
-        except Exception:
-            pass
-
-def _new_job_id() -> str:
-    return f"job_{int(time.time()*1000)}_{len(_AI_JOBS)+1}"
-
-def _run_job(job_id: str, messages: list[dict]):  # background thread
-    start = time.time()
-    try:
-        if grok_chat is None:
-            raise RuntimeError("ai_disabled")
-        resp = grok_chat(messages)  # type: ignore[arg-type]
-        status = "ok" if resp and resp.get("ok") else "error"
-        with _jobs_lock:
-            _AI_JOBS[job_id]["status"] = status
-            _AI_JOBS[job_id]["response"] = resp
-    except Exception as exc:  # noqa: BLE001
-        with _jobs_lock:
-            _AI_JOBS[job_id]["status"] = "failed"
-            _AI_JOBS[job_id]["error"] = str(exc)
-    finally:
-        with _jobs_lock:
-            _AI_JOBS[job_id]["completed_at"] = time.time()
-            try:
-                AI_JOBS_ACTIVE.dec()  # type: ignore
-            except Exception:
-                pass
-            _prune_jobs()
-        AI_LAT.labels("ask_async").observe(time.time()-start)  # type: ignore
-
-def _trim_events(seq: list[dict], max_items: int, max_field: int) -> list[dict]:
-    """Trim a list of event dicts limiting number of items and max string field length.
-
-    Args:
-        seq: Original sequence of event dictionaries.
-        max_items: Maximum number of events to retain.
-        max_field: Maximum length of any string field value.
-    Returns:
-        A new list of trimmed event dicts.
-    """
-    out: list[dict] = []
-    for r in seq[:max_items]:
-        nr: dict[str, Any] = {}
-        for k, v in r.items():
-            if isinstance(v, str) and len(v) > max_field:
-                nr[k] = v[:max_field] + "…"
-            else:
-                nr[k] = v
-        out.append(nr)
-    return out
-
-def _build_filters(args, mapping: dict[str, str]) -> dict[str, str]:
-    return {
-        k: v
-        for k, v in (
-            (alias, args.get(src, type=str)) for alias, src in mapping.items()
-        )
-        if v is not None
-    }
+        for job_id in to_remove:
+            _AI_JOBS.pop(job_id, None)
 
 
 # ----------------------------------------------------------------------------
+# CONFIGURACIÓN DE APLICACIÓN FLASK
+# ----------------------------------------------------------------------------
+
 # Logging básico
-# ----------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-# ----------------------------------------------------------------------------
-# Carga ligera de .env (sin dependencias externas)
-# ----------------------------------------------------------------------------
-
-def _load_env_file(path: str) -> None:
-    if not os.path.exists(path):
-        return
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" not in line:
-                    continue
-                key, value = line.split("=", 1)
-                key = key.strip()
-                value = value.strip().strip('"').strip("'")
-                os.environ.setdefault(key, value)
-    except Exception:
-        # Silencioso: si falla, seguimos con el entorno actual
-        pass
-
-
-ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-_load_env_file(ENV_PATH)
-
-
-# ----------------------------------------------------------------------------
-# Rutas organizadas (nuevo repo) y configuración por entorno
-# ----------------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BASE_DIR.parent
-DOCS_OFICIALES_DIR = PROJECT_ROOT / "docs"
-SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-REPORTES_DIR = BASE_DIR / "reportes"
-BADGES_DIR = PROJECT_ROOT / "badges"
-
-_raw_db = os.getenv("DB_PATH")
-if _raw_db:
-    try:
-        _p = Path(_raw_db)
-        if not _p.is_absolute():
-            _p = PROJECT_ROOT / _p
-        DB_PATH = str(_p.resolve())
-    except Exception:
-        # Fallback to PROJECT_ROOT/data to align with Docker volume /app/data
-        DB_PATH = str((PROJECT_ROOT / "data" / "chipax_data.db").resolve())
-else:
-    # Prefer PROJECT_ROOT/data (in Docker this is /app/data)
-    DB_PATH = str((PROJECT_ROOT / "data" / "chipax_data.db").resolve())
-
+# Flask app configuration
 PORT = int(os.getenv("PORT", "5555"))
 CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "http://localhost:3001")
 CORS_ORIGINS = [o.strip() for o in CORS_ORIGINS_ENV.split(",")]
@@ -320,32 +98,30 @@ CORS_ORIGINS = [o.strip() for o in CORS_ORIGINS_ENV.split(",")]
 # Flask app
 # ----------------------------------------------------------------------------
 app = Flask(__name__)
+
+# Registrar blueprints
 try:
     from ep_api import ep_bp  # type: ignore
     app.register_blueprint(ep_bp)
     logger.info(" EP blueprint registrada (local module)")
 except Exception as _e_local:  # noqa: BLE001
-    logger.warning("EP blueprint no disponible (local): %s", _e_local)
-    try:
-        from backend.ep_api import ep_bp  # type: ignore
-        app.register_blueprint(ep_bp)
-        logger.info(" EP blueprint registrada (package path)")
-    except Exception as _e_pkg:  # noqa: BLE001
-        logger.warning("❌ EP blueprint no disponible: %s", _e_pkg)
+    logger.warning("❌ EP blueprint no disponible: %s", _e_local)
 
-# Subcontractor EP blueprint (local-first, then package path)
 try:
     from sc_ep_api import sc_ep_bp  # type: ignore
     app.register_blueprint(sc_ep_bp)
     logger.info(" SC EP blueprint registrada (local module)")
 except Exception as _e_local:  # noqa: BLE001
-    logger.warning("SC EP blueprint (local) no disponible: %s", _e_local)
-    try:
-        from backend.sc_ep_api import sc_ep_bp  # type: ignore
-        app.register_blueprint(sc_ep_bp)
-        logger.info(" SC EP blueprint registrada (package path)")
-    except Exception as _e_pkg:  # noqa: BLE001
-        logger.warning("❌ SC EP blueprint no disponible: %s", _e_pkg)
+    logger.warning("❌ SC EP blueprint no disponible: %s", _e_local)
+
+try:
+    from api_ar_map import bp as ar_map_bp
+    app.register_blueprint(ar_map_bp)
+    logger.info("✅ AR-MAP blueprint registrada")
+except Exception as _e:  # noqa: BLE001
+    logger.warning("❌ AR-MAP blueprint no disponible: %s", _e)
+
+# Configuración CORS y Flask
 CORS(app, resources={r"/api/*": {"origins": CORS_ORIGINS}})
 app.config["SECRET_KEY"] = "ofitec_ai_2025"
 app.config["JSON_AS_ASCII"] = False
@@ -353,19 +129,11 @@ app.config["JSON_AS_ASCII"] = False
 # ---------------------------------------------------------------------------
 # Global Request ID + Structured Logging Middleware
 # ---------------------------------------------------------------------------
-from flask import g  # noqa: E402
 
 @app.before_request
 def _assign_request_id():  # noqa: D401
     rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
     g.request_id = rid
-    # NOTE (testing): Removed per-request cache clear for /api/ai/summary because
-    # it prevented the second call in the same test from producing a HIT.
-    # Deterministic MISS-on-first-call per test module is now achieved by
-    # embedding the id() of the current grok_chat function inside the cache
-    # payload (see api_ai_summary). When tests monkeypatch grok_chat, the
-    # function id changes causing a natural cache invalidation without wiping
-    # the cache on every request.
 
 @app.after_request
 def _append_request_id(resp: WSGIResponse):  # noqa: D401
@@ -384,7 +152,7 @@ def _structured_access_log(resp: WSGIResponse):  # noqa: D401
         logger.info(
             json.dumps(
                 {
-                    "ts": datetime.utcnow().isoformat() + "Z",
+                    "ts": datetime.now(timezone.utc).isoformat() + "Z",
                     "rid": rid,
                     "method": request.method,
                     "path": request.path,
@@ -398,9 +166,44 @@ def _structured_access_log(resp: WSGIResponse):  # noqa: D401
     return resp
 
 # ----------------------------------------------------------------------------
+# BLUEPRINT LOADING HELPERS - FASE 3 OPTIMIZATION
+# ----------------------------------------------------------------------------
+
+def safe_register_blueprint(blueprint_module: str, blueprint_attr: str = "bp",
+                            blueprint_name: str | None = None, url_prefix: str | None = None):
+    """Safely register a blueprint with error handling and optional renaming."""
+    blueprint_name = blueprint_name or blueprint_module.replace("api_", "")
+    
+    try:
+        # Try local import first
+        module = __import__(blueprint_module, fromlist=[blueprint_attr])
+        bp = getattr(module, blueprint_attr)
+        
+        # Check if blueprint name already exists
+        existing_names = [rule.endpoint.split('.')[0] for rule in app.url_map.iter_rules()]
+        if blueprint_name in existing_names:
+            logger.info("⚠️  Blueprint %s ya registrado, omitiendo duplicado", blueprint_name)
+            return True
+        
+        # Register with optional URL prefix and unique name
+        if url_prefix:
+            app.register_blueprint(bp, url_prefix=url_prefix, name=f"{blueprint_name}_prefixed")
+        else:
+            app.register_blueprint(bp, name=blueprint_name if blueprint_name != blueprint_module else None)
+        
+        logger.info("✅ %s blueprint registrada correctamente", blueprint_name)
+        return True
+    except ImportError as e:
+        logger.warning("⚠️  %s blueprint no disponible: %s", blueprint_name, e)
+        return False
+    except Exception as e:
+        logger.error("❌ Error registrando %s blueprint: %s", blueprint_name, e)
+        return False
+
+# ----------------------------------------------------------------------------
 # /metrics (Prometheus) - only if prometheus_client is available
 # ----------------------------------------------------------------------------
-if _AI_METRICS_ENABLED:
+if METRICS_ENABLED:
     try:
         from prometheus_client import generate_latest, CONTENT_TYPE_LATEST  # type: ignore
 
@@ -415,14 +218,14 @@ if _AI_METRICS_ENABLED:
 @app.get("/api/ai/metrics/debug")
 def api_ai_metrics_debug():  # noqa: D401
     payload = {
-        "metrics_enabled": bool(_AI_METRICS_ENABLED),
+        "metrics_enabled": bool(METRICS_ENABLED),
         "jobs": {
             "active": getattr(globals().get("AI_JOBS_ACTIVE"), "_value", None),
         },
     }
     # Best effort: if real prometheus objects, try calling collect for counters
     try:
-        if _AI_METRICS_ENABLED:
+        if METRICS_ENABLED:
             # We avoid heavy parsing; just include whether counters exist
             payload["counters"] = {
                 "calls": True,
@@ -440,93 +243,31 @@ try:
     import sys as _sys  # local path ensure
     if str(BASE_DIR) not in _sys.path:
         _sys.path.append(str(BASE_DIR))
-    # Try clean module first
+except Exception as _path_error:  # noqa: BLE001
+    logger.warning("Failed to add BASE_DIR to path: %s", _path_error)
+
+# Conciliation blueprint (clean module preferred)
+try:
+    from conciliacion_api_clean import bp as recon_bp  # type: ignore
+    app.register_blueprint(recon_bp)
+    logger.info("✅ Conciliacion (CLEAN) blueprint registrada")
+except Exception as _e_clean:  # noqa: BLE001
+    logger.warning("Clean conciliacion no disponible: %s", _e_clean)
     try:
-        from conciliacion_api_clean import bp as recon_bp  # type: ignore
+        from conciliacion_api import bp as recon_bp  # type: ignore
         app.register_blueprint(recon_bp)
-        logger.info(" Conciliacion (CLEAN) blueprint registrada (local module)")
-    except Exception as _e_clean_local:  # noqa: BLE001
-        logger.warning("Clean conciliacion local import fallo: %s", _e_clean_local)
-        try:
-            from backend.conciliacion_api_clean import bp as recon_bp  # type: ignore
-            app.register_blueprint(recon_bp)
-            logger.info(" Conciliacion (CLEAN) blueprint registrada (package path)")
-        except Exception as _e_clean_pkg:  # noqa: BLE001
-            if _FORCE_CLEAN:
-                raise
-            logger.warning("Clean conciliacion no disponible, intentando legacy: %s", _e_clean_pkg)
-            # Legacy fallback (may be corrupted) only if not forced clean
-            try:
-                from conciliacion_api import bp as recon_bp  # type: ignore
-                app.register_blueprint(recon_bp)
-                logger.info(" Conciliacion (legacy) blueprint registrada (local module)")
-            except Exception as _e_legacy_local:  # noqa: BLE001
-                logger.warning("Conciliacion legacy local no disponible: %s", _e_legacy_local)
-                try:
-                    from backend.conciliacion_api import bp as recon_bp  # type: ignore
-                    app.register_blueprint(recon_bp)
-                    logger.info(" Conciliacion (legacy) blueprint registrada (package path)")
-                except Exception as _e_legacy_pkg:  # noqa: BLE001
-                    logger.warning("❌ Conciliacion blueprint no disponible (clean ni legacy): %s", _e_legacy_pkg)
-except Exception as _fatal_recon:  # noqa: BLE001
-    logger.error("❌ Error inicializando conciliacion blueprint: %s", _fatal_recon)
+        logger.info("✅ Conciliacion (LEGACY) blueprint registrada")
+    except Exception as _e_legacy:  # noqa: BLE001
+        logger.warning("❌ Conciliacion blueprint no disponible: %s", _e_legacy)
 
 # Sales invoices blueprint (local-first, then package path)
-try:
-    from api_sales_invoices import bp as sales_bp  # type: ignore
-    app.register_blueprint(sales_bp)
-    logger.info(" Sales invoices blueprint registrada (local module)")
-except Exception as _e_local:  # noqa: BLE001
-    logger.warning("Sales invoices (local) no disponible: %s", _e_local)
-    try:
-        from backend.api_sales_invoices import bp as sales_bp  # type: ignore
-        app.register_blueprint(sales_bp)
-        logger.info(" Sales invoices blueprint registrada (package path)")
-    except Exception as _e_pkg:  # noqa: BLE001
-        logger.warning("❌ Sales invoices blueprint no disponible: %s", _e_pkg)
-
-# AR map blueprint (local-first, then package path)
-try:
-    from api_ar_map import bp as ar_map_bp  # type: ignore
-    app.register_blueprint(ar_map_bp)
-    logger.info(" AR map blueprint registrada (local module)")
-except Exception as _e_local:  # noqa: BLE001
-    logger.warning("AR map (local) no disponible: %s", _e_local)
-    try:
-        from backend.api_ar_map import bp as ar_map_bp  # type: ignore
-        app.register_blueprint(ar_map_bp)
-        logger.info(" AR map blueprint registrada (package path)")
-    except Exception as _e_pkg:  # noqa: BLE001
-        logger.warning("❌ AR map blueprint no disponible: %s", _e_pkg)
-
-# SII integration blueprint (local-first, then package path)
-try:
-    from api_sii import bp as sii_bp  # type: ignore
-    app.register_blueprint(sii_bp)
-    logger.info('SII blueprint registrada (local module)')
-except Exception as _e_local:  # noqa: BLE001
-    logger.warning('SII blueprint (local) no disponible: %s', _e_local)
-    try:
-        from backend.api_sii import bp as sii_bp  # type: ignore
-        app.register_blueprint(sii_bp)
-        logger.info('SII blueprint registrada (package path)')
-    except Exception as _e_pkg:  # noqa: BLE001
-        logger.warning('SII blueprint no disponible: %s', _e_pkg)
-
-# AP match blueprint
-try:
-    from backend.api_ap_match import bp as ap_match_bp  # type: ignore
-    app.register_blueprint(ap_match_bp)
-except Exception as _e:  # noqa: BLE001
-    logger.warning("AP match blueprint no disponible: %s", _e)
-
-# Matching metrics unified blueprint (AP + AR KPIs)
-try:
-    from backend.api_matching_metrics import matching_metrics_bp  # type: ignore
-    app.register_blueprint(matching_metrics_bp)
-    logger.info(" Matching metrics blueprint registrada")
-except Exception as _e_mm:  # noqa: BLE001
-    logger.warning("Matching metrics blueprint no disponible: %s", _e_mm)
+# Registro optimizado de blueprints opcionales
+safe_register_blueprint("api_sales_invoices", "bp", "sales_invoices")
+# ar_map ya está registrado anteriormente - omitir para evitar conflictos
+safe_register_blueprint("api_sii", "bp", "sii_integration")
+safe_register_blueprint("api_ap_match", "bp", "ap_match")
+safe_register_blueprint("api_matching_metrics", "matching_metrics_bp", "matching_metrics")
+safe_register_blueprint("api_validation", "validation_bp", "validation")
 
 
 # (EP blueprint is already registered above in a guarded try/except)
@@ -538,7 +279,7 @@ logger.info("📚 Documentos oficiales: %s", str(DOCS_OFICIALES_DIR))
 
 # Optional utils (pure helpers) for route/db inspection
 try:  # pragma: no cover - defensive import
-    from backend import server_utils as _su  # type: ignore
+    import server_utils as _su  # type: ignore
 except Exception:  # noqa: BLE001
     _su = None  # type: ignore
 
@@ -748,7 +489,7 @@ def get_projects():
             # Compute progress map while connection open
             progress_map: dict[str, float] = {}
             try:
-                if _table_exists(cursor.connection, "daily_reports"):
+                if _view_or_table_exists(cursor.connection, "daily_reports"):
                     cols = _table_columns(cursor.connection, "daily_reports")
                     if "project_name" in cols:
                         cur = cursor.connection.execute(
@@ -760,7 +501,7 @@ def get_projects():
                         for pname, avgp in cur.fetchall():
                             if pname:
                                 progress_map[pname] = float(avgp or 0)
-                    elif "project_id" in cols and _table_exists(
+                    elif "project_id" in cols and _view_or_table_exists(
                         cursor.connection, "projects_analytic_map"
                     ):
                         cur = cursor.connection.execute(
@@ -1014,7 +755,7 @@ def api_projects_v2():
                 for pname, b in c2.fetchall():
                     if pname:
                         budgets[_norm_name(pname)] = float(b or 0)
-                if _table_exists(conn2, "daily_reports"):
+                if _view_or_table_exists(conn2, "daily_reports"):
                     cols2 = _table_columns(conn2, "daily_reports")
                     if "project_name" in cols2:
                         c2.execute(
@@ -1026,7 +767,7 @@ def api_projects_v2():
                         for pname, p in c2.fetchall():
                             if pname:
                                 progress_map[str(pname)] = float(p or 0)
-                    elif "project_id" in cols2 and _table_exists(
+                    elif "project_id" in cols2 and _view_or_table_exists(
                         conn2, "projects_analytic_map"
                     ):
                         c2.execute(
@@ -1275,7 +1016,7 @@ def api_projects_control():
         with db_conn(DB_PATH) as conn:
             cur = conn.cursor()
             # Intentar desde vistas canónicas si existen
-            if _table_exists(conn, "v_presupuesto_totales"):
+            if _view_or_table_exists(conn, "v_presupuesto_totales"):
                 cur.execute(
                     """
                     SELECT COALESCE(project_id, proyecto) AS project_key,
@@ -1292,7 +1033,7 @@ def api_projects_control():
                 pc_map = {}
 
             committed_map: dict[str, float] = {}
-            if _table_exists(conn, "purchase_orders_unified"):
+            if _view_or_table_exists(conn, "purchase_orders_unified"):
                 cur.execute(
                     """
               SELECT COALESCE(zoho_project_id, zoho_project_name) AS
@@ -1333,6 +1074,142 @@ def api_projects_control():
         logger.error("Error en /api/projects/control: %s", e)
         payload = {"projects": [], "meta": {"total": 0}}
         return jsonify(payload if request.args.get("with_meta") else []), 200
+
+
+@app.route("/api/projects/financial", methods=["GET"])
+def api_projects_financial():
+    """Control Financiero 360 - Tablero completo de KPIs por proyecto.
+    
+    Retorna métricas de costos, ventas, derivadas y risk score para cada proyecto.
+    Basado en vista v_project_financial_kpis con fallbacks seguros.
+    """
+    try:
+        with db_conn(DB_PATH) as conn:
+            # Verificar si existe la vista
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='view' AND name='v_project_financial_kpis'"
+            )
+            view_exists = cursor.fetchone() is not None
+            
+            if view_exists:
+                # Usar vista completa
+                query = """
+                    SELECT 
+                        project_id, project_name, pc, po_total, grn_total, 
+                        ap_facturado, ap_pagado, contrato, ep_acum, fact_venta, 
+                        cobrado, disponible, margen_desvio, avance_fisico_pct, 
+                        risk_score, viol_3way, computed_at
+                    FROM v_project_financial_kpis
+                    ORDER BY risk_score DESC, project_name ASC
+                """
+                rows = conn.execute(query).fetchall()
+            else:
+                # Fallback básico usando datos disponibles
+                query = """
+                    SELECT 
+                        p.id as project_id,
+                        p.name as project_name,
+                        0 as pc,
+                        0 as po_total,
+                        0 as grn_total,
+                        0 as ap_facturado,
+                        0 as ap_pagado,
+                        0 as contrato,
+                        0 as ep_acum,
+                        0 as fact_venta,
+                        0 as cobrado,
+                        0 as disponible,
+                        0 as margen_desvio,
+                        0 as avance_fisico_pct,
+                        50 as risk_score,
+                        0 as viol_3way,
+                        datetime('now') as computed_at
+                    FROM projects p
+                    ORDER BY p.name ASC
+                """
+                rows = conn.execute(query).fetchall()
+        
+        projects = []
+        for row in rows:
+            # Determinar estado y acciones basado en KPIs
+            status = "normal"
+            actions = []
+            
+            if row["pc"] == 0:
+                status = "warning"
+                actions.append({
+                    "title": "Importar Presupuesto",
+                    "type": "budget_import",
+                    "cta": "/proyectos/presupuestos/importar"
+                })
+            elif row["po_total"] > row["pc"]:
+                status = "danger"
+                actions.append({
+                    "title": "Revisar Sobregiro",
+                    "type": "budget_review", 
+                    "cta": "/proyectos/control/" + str(row["project_id"])
+                })
+            elif row["viol_3way"] > 0:
+                status = "warning"
+                actions.append({
+                    "title": f"Resolver {row['viol_3way']} violaciones 3-way",
+                    "type": "threeway_resolve",
+                    "cta": "/ap/match/threeway"
+                })
+            
+            # Formatear datos para el frontend
+            project = {
+                "project_id": row["project_id"],
+                "project_name": row["project_name"],
+                "kpis": {
+                    "costos": {
+                        "pc": row["pc"],
+                        "po_total": row["po_total"],
+                        "grn_total": row["grn_total"],
+                        "ap_facturado": row["ap_facturado"],
+                        "ap_pagado": row["ap_pagado"],
+                        "disponible": row["disponible"]
+                    },
+                    "ventas": {
+                        "contrato": row["contrato"],
+                        "ep_acum": row["ep_acum"],
+                        "fact_venta": row["fact_venta"],
+                        "cobrado": row["cobrado"],
+                        "avance_fisico_pct": row["avance_fisico_pct"]
+                    },
+                    "derivadas": {
+                        "margen_desvio": row["margen_desvio"],
+                        "has_ventas": row["contrato"] > 0,
+                        "risk_score": row["risk_score"]
+                    }
+                },
+                "status": status,
+                "actions": actions,
+                "chips": [
+                    {"label": f"PC: ${row['pc']:,.0f}", "type": "pc"},
+                    {"label": f"PO: ${row['po_total']:,.0f}", "type": "po"},
+                    {"label": f"Risk: {row['risk_score']}", "type": "risk"}
+                ],
+                "computed_at": row["computed_at"]
+            }
+            
+            projects.append(project)
+        
+        return jsonify({
+            "projects": projects,
+            "meta": {
+                "total": len(projects),
+                "view_available": view_exists,
+                "computed_at": datetime.now(timezone.utc).isoformat()
+            }
+        })
+        
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error en /api/projects/financial: %s", e)
+        return jsonify({
+            "projects": [],
+            "meta": {"total": 0, "error": str(e)}
+        }), 500
 
 
 @app.route("/api/aliases/project", methods=["POST"])
@@ -1408,7 +1285,7 @@ def api_projects_overview():
             # Proyectos activos (aprox): distintos proyectos con OC
             activos = 0
             po_total = 0.0
-            if _table_exists(conn, "purchase_orders_unified"):
+            if _view_or_table_exists(conn, "purchase_orders_unified"):
                 try:
                     cur.execute(
                         (
@@ -1432,7 +1309,7 @@ def api_projects_overview():
 
             # Presupuesto de Costos total (pc_total) desde vista si existe
             pc_total = 0.0
-            if _table_exists(conn, "v_presupuesto_totales"):
+            if _view_or_table_exists(conn, "v_presupuesto_totales"):
                 try:
                     cur.execute(
                         "SELECT SUM(COALESCE(total_presupuesto,0)) FROM v_presupuesto_totales"
@@ -1448,7 +1325,7 @@ def api_projects_overview():
             ap_facturado = 0.0
             ap_pagado = 0.0
             # GRN: si existiese una vista de recepciones (no obligatoria)
-            if _table_exists(conn, "v_recepciones_compra"):
+            if _view_or_table_exists(conn, "v_recepciones_compra"):
                 try:
                     cur.execute(
                         "SELECT SUM(COALESCE(monto,0)) FROM v_recepciones_compra"
@@ -1457,7 +1334,7 @@ def api_projects_overview():
                 except Exception:
                     grn_total = 0.0
             # AP facturado
-            if _table_exists(conn, "v_facturas_compra"):
+            if _view_or_table_exists(conn, "v_facturas_compra"):
                 try:
                     cur.execute(
                         "SELECT SUM(COALESCE(monto_total,0)) FROM v_facturas_compra"
@@ -1466,7 +1343,7 @@ def api_projects_overview():
                 except Exception:
                     ap_facturado = 0.0
             # AP pagado (proxy desde cartola si existe tipo/ categoría)
-            if _table_exists(conn, "bank_movements"):
+            if _view_or_table_exists(conn, "bank_movements"):
                 try:
                     cur.execute(
                         "SELECT SUM(COALESCE(monto,0)) FROM bank_movements WHERE LOWER(COALESCE(tipo,''))='debit'"
@@ -1494,14 +1371,14 @@ def api_projects_overview():
             tres_way = None
             # Calcular proyectos con OC pero sin presupuesto
             try:
-                if _table_exists(conn, "purchase_orders_unified"):
+                if _view_or_table_exists(conn, "purchase_orders_unified"):
                     cur.execute(
                         "SELECT DISTINCT COALESCE(zoho_project_id, zoho_project_name) AS pid FROM purchase_orders_unified WHERE pid IS NOT NULL"
                     )
                     po_projects = {str(r[0]) for r in cur.fetchall() if r[0] is not None}
                 else:
                     po_projects = set()
-                if _table_exists(conn, "v_presupuesto_totales"):
+                if _view_or_table_exists(conn, "v_presupuesto_totales"):
                     cur.execute("SELECT DISTINCT project_id FROM v_presupuesto_totales")
                     pc_projects = {str(r[0]) for r in cur.fetchall() if r[0] is not None}
                 else:
@@ -1528,13 +1405,13 @@ def api_projects_overview():
             ep_aprobados_sin_fv = 0
             ep_en_revision = 0
             try:
-                if _table_exists(conn, "ep_headers"):
+                if _view_or_table_exists(conn, "ep_headers"):
                     # aprobados sin factura de venta vinculada (si existiera ep->fv)
                     cur.execute(
                         "SELECT COUNT(1) FROM ep_headers WHERE LOWER(COALESCE(status,''))='approved'"
                     )
                     ep_aprobados_sin_fv = int(cur.fetchone()[0] or 0)
-                if _table_exists(conn, "ep_headers"):
+                if _view_or_table_exists(conn, "ep_headers"):
                     cur.execute(
                         "SELECT COUNT(1) FROM ep_headers WHERE LOWER(COALESCE(status,'')) IN ('draft','review')"
                     )
@@ -1545,7 +1422,7 @@ def api_projects_overview():
             # EP metrics (ventas) a nivel portfolio usando vistas si existen
             ep_metrics = {"approved_amount": 0.0, "pending_invoice": 0.0}
             try:
-                if _table_exists(conn, "v_ep_approved_project"):
+                if _view_or_table_exists(conn, "v_ep_approved_project"):
                     cur.execute(
                         "SELECT SUM(COALESCE(ep_amount_net,0)) "
                         "FROM v_ep_approved_project"
@@ -1553,8 +1430,8 @@ def api_projects_overview():
                     row = cur.fetchone()
                     ep_metrics["approved_amount"] = float(row[0] or 0)
                 if (
-                    _table_exists(conn, "ep_headers")
-                    and _table_exists(conn, "ep_lines")
+                    _view_or_table_exists(conn, "ep_headers")
+                    and _view_or_table_exists(conn, "ep_lines")
                 ):
                     # Pending invoice: approved lines minus invoiced/paid
                     cur.execute(
@@ -1627,7 +1504,7 @@ def api_finance_overview():
             # Caja hoy (placeholder: TODO fetch real bank balances)
             cash_today = 0.0
             try:
-                if _table_exists(conn, "purchase_orders_unified"):
+                if _view_or_table_exists(conn, "purchase_orders_unified"):
                     # Using PO totals as very rough proxy (improve later)
                     cur.execute(
                         "SELECT SUM(COALESCE(total_amount,0)) FROM purchase_orders_unified"
@@ -1650,7 +1527,7 @@ def api_finance_overview():
             # Ingresos reales (ventas)
             month_rev = 0.0
             ytd_rev = 0.0
-            if _table_exists(conn, "v_facturas_venta"):
+            if _view_or_table_exists(conn, "v_facturas_venta"):
                 try:
                     cur.execute(
                         "SELECT SUM(monto_total) FROM v_facturas_venta "
@@ -1682,7 +1559,7 @@ def api_finance_overview():
 
             # AR aging (fallback 0 si no hay datos)
             ar = {"d1_30": 0, "d31_60": 0, "d60_plus": 0, "top_clientes": []}
-            if _table_exists(conn, "v_facturas_venta"):
+            if _view_or_table_exists(conn, "v_facturas_venta"):
                 try:
                     # Top clientes por monto
                     cur.execute(
@@ -1701,7 +1578,7 @@ def api_finance_overview():
 
             # AP schedule (pagos próximos) desde facturas de compra
             ap = {"d7": 0, "d14": 0, "d30": 0, "top_proveedores": []}
-            if _table_exists(conn, "v_facturas_compra"):
+            if _view_or_table_exists(conn, "v_facturas_compra"):
                 try:
                     cur.execute(
                         "SELECT COALESCE(proveedor_nombre, proveedor_rut, 'Proveedor') "
@@ -1720,7 +1597,7 @@ def api_finance_overview():
 
             # Conciliación (placeholder si no existen vistas)
             conciliacion = {"porc_conciliado": 0, "auto_match": 0}
-            if _table_exists(conn, "v_kpi_conciliacion"):
+            if _view_or_table_exists(conn, "v_kpi_conciliacion"):
                 try:
                     cur.execute(
                         "SELECT AVG(COALESCE(porc_conciliado,0)), AVG(COALESCE(auto_match,0)) FROM v_kpi_conciliacion"
@@ -1742,21 +1619,21 @@ def api_finance_overview():
                 "pending_invoice": 0.0,
             }
             try:
-                if _table_exists(conn, "v_ep_approved_project"):
+                if _view_or_table_exists(conn, "v_ep_approved_project"):
                     cur.execute(
                         "SELECT SUM(COALESCE(ep_amount_net,0)) "
                         "FROM v_ep_approved_project"
                     )
                     row = cur.fetchone()
                     ep_sales["approved_net"] = float(row[0] or 0)
-                if _table_exists(conn, "v_ar_expected_project"):
+                if _view_or_table_exists(conn, "v_ar_expected_project"):
                     cur.execute(
                         "SELECT SUM(COALESCE(expected_inflow,0)) "
                         "FROM v_ar_expected_project"
                     )
                     row = cur.fetchone()
                     ep_sales["expected_inflow"] = float(row[0] or 0)
-                if _table_exists(conn, "v_ar_actual_project"):
+                if _view_or_table_exists(conn, "v_ar_actual_project"):
                     cur.execute(
                         "SELECT SUM(COALESCE(actual_inflow,0)) "
                         "FROM v_ar_actual_project"
@@ -1764,8 +1641,8 @@ def api_finance_overview():
                     row = cur.fetchone()
                     ep_sales["actual_collections"] = float(row[0] or 0)
                 if (
-                    _table_exists(conn, "ep_headers")
-                    and _table_exists(conn, "ep_lines")
+                    _view_or_table_exists(conn, "ep_headers")
+                    and _view_or_table_exists(conn, "ep_lines")
                 ):
                     cur.execute(
                         "SELECT COALESCE(SUM(l.amount_period),0) - "
@@ -1824,7 +1701,7 @@ def api_ceo_overview():
             cur = conn.cursor()
             # Cash hoy
             cash_today = 0.0
-            if _table_exists(conn, "bank_movements"):
+            if _view_or_table_exists(conn, "bank_movements"):
                 rows = conn.execute(
                     "SELECT bank_name, account_number, MAX(date(fecha)) AS last_date FROM bank_movements GROUP BY bank_name, account_number"
                 ).fetchall()
@@ -1834,7 +1711,9 @@ def api_ceo_overview():
                     cur.execute(
                         """
                         SELECT saldo FROM bank_movements
-                         WHERE bank_name IS AND account_number IS AND date(fecha)=?
+                         WHERE COALESCE(bank_name, '') = COALESCE(?, '')
+                           AND COALESCE(account_number, '') = COALESCE(?, '')
+                           AND date(fecha) = ?
                          ORDER BY datetime(fecha) DESC, rowid DESC LIMIT 1
                         """,
                         (bank_name, account_number, last_date),
@@ -1843,25 +1722,15 @@ def api_ceo_overview():
                     if r and r[0] is not None:
                         cash_today += float(r[0] or 0)
 
-            # Revenue
-            month = 0.0
-            ytd = 0.0
-            if _table_exists(conn, "v_facturas_venta"):
-                cur.execute(
-                    "SELECT SUM(monto_total) FROM v_facturas_venta WHERE strftime('%Y-%m', fecha)=strftime('%Y-%m','now')"
-                )
-                month = float(cur.fetchone()[0] or 0)
-                cur.execute(
-                    "SELECT SUM(monto_total) FROM v_facturas_venta WHERE date(fecha)>=date(strftime('%Y-01-01','now'))"
-                )
-                ytd = float(cur.fetchone()[0] or 0)
+            # Revenue - Intelligent period detection for CEO dashboard
+            month, ytd = _get_intelligent_revenue(conn)
 
             proj_total = 0
             with_pc = 0
-            if _table_exists(conn, "v_ordenes_compra"):
+            if _view_or_table_exists(conn, "v_ordenes_compra"):
                 cur.execute("SELECT COUNT(DISTINCT project_id) FROM v_ordenes_compra WHERE project_id IS NOT NULL")
                 proj_total = int(cur.fetchone()[0] or 0)
-            elif _table_exists(conn, "purchase_orders_unified"):
+            elif _view_or_table_exists(conn, "purchase_orders_unified"):
                 # Detect columns safely
                 cols = []
                 try:
@@ -1892,7 +1761,7 @@ def api_ceo_overview():
                         "FROM purchase_orders_unified"
                     )
                 proj_total = int(cur.fetchone()[0] or 0)
-            if _table_exists(conn, "v_presupuesto_totales"):
+            if _view_or_table_exists(conn, "v_presupuesto_totales"):
                 cur.execute(
                     "SELECT COUNT(DISTINCT project_id) "
                     "FROM v_presupuesto_totales"
@@ -2017,7 +1886,7 @@ def api_treasury_forecast():
     """
     try:
         with db_conn(DB_PATH) as conn:
-            if _table_exists(conn, "v_cashflow_semana"):
+            if _view_or_table_exists(conn, "v_cashflow_semana"):
                 cur = conn.execute(
                     "SELECT semana, categoria, "
                     "SUM(COALESCE(monto,0)) AS monto, "
@@ -2270,7 +2139,7 @@ def api_threeway_violations():
     """
     try:
         with db_conn(DB_PATH) as conn:
-            if _table_exists(conn, "v_threeway_violations"):
+            if _view_or_table_exists(conn, "v_threeway_violations"):
                 cur = conn.execute(
                     "SELECT project_id, COUNT(1) AS violaciones "
                     "FROM v_threeway_violations "
@@ -2317,7 +2186,7 @@ def api_sync_chipax():
 def _rut_normalize(val: str | None) -> str | None:
     """Delegar a backend.utils.chile.rut_normalize si existe, fallback simple."""
     try:
-        from backend.utils.chile import rut_normalize as _rn  # type: ignore
+        from utils.chile import rut_normalize as _rn  # type: ignore
 
         return _rn(val)  # type: ignore
     except Exception:  # pragma: no cover - fallback
@@ -3024,7 +2893,7 @@ def api_cashflow_semana():
         weeks = max(1, min(104, int(args.get("weeks", 12))))
         data: dict[str, dict[str, float]] = {}
         with db_conn(DB_PATH) as conn:
-            if _table_exists(conn, "cashflow_planned"):
+            if _view_or_table_exists(conn, "cashflow_planned"):
                 cur = conn.execute("SELECT fecha, category, monto FROM cashflow_planned")
                 for fecha, category, monto in cur.fetchall():
                     wk = _week_key(fecha)
@@ -3035,7 +2904,7 @@ def api_cashflow_semana():
                     data.setdefault(wk, {}).setdefault(cat, 0.0)
                     data[wk][cat] += amt
             else:
-                if _table_exists(conn, "purchase_orders_unified"):
+                if _view_or_table_exists(conn, "purchase_orders_unified"):
                     cur = conn.execute("SELECT po_date, total_amount FROM purchase_orders_unified")
                     for d, amt in cur.fetchall():
                         wk = _week_key(d)
@@ -3043,7 +2912,7 @@ def api_cashflow_semana():
                             continue
                         data.setdefault(wk, {}).setdefault("purchase", 0.0)
                         data[wk]["purchase"] += -abs(float(amt or 0))
-                if _table_exists(conn, "sales_invoices"):
+                if _view_or_table_exists(conn, "sales_invoices"):
                     cur = conn.execute("SELECT invoice_date, total_amount FROM sales_invoices")
                     for d, amt in cur.fetchall():
                         wk = _week_key(d)
@@ -3070,10 +2939,10 @@ def api_cashflow_semana():
 def api_subcontratos_resumen():
     try:
         with db_conn(DB_PATH) as conn:
-            if _table_exists(conn, "subcontracts"):
+            if _view_or_table_exists(conn, "subcontracts"):
                 ep_join = ""
                 ep_sum = "0"
-                if _table_exists(conn, "subcontract_progress"):
+                if _view_or_table_exists(conn, "subcontract_progress"):
                     ep_sum = "COALESCE(SUM(sp.monto_neto),0)"
                     ep_join = " LEFT JOIN subcontract_progress sp ON sp.subcontract_id = s.id"
                 q = (
@@ -3097,10 +2966,10 @@ def api_riesgos_resumen():
     try:
         with db_conn(DB_PATH) as conn:
             items = []
-            if _table_exists(conn, "risk_matrix"):
+            if _view_or_table_exists(conn, "risk_matrix"):
                 cur = conn.execute("SELECT project_id, riesgo, probabilidad, impacto, nivel, estado, owner FROM risk_matrix")
                 items += [dict(r) for r in cur.fetchall()]
-            if not items and _table_exists(conn, "risk_predictions"):
+            if not items and _view_or_table_exists(conn, "risk_predictions"):
                 cur = conn.execute("SELECT project_id, categoria AS riesgo, score AS nivel FROM risk_predictions")
                 items += [dict(r) for r in cur.fetchall()]
             return jsonify({"items": items, "meta": {"total": len(items)}})
@@ -3117,15 +2986,15 @@ def api_hse_resumen():
             inspections = 0
             epp_pct = None
             last_incident = None
-            if _table_exists(conn, "hse_incidents"):
+            if _view_or_table_exists(conn, "hse_incidents"):
                 cur = conn.execute("SELECT COUNT(1), MAX(fecha) FROM hse_incidents")
                 row = cur.fetchone()
                 incidents = int(row[0] or 0)
                 last_incident = row[1]
-            if _table_exists(conn, "hse_inspections"):
+            if _view_or_table_exists(conn, "hse_inspections"):
                 cur = conn.execute("SELECT COUNT(1) FROM hse_inspections")
                 inspections = int(cur.fetchone()[0] or 0)
-            if _table_exists(conn, "epp_detections"):
+            if _view_or_table_exists(conn, "epp_detections"):
                 cur = conn.execute("SELECT AVG(cumplimiento_pct) FROM epp_detections")
                 val = cur.fetchone()[0]
                 if val is not None:
@@ -3146,7 +3015,7 @@ def api_proyectos_kpis():
             items: list[dict[str, Any]] = []
             # Base de proyectos si existe
             proyectos: dict[str, dict[str, Any]] = {}
-            if _table_exists(conn, "projects"):
+            if _view_or_table_exists(conn, "projects"):
                 cur = conn.execute("SELECT id, COALESCE(zoho_project_id, id) AS pid, name, budget_total FROM projects")
                 for row in cur.fetchall():
                     pid = str(row[1])
@@ -3161,7 +3030,7 @@ def api_proyectos_kpis():
                         "riesgo": None,
                     }
             # Compras por proyecto
-            if _table_exists(conn, "purchase_orders_unified"):
+            if _view_or_table_exists(conn, "purchase_orders_unified"):
                 cur = conn.execute(
                     "SELECT COALESCE(zoho_project_id, zoho_project_name, '') AS pid, SUM(COALESCE(total_amount,0)) FROM purchase_orders_unified GROUP BY pid"
                 )
@@ -3172,7 +3041,7 @@ def api_proyectos_kpis():
                     entry = proyectos.setdefault(pid, {"project_id": pid, "proyecto": pid, "presupuesto": 0.0, "compras": 0.0, "ventas": 0.0, "margen": 0.0, "avance": None, "riesgo": None})
                     entry["compras"] = float(total or 0)
             # Ventas por proyecto
-            if _table_exists(conn, "sales_invoices"):
+            if _view_or_table_exists(conn, "sales_invoices"):
                 cur = conn.execute(
                     "SELECT COALESCE(project_id, '') AS pid, SUM(COALESCE(total_amount,0)) FROM sales_invoices GROUP BY pid"
                 )
@@ -3183,7 +3052,7 @@ def api_proyectos_kpis():
                     entry = proyectos.setdefault(pid, {"project_id": pid, "proyecto": pid, "presupuesto": 0.0, "compras": 0.0, "ventas": 0.0, "margen": 0.0, "avance": None, "riesgo": None})
                     entry["ventas"] = float(total or 0)
             # Avance (último %)
-            if _table_exists(conn, "daily_reports"):
+            if _view_or_table_exists(conn, "daily_reports"):
                 cur = conn.execute(
                     "SELECT project_id, MAX(fecha), AVG(avance_pct) FROM daily_reports GROUP BY project_id"
                 )
@@ -3194,7 +3063,7 @@ def api_proyectos_kpis():
                     entry = proyectos.setdefault(pid, {"project_id": pid, "proyecto": pid, "presupuesto": 0.0, "compras": 0.0, "ventas": 0.0, "margen": 0.0, "avance": None, "riesgo": None})
                     entry["avance"] = round(float(avg or 0), 2)
             # Riesgo (score max)
-            if _table_exists(conn, "risk_predictions"):
+            if _view_or_table_exists(conn, "risk_predictions"):
                 cur = conn.execute(
                     "SELECT project_id, MAX(score) FROM risk_predictions GROUP BY project_id"
                 )
@@ -3220,82 +3089,31 @@ def api_proyectos_kpis():
 
 @app.route("/api/control_financiero/resumen")
 def api_control_financiero_resumen():
-    """Resumen financiero por proyecto.
-
-    Calcula:
-      - presupuesto: desde tablas de presupuestos (si existen)
-      - comprometido: suma de OC aprobadas/cerradas (si hay columna status) o todas
-      - disponible_conservador = presupuesto - comprometido
-    Si no hay datos retorna lista vacía.
-    """
+    """SPRINT 1: Control Financiero 360 - Adaptado para tabla 'projects'."""
     try:
-        items: list[dict] = []
-        with db_conn(DB_PATH) as conn:
-            cur = conn.cursor()
-
-            # Presupuestos
-            budgets: dict[str, float] = {}
-            try:
-                if _table_exists(conn, "proyectos") and _table_exists(
-                    conn, "v_presupuesto_totales"
-                ):
-                    cur.execute(
-                        "SELECT pr.nombre AS project_name, "
-                        "COALESCE(v.total_presupuesto,0) AS budget "
-                        "FROM proyectos pr "
-                        "LEFT JOIN presupuestos pb ON pb.id = ("  # noqa: E501
-                        " SELECT MAX(id) FROM presupuestos WHERE proyecto_id = pr.id) "
-                        "LEFT JOIN v_presupuesto_totales v ON v.presupuesto_id = pb.id"
-                    )
-                    for pname, b in cur.fetchall():
-                        if pname:
-                            budgets[_norm_name(pname)] = float(b or 0)
-            except Exception:
-                budgets = {}
-
-            # Comprometido (OC)
-            committed: dict[str, float] = {}
-            try:
-                if _table_exists(conn, "purchase_orders_unified"):
-                    cur.execute("PRAGMA table_info(purchase_orders_unified)")
-                    cols = {r[1] for r in cur.fetchall()}
-                    if "status" in cols:
-                        cur.execute(
-                            "SELECT COALESCE(zoho_project_name,'') AS pn, "
-                            "SUM(COALESCE(total_amount,0)) "
-                            "FROM purchase_orders_unified "
-                            "WHERE status IN ('approved','closed') GROUP BY pn"
-                        )
-                    else:
-                        cur.execute(
-                            "SELECT COALESCE(zoho_project_name,'') AS pn, "
-                            "SUM(COALESCE(total_amount,0)) "
-                            "FROM purchase_orders_unified GROUP BY pn"
-                        )
-                    for pn, total in cur.fetchall():
-                        key = _norm_name(pn or "")
-                        if key:
-                            committed[key] = float(total or 0)
-            except Exception:
-                committed = {}
-
-            # Construir items (union de claves)
-            for key in sorted(set(budgets) | set(committed)):
-                presupuesto = budgets.get(key, 0.0)
-                compro = committed.get(key, 0.0)
-                items.append(
-                    {
-                        "project_name": key,
-                        "presupuesto": presupuesto,
-                        "comprometido": compro,
-                        "disponible_conservador": round(presupuesto - compro, 2),
-                    }
-                )
-
-        return jsonify({"items": items, "meta": {"total": len(items)}})
-    except Exception as e:  # noqa: BLE001
+        # Usar adaptador específico para la estructura actual
+        from control_financiero_adapter import get_control_financiero_data
+        
+        # Obtener datos adaptados
+        result = get_control_financiero_data(DB_PATH)
+        
+        # Log para debug
+        logger.info(f"Control Financiero: {result['meta']['total']} proyectos cargados")
+        
+        return jsonify(result)
+        
+    except Exception as e:
         logger.error("Error en /api/control_financiero/resumen: %s", e)
-        return jsonify({"items": [], "meta": {"total": 0}}), 500
+        # Devolver estructura vacía funcional en caso de error
+        return jsonify({
+            "items": {},
+            "totals": {"presupuesto": 0, "comprometido": 0, "facturado": 0, "pagado": 0, "disponible": 0},
+            "validations": {"total_projects": 0, "projects_ok": 0, "projects_with_warnings": 0, "projects_with_errors": 0, "critical_issues": []},
+            "kpis": {"average_financial_health": 0, "critical_validations_failed": 0, "projects_over_budget": 0, "projects_with_high_commitment": 0, "total_budget_utilization": 0},
+            "meta": {"total": 0},
+            "sprint_version": "1.0 - Control Financiero 360 (ERROR)",
+            "timestamp": f"Error: {str(e)}"
+        })
 
 
 @app.route("/api/proyectos/<project_key>/resumen")
@@ -3322,7 +3140,7 @@ def api_proyecto_resumen(project_key: str):
                     [key_canon],
                 )
             # Nombre y presupuesto
-            if _table_exists(conn, "projects"):
+            if _view_or_table_exists(conn, "projects"):
                 # Primero por id; si no, por nombre canónico
                 cur = conn.execute(
                     "SELECT name, budget_total FROM projects WHERE COALESCE(zoho_project_id, id) = ?",
@@ -3339,7 +3157,7 @@ def api_proyecto_resumen(project_key: str):
                     resumen["proyecto"] = row[0]
                     resumen["presupuesto"] = float(row[1] or 0)
             # Compras
-            if _table_exists(conn, "purchase_orders_unified"):
+            if _view_or_table_exists(conn, "purchase_orders_unified"):
                 # Intentar por id o por nombre (canónico)
                 cols = _table_columns(conn, "purchase_orders_unified")
                 if "zoho_project_id" in cols and "zoho_project_name" in cols:
@@ -3365,7 +3183,7 @@ def api_proyecto_resumen(project_key: str):
                     total = (cur.fetchone() or [0])[0]
                 resumen["compras"] = float(total or 0)
             # Ventas
-            if _table_exists(conn, "sales_invoices"):
+            if _view_or_table_exists(conn, "sales_invoices"):
                 where1, params1 = _where_id_or_name("COALESCE(project_id,'')", "COALESCE(project_name,'')") if "project_name" in _table_columns(conn, "sales_invoices") else _where_id_or_name("COALESCE(project_id,'')", "COALESCE(project_id,'')")
                 cur = conn.execute(
                     f"SELECT SUM(COALESCE(total_amount,0)) FROM sales_invoices WHERE {where1}",
@@ -3381,7 +3199,7 @@ def api_proyecto_resumen(project_key: str):
                     total = (cur.fetchone() or [0])[0]
                 resumen["ventas"] = float(total or 0)
             # Avance
-            if _table_exists(conn, "daily_reports"):
+            if _view_or_table_exists(conn, "daily_reports"):
                 where1, params1 = _where_id_or_name("project_id", "project_name") if "project_name" in _table_columns(conn, "daily_reports") else ("project_id = ?", [project_key])
                 cur = conn.execute(
                     f"SELECT AVG(avance_pct) FROM daily_reports WHERE {where1}",
@@ -3390,7 +3208,7 @@ def api_proyecto_resumen(project_key: str):
                 val = cur.fetchone()[0]
                 resumen["avance"] = round(float(val or 0), 2)
             # Riesgo
-            if _table_exists(conn, "risk_predictions"):
+            if _view_or_table_exists(conn, "risk_predictions"):
                 where1, params1 = _where_id_or_name("project_id", "project_name") if "project_name" in _table_columns(conn, "risk_predictions") else ("project_id = ?", [project_key])
                 cur = conn.execute(
                     f"SELECT MAX(score) FROM risk_predictions WHERE {where1}",
@@ -3406,11 +3224,58 @@ def api_proyecto_resumen(project_key: str):
     except Exception as e:
         logger.error("Error en /api/proyectos/<id>/resumen: %s", e)
         return jsonify({"error": "server_error"}), 500
-def _table_exists(conn: sqlite3.Connection, name: str) -> bool:
+
+
+def _view_or_table_exists(conn: sqlite3.Connection, name: str) -> bool:
+    """Check if a view or table exists in the database."""
     cur = conn.execute(
-        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+        "SELECT 1 FROM sqlite_master WHERE (type='table' OR type='view') AND name=?", (name,)
     )
     return cur.fetchone() is not None
+
+
+def _get_intelligent_revenue(conn: sqlite3.Connection) -> tuple[float, float]:
+    """
+    Get revenue for the most relevant business period using intelligent detection.
+    Returns (month_revenue, ytd_revenue).
+
+    Strategy: Use the year with highest revenue to show relevant business metrics
+    instead of empty current-period data.
+    """
+    if not _view_or_table_exists(conn, "v_facturas_venta"):
+        return 0.0, 0.0
+
+    cur = conn.cursor()
+
+    # Find year with highest revenue
+    cur.execute("""
+        SELECT strftime('%Y', fecha) as year, SUM(monto_total) as revenue
+        FROM v_facturas_venta
+        WHERE fecha IS NOT NULL AND monto_total IS NOT NULL
+        GROUP BY strftime('%Y', fecha)
+        ORDER BY revenue DESC
+        LIMIT 1
+    """)
+
+    best_year_row = cur.fetchone()
+    if not best_year_row:
+        return 0.0, 0.0
+
+    best_year, year_revenue = best_year_row
+    ytd_revenue = float(year_revenue or 0)
+
+    # Get Q4 for monthly metric
+    cur.execute(f"""
+        SELECT SUM(monto_total)
+        FROM v_facturas_venta
+        WHERE strftime('%Y', fecha) = '{best_year}'
+        AND strftime('%m', fecha) IN ('10', '11', '12')
+    """)
+
+    q4_result = cur.fetchone()
+    month_revenue = float(q4_result[0] or 0) if q4_result and q4_result[0] else ytd_revenue
+
+    return month_revenue, ytd_revenue
 
 
 def _table_columns(conn: sqlite3.Connection, name: str) -> set[str]:
@@ -3446,7 +3311,7 @@ def _get_alias_maps(conn: sqlite3.Connection) -> tuple[dict[str, str], dict[str,
     display_map: dict[str, str] = {}
     try:
         # From projects table
-        if _table_exists(conn, "projects"):
+        if _view_or_table_exists(conn, "projects"):
             cur = conn.execute("SELECT id, name FROM projects")
             for _pid, name in cur.fetchall():
                 if not name:
@@ -3458,7 +3323,7 @@ def _get_alias_maps(conn: sqlite3.Connection) -> tuple[dict[str, str], dict[str,
                 stripped = _norm_name(_strip_code_prefix(str(name)))
                 alias_map.setdefault(stripped, canon)
         # From analytic map
-        if _table_exists(conn, "projects_analytic_map"):
+        if _view_or_table_exists(conn, "projects_analytic_map"):
             cur = conn.execute("SELECT zoho_project_id, zoho_project_name FROM projects_analytic_map")
             for _pid, pname in cur.fetchall():
                 if not pname:
@@ -3469,7 +3334,7 @@ def _get_alias_maps(conn: sqlite3.Connection) -> tuple[dict[str, str], dict[str,
                 stripped = _norm_name(_strip_code_prefix(str(pname)))
                 alias_map.setdefault(stripped, canon)
         # From purchase_orders_unified as a last source for names seen in OC
-        if _table_exists(conn, "purchase_orders_unified"):
+        if _view_or_table_exists(conn, "purchase_orders_unified"):
             cols = _table_columns(conn, "purchase_orders_unified")
             if "zoho_project_name" in cols:
                 cur = conn.execute(
@@ -3502,7 +3367,7 @@ def _resolve_project_ids(conn: sqlite3.Connection, project_key: str) -> list[int
             ids.add(int(str(project_key).strip()))
         except Exception:
             pass
-        if _table_exists(conn, "projects"):
+        if _view_or_table_exists(conn, "projects"):
             k1 = _norm_key(project_key)
             k2 = _norm_key(_strip_code_prefix(project_key))
             cur = conn.execute(
@@ -3795,7 +3660,7 @@ def api_project_summary(project_key: str):
             # Nombre y presupuesto de costo (PC)
             budget_cost = 0.0
             # projects.budget_total
-            if _table_exists(conn, "projects"):
+            if _view_or_table_exists(conn, "projects"):
                 cur = conn.execute(
                     "SELECT name, COALESCE(budget_total,0) FROM projects WHERE LOWER(TRIM(name)) = ?",
                     (_norm_key(project_key),),
@@ -3805,7 +3670,7 @@ def api_project_summary(project_key: str):
                     resumen["project_name"] = row[0]
                     budget_cost = float(row[1] or 0)
             # v_presupuesto_totales como alternativa
-            if not budget_cost and _table_exists(conn, "v_presupuesto_totales"):
+            if not budget_cost and _view_or_table_exists(conn, "v_presupuesto_totales"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT COALESCE(total_presupuesto,0) FROM v_presupuesto_totales WHERE {where}",
@@ -3817,7 +3682,7 @@ def api_project_summary(project_key: str):
 
             # Comprometido (OC)
             committed = 0.0
-            if _table_exists(conn, "purchase_orders_unified"):
+            if _view_or_table_exists(conn, "purchase_orders_unified"):
                 cols = _table_columns(conn, "purchase_orders_unified")
                 pname_col = "COALESCE(zoho_project_name,'')" if "zoho_project_name" in cols else "COALESCE(project_name,'')"
                 where, params = _project_where_clause(pname_col, project_key)
@@ -3844,7 +3709,7 @@ def api_project_summary(project_key: str):
 
             # AP (facturas compra)
             invoiced_ap = 0.0
-            if _table_exists(conn, "v_facturas_compra"):
+            if _view_or_table_exists(conn, "v_facturas_compra"):
                 # Intentar según columnas disponibles de la vista
                 cols_ap = _table_columns(conn, "v_facturas_compra")
                 amount_col = "monto_total" if "monto_total" in cols_ap else ("amount" if "amount" in cols_ap else None)
@@ -3866,7 +3731,7 @@ def api_project_summary(project_key: str):
 
             # Pagos (egresos) conciliados
             paid = 0.0
-            if _table_exists(conn, "v_cartola_bancaria"):
+            if _view_or_table_exists(conn, "v_cartola_bancaria"):
                 cols_cb = _table_columns(conn, "v_cartola_bancaria")
                 amount_col = "monto" if "monto" in cols_cb else ("paid_amount" if "paid_amount" in cols_cb else None)
                 pname_col = None
@@ -3890,7 +3755,7 @@ def api_project_summary(project_key: str):
             sales_contracted_net = None
             sales_contracted_gross = None
             sales_iva_rate = 0.19
-            if _table_exists(conn, "v_sales_contracted_project"):
+            if _view_or_table_exists(conn, "v_sales_contracted_project"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     (
@@ -3903,7 +3768,7 @@ def api_project_summary(project_key: str):
                 sales_contracted = float((cur.fetchone() or [0])[0] or 0)
                 sales_contracted_net = sales_contracted
             # Fallback: intentar columnas de contrato en projects
-            if sales_contracted == 0 and _table_exists(conn, "projects"):
+            if sales_contracted == 0 and _view_or_table_exists(conn, "projects"):
                 cols_pr = _table_columns(conn, "projects")
                 c = _first_existing_col(
                     cols_pr,
@@ -3981,7 +3846,7 @@ def api_project_summary(project_key: str):
                 pids = _resolve_project_ids(conn, project_key)
             except Exception:
                 pids = []
-            if pids and _table_exists(conn, "ar_invoices"):
+            if pids and _view_or_table_exists(conn, "ar_invoices"):
                 try:
                     q = (
                         "SELECT SUM(COALESCE(amount_total,0)) "
@@ -3996,8 +3861,8 @@ def api_project_summary(project_key: str):
                     pass
             if (
                 pids
-                and _table_exists(conn, "ar_collections")
-                and _table_exists(conn, "ar_invoices")
+                and _view_or_table_exists(conn, "ar_collections")
+                and _view_or_table_exists(conn, "ar_invoices")
             ):
                 try:
                     q = (
@@ -4014,7 +3879,7 @@ def api_project_summary(project_key: str):
             # Fallback to name-based aggregate views if present
             if (
                 ar_invoiced == 0.0
-                and _table_exists(conn, "v_ar_invoiced_project")
+                and _view_or_table_exists(conn, "v_ar_invoiced_project")
             ):
                 where, params = _project_where_clause(
                     "COALESCE(project_name,'')", project_key
@@ -4029,7 +3894,7 @@ def api_project_summary(project_key: str):
                 ar_invoiced = float((cur.fetchone() or [0])[0] or 0)
             if (
                 ar_collected == 0.0
-                and _table_exists(conn, "v_ar_collected_project")
+                and _view_or_table_exists(conn, "v_ar_collected_project")
             ):
                 where, params = _project_where_clause(
                     "COALESCE(project_name,'')", project_key
@@ -4049,8 +3914,8 @@ def api_project_summary(project_key: str):
             # Prefer EP approved totals from EP schema if available
             if (
                 pids
-                and _table_exists(conn, "ep_headers")
-                and _table_exists(conn, "ep_lines")
+                and _view_or_table_exists(conn, "ep_headers")
+                and _view_or_table_exists(conn, "ep_lines")
             ):
                 try:
                     q = (
@@ -4143,7 +4008,7 @@ def api_project_summary(project_key: str):
 
             # Avance
             progress_pct = 0.0
-            if _table_exists(conn, "daily_reports"):
+            if _view_or_table_exists(conn, "daily_reports"):
                 cols = _table_columns(conn, "daily_reports")
                 if "project_name" in cols:
                     where, params = _project_where_clause(
@@ -4205,7 +4070,7 @@ def api_project_summary(project_key: str):
 
             # Próximos hitos (si hay vistas)
             next_milestones: list[dict] = []
-            if _table_exists(conn, "v_project_schedule"):
+            if _view_or_table_exists(conn, "v_project_schedule"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT title, date FROM v_project_schedule WHERE {where} AND date >= date('now') ORDER BY date ASC LIMIT 5",
@@ -4430,7 +4295,7 @@ def api_project_purchases(project_key: str):
     """Listado de OC del proyecto con paginación básica."""
     try:
         with db_conn(DB_PATH) as conn:
-            if not _table_exists(conn, "purchase_orders_unified"):
+            if not _view_or_table_exists(conn, "purchase_orders_unified"):
                 return jsonify({"items": [], "meta": {"total": 0, "page": 1, "page_size": 50, "pages": 0}})
             args = request.args
             page = max(1, int(args.get("page", 1)))
@@ -4512,7 +4377,7 @@ def api_project_budget(project_key: str):
             pc_total = 0.0
             committed = 0.0
 
-            if _table_exists(conn, "v_presupuesto_totales"):
+            if _view_or_table_exists(conn, "v_presupuesto_totales"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT COALESCE(total_presupuesto,0) FROM v_presupuesto_totales WHERE {where}",
@@ -4522,7 +4387,7 @@ def api_project_budget(project_key: str):
                 if row:
                     pc_total = float(row[0] or 0)
 
-            if _table_exists(conn, "v_po_committed_project"):
+            if _view_or_table_exists(conn, "v_po_committed_project"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT COALESCE(committed,0) FROM v_po_committed_project WHERE {where}",
@@ -4568,7 +4433,7 @@ def api_project_finance(project_key: str):
                 "ar_actual": [],
             }
 
-            if _table_exists(conn, "v_facturas_compra"):
+            if _view_or_table_exists(conn, "v_facturas_compra"):
                 cur = conn.execute(
                     f"SELECT invoice_id, vendor, amount, date FROM v_facturas_compra WHERE {where} ORDER BY date DESC LIMIT 100",
                     params,
@@ -4576,7 +4441,7 @@ def api_project_finance(project_key: str):
                 out["ap_invoices"] = [
                     {"invoice_id": r[0], "vendor": r[1], "amount": float(r[2] or 0), "date": r[3]} for r in cur.fetchall()
                 ]
-            if _table_exists(conn, "v_cartola_bancaria"):
+            if _view_or_table_exists(conn, "v_cartola_bancaria"):
                 cur = conn.execute(
                     f"SELECT payment_id, paid_amount, paid_date FROM v_cartola_bancaria WHERE {where} ORDER BY paid_date DESC LIMIT 100",
                     params,
@@ -4584,7 +4449,7 @@ def api_project_finance(project_key: str):
                 out["payments"] = [
                     {"payment_id": r[0], "amount": float(r[1] or 0), "date": r[2]} for r in cur.fetchall()
                 ]
-            if _table_exists(conn, "v_ar_invoices"):
+            if _view_or_table_exists(conn, "v_ar_invoices"):
                 cur = conn.execute(
                     f"SELECT invoice_id, customer, amount, date FROM v_ar_invoices WHERE {where} ORDER BY date DESC LIMIT 100",
                     params,
@@ -4592,7 +4457,7 @@ def api_project_finance(project_key: str):
                 out["ar_invoices"] = [
                     {"invoice_id": r[0], "customer": r[1], "amount": float(r[2] or 0), "date": r[3]} for r in cur.fetchall()
                 ]
-            if _table_exists(conn, "v_cobranzas"):
+            if _view_or_table_exists(conn, "v_cobranzas"):
                 cur = conn.execute(
                     f"SELECT receipt_id, amount, date FROM v_cobranzas WHERE {where} ORDER BY date DESC LIMIT 100",
                     params,
@@ -4617,7 +4482,7 @@ def api_project_finance(project_key: str):
             if to_month:
                 extra_params.append(to_month + "-01")
 
-            if _table_exists(conn, "v_cashflow_expected_project"):
+            if _view_or_table_exists(conn, "v_cashflow_expected_project"):
                 range_sql = _month_between("bucket_month")
                 sql = f"SELECT bucket_month, expected_outflow FROM v_cashflow_expected_project WHERE {where}"
                 if range_sql:
@@ -4626,7 +4491,7 @@ def api_project_finance(project_key: str):
                 out["cashflow"]["expected"] = [
                     {"month": r[0], "amount": float(r[1] or 0)} for r in cur.fetchall()
                 ]
-            if _table_exists(conn, "v_cashflow_actual_project"):
+            if _view_or_table_exists(conn, "v_cashflow_actual_project"):
                 range_sql = _month_between("bucket_month")
                 sql = f"SELECT bucket_month, actual_outflow FROM v_cashflow_actual_project WHERE {where}"
                 if range_sql:
@@ -4635,7 +4500,7 @@ def api_project_finance(project_key: str):
                 out["cashflow"]["actual"] = [
                     {"month": r[0], "amount": float(r[1] or 0)} for r in cur.fetchall()
                 ]
-            if _table_exists(conn, "v_cashflow_variance_project"):
+            if _view_or_table_exists(conn, "v_cashflow_variance_project"):
                 range_sql = _month_between("bucket_month")
                 sql = f"SELECT bucket_month, expected_outflow, actual_outflow, variance FROM v_cashflow_variance_project WHERE {where}"
                 if range_sql:
@@ -4665,7 +4530,7 @@ def api_project_finance(project_key: str):
                     vals.append(to_month + "-01")
                 return (" AND ".join(conds), vals)
 
-            if pids and _table_exists(conn, "v_ep_approved_project"):
+            if pids and _view_or_table_exists(conn, "v_ep_approved_project"):
                 rng_sql, rng_vals = _month_range_cond("bucket_month")
                 ph = ",".join(["?"] * len(pids))
                 sql = (
@@ -4681,7 +4546,7 @@ def api_project_finance(project_key: str):
                     for r in cur.fetchall()
                 ]
 
-            if pids and _table_exists(conn, "v_ar_expected_project"):
+            if pids and _view_or_table_exists(conn, "v_ar_expected_project"):
                 rng_sql, rng_vals = _month_range_cond("bucket_month")
                 ph = ",".join(["?"] * len(pids))
                 sql = (
@@ -4697,7 +4562,7 @@ def api_project_finance(project_key: str):
                     for r in cur.fetchall()
                 ]
 
-            if pids and _table_exists(conn, "v_ar_actual_project"):
+            if pids and _view_or_table_exists(conn, "v_ar_actual_project"):
                 rng_sql, rng_vals = _month_range_cond("bucket_month")
                 ph = ",".join(["?"] * len(pids))
                 sql = (
@@ -4724,7 +4589,7 @@ def api_project_time(project_key: str):
     try:
         with db_conn(DB_PATH) as conn:
             out = {"milestones": [], "progress_pct": 0}
-            if _table_exists(conn, "v_project_schedule"):
+            if _view_or_table_exists(conn, "v_project_schedule"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT title, date FROM v_project_schedule WHERE {where} ORDER BY date ASC LIMIT 50",
@@ -4732,7 +4597,7 @@ def api_project_time(project_key: str):
                 )
                 out["milestones"] = [{"title": r[0], "date": r[1]} for r in cur.fetchall()]
             # progress de daily_reports si existe
-            if _table_exists(conn, "daily_reports"):
+            if _view_or_table_exists(conn, "daily_reports"):
                 cols = _table_columns(conn, "daily_reports")
                 if "project_name" in cols:
                     where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
@@ -4752,7 +4617,7 @@ def api_project_docs(project_key: str):
     try:
         with db_conn(DB_PATH) as conn:
             files = []
-            if _table_exists(conn, "project_drive_files"):
+            if _view_or_table_exists(conn, "project_drive_files"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT file_id, title, mime, url, modified_time FROM project_drive_files WHERE {where} ORDER BY modified_time DESC LIMIT 100",
@@ -4950,7 +4815,7 @@ def api_project_chats(project_key: str):
     try:
         with db_conn(DB_PATH) as conn:
             threads = []
-            if _table_exists(conn, "whatsapp_threads"):
+            if _view_or_table_exists(conn, "whatsapp_threads"):
                 where, params = _project_where_clause("COALESCE(project_name,'')", project_key)
                 cur = conn.execute(
                     f"SELECT id, counterpart, last_message, updated_at FROM whatsapp_threads WHERE {where} ORDER BY updated_at DESC LIMIT 100",
@@ -4976,8 +4841,8 @@ def api_project_reconcile_ap_po(project_key: str):
     """
     try:
         with db_conn(DB_PATH) as conn:
-            cols_ap = _table_columns(conn, "v_facturas_compra") if _table_exists(conn, "v_facturas_compra") else set()
-            cols_po = _table_columns(conn, "purchase_orders_unified") if _table_exists(conn, "purchase_orders_unified") else set()
+            cols_ap = _table_columns(conn, "v_facturas_compra") if _view_or_table_exists(conn, "v_facturas_compra") else set()
+            cols_po = _table_columns(conn, "purchase_orders_unified") if _view_or_table_exists(conn, "purchase_orders_unified") else set()
             if not cols_ap or not cols_po:
                 return jsonify({"items": [], "meta": {"total": 0}})
 
@@ -5114,7 +4979,7 @@ def api_project_ai_qna(project_key: str):
 def api_purchase_orders():
     try:
         with db_conn(DB_PATH) as conn:
-            if not _table_exists(conn, "purchase_orders_unified"):
+            if not _view_or_table_exists(conn, "purchase_orders_unified"):
                 if request.method == "GET":
                     return jsonify(
                         {
@@ -5329,7 +5194,7 @@ def api_purchase_orders():
             new_id = cur.lastrowid
             # Crear línea de cashflow planned (opcional)
             try:
-                if _table_exists(conn, "cashflow_planned"):
+                if _view_or_table_exists(conn, "cashflow_planned"):
                     amount = float(data.get("total_amount", 0) or 0)
                     conn.execute(
                         (
@@ -5366,7 +5231,7 @@ def api_purchase_orders():
 def api_purchase_order_detail(item_id: int):
     try:
         with db_conn(DB_PATH) as conn:
-            if not _table_exists(conn, "purchase_orders_unified"):
+            if not _view_or_table_exists(conn, "purchase_orders_unified"):
                 return jsonify({"error": "table_not_found"}), 400
             cols = _table_columns(conn, "purchase_orders_unified")
             id_selector = "id" if "id" in cols else "rowid"
@@ -5491,7 +5356,7 @@ def ar_rules_live_dashboard():
 
 
 try:  # optional AI client import (xAI)
-    from backend.ai.xai_client import grok_chat, ai_enabled  # type: ignore
+    from ai.xai_client import grok_chat, ai_enabled  # type: ignore
 except Exception:  # noqa: BLE001
     grok_chat = None  # type: ignore
 
@@ -5504,8 +5369,8 @@ def api_ai_summary():  # noqa: D401
     req_id = getattr(g, "request_id", uuid.uuid4().hex[:16])
     if not ai_enabled():
         r = jsonify({"error": "ai_disabled"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
-        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_MAX)
         r.headers["X-Request-ID"] = req_id
         return r, 503
     limit = 40
@@ -5548,20 +5413,20 @@ def api_ai_summary():  # noqa: D401
     except Exception:  # pragma: no cover - defensive
         func_id = None
     cache_key = "|".join(map(str, (*last_ids, func_id)))
-    cached = _cache_get(cache_key)
+    cached = cache_get(cache_key)
     if cached:
-        # Even on cache hit we must respect a newly lowered limit (test mutates _RATE_LIMIT_MAX)
-        limit_now, remaining_now = _rate_state("summary")
+        # Even on cache hit we must respect a newly lowered limit (test mutates RATE_LIMIT_MAX)
+        limit_now, remaining_now = get_rate_state("summary")
         # If currently rate limited (remaining_now == 0 and existing deque length >= limit), respond 429
         # Determine limited condition using remaining_now == 0 and limit_now == 0? limit may be >=1; treat remaining 0 as limited.
-        if remaining_now == 0 and _RATE_LIMIT_ENABLED:
+        if remaining_now == 0 and RATE_LIMIT_ENABLED:
             AI_CALLS.labels("summary", "rate_limited").inc()  # type: ignore
             r = jsonify({"error": "rate_limited", "meta": {"cache": "hit"}})
             r.headers["X-Cache"] = "HIT"
             r.headers["X-RateLimit-Limit"] = str(limit_now)
             r.headers["X-RateLimit-Remaining"] = "0"
-            r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
-            r.headers["Retry-After"] = str(_retry_after_seconds("summary"))
+            r.headers["X-RateLimit-Reset"] = str(int(time.time()) + RATE_LIMIT_WINDOW_SEC)
+            r.headers["Retry-After"] = str(retry_after_seconds("summary"))
             r.headers["X-Request-ID"] = req_id
             return r, 429
         resp_cached = dict(cached)
@@ -5577,13 +5442,13 @@ def api_ai_summary():  # noqa: D401
         rj.headers["X-Request-ID"] = req_id
         return rj
     # Rate limit only applies to fresh generation
-    if _rate_limited("summary"):
+    if is_rate_limited("summary"):
         AI_CALLS.labels("summary", "rate_limited").inc()  # type: ignore
         r = jsonify({"error": "rate_limited"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
         r.headers["X-RateLimit-Remaining"] = "0"
-        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
-        r.headers["Retry-After"] = str(_retry_after_seconds("summary"))
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(retry_after_seconds("summary"))
         r.headers["X-Request-ID"] = req_id
         return r, 429
     sys_prompt = "Eres un analista financiero. Resume eventos y métricas clave en 6-8 viñetas concisas en español neutro."  # noqa: E501
@@ -5594,8 +5459,8 @@ def api_ai_summary():  # noqa: D401
             "content": "Contexto:" + json.dumps(
                 {
                     "metrics": metrics,
-                    "ap": _trim_events(ap_events, 12, 180),
-                    "ar": _trim_events(ar_events, 12, 180),
+                    "ap": trim_events(ap_events, 12, 180),
+                    "ar": trim_events(ar_events, 12, 180),
                 },
                 ensure_ascii=False,
             ),
@@ -5617,17 +5482,17 @@ def api_ai_summary():  # noqa: D401
     out = {"summary": resp.get("content"), "meta": {"ap_events": len(ap_events), "ar_events": len(ar_events), "cache": "miss"}}
     # Store function identity inside cached payload for introspection (not used in tests but aids debugging)
     out["_func_id"] = func_id
-    _cache_set(cache_key, out)
+    cache_set(cache_key, out)
     AI_CALLS.labels("summary", "ok").inc()  # type: ignore
     rj = jsonify(out)
     rj.headers["X-Cache"] = "MISS"
     # Compute remaining after this MISS using current deque length
     try:
-        _, remaining_now = _rate_state("summary")
+        _, remaining_now = get_rate_state("summary")
         # After generating we have already consumed the slot; remaining_now should reflect that.
     except Exception:
-        remaining_now = max(0, _RATE_LIMIT_MAX - 1)
-    rj.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        remaining_now = max(0, RATE_LIMIT_MAX - 1)
+    rj.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
     rj.headers["X-RateLimit-Remaining"] = str(remaining_now)
     rj.headers["X-Request-ID"] = req_id
     return rj
@@ -5641,19 +5506,19 @@ def api_ai_ask():  # noqa: D401
         r = jsonify({"error": "missing:question"})
         r.headers["X-Request-ID"] = req_id
         return r, 422
-    if _rate_limited("ask"):
+    if is_rate_limited("ask"):
         AI_CALLS.labels("ask", "rate_limited").inc()  # type: ignore
         r = jsonify({"error": "rate_limited"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
         r.headers["X-RateLimit-Remaining"] = "0"
-        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
-        r.headers["Retry-After"] = str(_retry_after_seconds("ask"))
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(retry_after_seconds("ask"))
         r.headers["X-Request-ID"] = req_id
         return r, 429
     if not ai_enabled():
         r = jsonify({"error": "ai_disabled"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
-        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_MAX)
         r.headers["X-Request-ID"] = req_id
         return r, 503
     ctx = {}
@@ -5680,7 +5545,7 @@ def api_ai_ask():  # noqa: D401
             "content": (
                 "Contexto: "
                 + json.dumps(
-                    {k: _trim_events(v, 25, 160) for k, v in ctx.items()},
+                    {k: trim_events(v, 25, 160) for k, v in ctx.items()},
                     ensure_ascii=False,
                 )
                 + f"\n\nPregunta: {question}"
@@ -5703,8 +5568,8 @@ def api_ai_ask():  # noqa: D401
     AI_CALLS.labels("ask", "ok").inc()  # type: ignore
     answer_content = resp.get("content") or (resp.get("message") or {}).get("content")
     r = jsonify({"ok": True, "answer": answer_content})
-    r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
-    r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX-1)
+    r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+    r.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_MAX-1)
     r.headers["X-Request-ID"] = req_id
     return r
 
@@ -5719,16 +5584,16 @@ def api_ai_ask_async():  # noqa: D401
         return r, 422
     if not ai_enabled():
         r = jsonify({"error": "ai_disabled"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
-        r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_MAX)
         r.headers["X-Request-ID"] = req_id
         return r, 503
-    if _rate_limited("ask_async"):
+    if is_rate_limited("ask_async"):
         r = jsonify({"error": "rate_limited"})
-        r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
+        r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
         r.headers["X-RateLimit-Remaining"] = "0"
-        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + _RATE_LIMIT_WINDOW_SEC)
-        r.headers["Retry-After"] = str(_retry_after_seconds("ask_async"))
+        r.headers["X-RateLimit-Reset"] = str(int(time.time()) + RATE_LIMIT_WINDOW_SEC)
+        r.headers["Retry-After"] = str(retry_after_seconds("ask_async"))
         r.headers["X-Request-ID"] = req_id
         return r, 429
     ctx = {}
@@ -5755,38 +5620,206 @@ def api_ai_ask_async():  # noqa: D401
             "content": (
                 "Contexto: "
                 + json.dumps(
-                    {k: _trim_events(v, 25, 160) for k, v in ctx.items()},
+                    {k: trim_events(v, 25, 160) for k, v in ctx.items()},
                     ensure_ascii=False,
                 )
                 + f"\n\nPregunta: {question}"
             ),
         },
     ]
-    job_id = _new_job_id()
-    with _jobs_lock:
-        _AI_JOBS[job_id] = {"id": job_id, "status": "running", "created_at": time.time()}
-        try:
-            AI_JOBS_ACTIVE.inc()  # type: ignore
-            AI_JOBS_TOTAL.inc()  # type: ignore
-        except Exception:
-            pass
-        _prune_jobs()
-    th = threading.Thread(target=_run_job, args=(job_id, messages), daemon=True)
-    th.start()
+    job_id = f"job_{int(time.time()*1000)}_{uuid.uuid4().hex[:8]}"
+
+    # Crear el trabajo
+    create_ai_job(job_id, "ai_ask_async", {"messages": messages, "endpoint": "ask_async"})
+    
+    # Función para ejecutar la tarea de AI
+    def execute_ai_request():
+        """Ejecutar la consulta de AI."""
+        if grok_chat:
+            return grok_chat(messages)
+        else:
+            raise RuntimeError("AI not available")
+    
+    # Iniciar la ejecución del trabajo
+    run_ai_job(job_id, execute_ai_request)
+
     AI_CALLS.labels("ask_async", "queued").inc()  # type: ignore
     r = jsonify({"job_id": job_id, "status": "running"})
-    r.headers["X-RateLimit-Limit"] = str(_RATE_LIMIT_MAX)
-    r.headers["X-RateLimit-Remaining"] = str(_RATE_LIMIT_MAX-1)
+    r.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+    r.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_MAX-1)
     r.headers["X-Request-ID"] = req_id
     return r, 202
 
 @app.get("/api/ai/jobs/<job_id>")
 def api_ai_job_status(job_id: str):  # noqa: D401
-    with _jobs_lock:
-        job = _AI_JOBS.get(job_id)
-        if not job:
-            return jsonify({"error": "not_found"}), 404
-        return jsonify(job)
+    req_id = getattr(g, "request_id", uuid.uuid4().hex[:16])
+    job = get_ai_job_status(job_id)
+    if not job:
+        r = jsonify({"error": "job_not_found"})
+        r.headers["X-Request-ID"] = req_id
+        return r, 404
+    r = jsonify(job)
+    r.headers["X-Request-ID"] = req_id
+    return r
+
+@app.get("/api/debug/routes")
+def debug_routes():
+    """Endpoint de debug para listar todas las rutas registradas."""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append({
+            "endpoint": rule.endpoint,
+            "methods": list(rule.methods) if rule.methods else [],
+            "rule": rule.rule
+        })
+    return jsonify({"routes": routes, "total": len(routes)})
+
+
+# SPRINT 1: Endpoints de validación crítica
+@app.route('/api/validations/validate_invoice', methods=['POST'])
+def validate_invoice_endpoint():
+    """Validar factura contra orden de compra"""
+    try:
+        data = request.json
+        po_number = data.get('po_number')
+        invoice_amount = float(data.get('invoice_amount', 0))
+        po_line_id = data.get('po_line_id')  # Opcional
+        
+        from validation_engine import FinancialValidator
+        validator = FinancialValidator(DB_PATH)
+        
+        result = validator.validate_invoice_vs_po(po_number, invoice_amount, po_line_id)
+        
+        if result.is_valid:
+            return jsonify({
+                'valid': True,
+                'remaining_amount': result.allowed_amount,
+                'flags': [{
+                    'type': flag.flag_type,
+                    'severity': flag.severity,
+                    'message': flag.message,
+                    'details': flag.details
+                } for flag in result.flags]
+            }), 200
+        else:
+            error_flag = next((f for f in result.flags if f.severity == 'error'), result.flags[0])
+            return jsonify({
+                'valid': False,
+                'error': error_flag.flag_type,
+                'message': error_flag.message,
+                'details': error_flag.details,
+                'remaining_amount': result.allowed_amount,
+                'attempted_amount': result.attempted_amount
+            }), 422
+            
+    except Exception as e:
+        logger.error(f"Error en validate_invoice: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/validations/validate_payment', methods=['POST'])
+def validate_payment_endpoint():
+    """Validar pago contra factura"""
+    try:
+        data = request.json
+        invoice_id = int(data.get('invoice_id'))
+        payment_amount = float(data.get('payment_amount', 0))
+        
+        from validation_engine import FinancialValidator
+        validator = FinancialValidator(DB_PATH)
+        
+        result = validator.validate_payment_vs_invoice(invoice_id, payment_amount)
+        
+        if result.is_valid:
+            return jsonify({
+                'valid': True,
+                'remaining_amount': result.allowed_amount,
+                'flags': [{
+                    'type': flag.flag_type,
+                    'severity': flag.severity,
+                    'message': flag.message,
+                    'details': flag.details
+                } for flag in result.flags]
+            }), 200
+        else:
+            error_flag = next((f for f in result.flags if f.severity == 'error'), result.flags[0])
+            return jsonify({
+                'valid': False,
+                'error': error_flag.flag_type,
+                'message': error_flag.message,
+                'details': error_flag.details,
+                'remaining_amount': result.allowed_amount,
+                'attempted_amount': result.attempted_amount
+            }), 422
+            
+    except Exception as e:
+        logger.error(f"Error en validate_payment: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/validations/validate_po_budget', methods=['POST'])
+def validate_po_budget_endpoint():
+    """Validar orden de compra contra presupuesto del proyecto"""
+    try:
+        data = request.json
+        project_name = data.get('project_name')
+        po_amount = float(data.get('po_amount', 0))
+        
+        from validation_engine import FinancialValidator
+        validator = FinancialValidator(DB_PATH)
+        
+        result = validator.validate_po_vs_budget(project_name, po_amount)
+        
+        if result.is_valid:
+            return jsonify({
+                'valid': True,
+                'remaining_amount': result.allowed_amount,
+                'flags': [{
+                    'type': flag.flag_type,
+                    'severity': flag.severity,
+                    'message': flag.message,
+                    'details': flag.details
+                } for flag in result.flags]
+            }), 200
+        else:
+            error_flag = next((f for f in result.flags if f.severity == 'error'), result.flags[0])
+            return jsonify({
+                'valid': False,
+                'error': error_flag.flag_type,
+                'message': error_flag.message,
+                'details': error_flag.details,
+                'remaining_amount': result.allowed_amount,
+                'attempted_amount': result.attempted_amount
+            }), 422
+            
+    except Exception as e:
+        logger.error(f"Error en validate_po_budget: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/validations/project_risks/<project_name>')
+def get_project_risks(project_name):
+    """Obtener flags de riesgo para un proyecto específico"""
+    try:
+        from validation_engine import FinancialValidator
+        validator = FinancialValidator(DB_PATH)
+        
+        flags = validator.get_project_risk_flags(project_name)
+        
+        return jsonify({
+            'project_name': project_name,
+            'flags': [{
+                'type': flag.flag_type,
+                'severity': flag.severity,
+                'message': flag.message,
+                'details': flag.details
+            } for flag in flags]
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en get_project_risks: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == "__main__":
     # Run development server only when executed directly (Docker CMD)

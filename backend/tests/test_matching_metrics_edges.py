@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta, UTC
 import unittest
 
-from backend import server  # noqa: F401
+import server  # noqa: F401
 
 
 class MatchingMetricsEdgeCases(unittest.TestCase):

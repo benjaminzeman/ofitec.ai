@@ -1,6 +1,6 @@
 import json
 
-from backend.server import app
+from server import app
 
 
 def test_conciliacion_suggest_metadata(monkeypatch):
@@ -8,7 +8,7 @@ def test_conciliacion_suggest_metadata(monkeypatch):
 
     # Force engine unavailable path (ensure deterministic empty suggestions)
     # by monkeypatching suggest_for_movement to raise.
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
 
     resp = client.post('/api/conciliacion/suggest', json={"context": "bank", "movement_id": 1, "limit": 7})

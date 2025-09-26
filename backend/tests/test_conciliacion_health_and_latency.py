@@ -1,4 +1,4 @@
-from backend.server import app
+from server import app
 
 
 def test_conciliacion_healthz():
@@ -12,7 +12,7 @@ def test_conciliacion_latency_metrics_after_suggest(monkeypatch):
     client = app.test_client()
 
     # Monkeypatch suggest_for_movement to ensure deterministic quick path
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
 
     # Call suggest a few times to populate latency deque

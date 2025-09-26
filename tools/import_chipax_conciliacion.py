@@ -406,7 +406,10 @@ def import_bank(cfg: ImportConfig, metrics: Metrics) -> None:
         })
         _ensure_unique_index(con, 'ux_bank_external', 'bank_movements', ('external_id',))
 
-    files = _iter_csv(cfg, "*Cartola*.csv")
+    files = _iter_csv(cfg, "*banco de chile*conciliacion.csv")
+    if not files:
+        # Fallback to generic cartola pattern
+        files = _iter_csv(cfg, "*Cartola*.csv")
     if not files:
         return
 
@@ -422,14 +425,21 @@ def import_bank(cfg: ImportConfig, metrics: Metrics) -> None:
                         or row.get("Descripcion")
                         or row.get("Descripción")
                     )
-                    monto = _parse_amount(row.get("Monto") or row.get("monto"))
+                    # Handle Chipax format: Cargo (debit) and Abono (credit)
+                    cargo = _parse_amount(row.get("Cargo") or 0)
+                    abono = _parse_amount(row.get("Abono") or 0)
+                    monto = abono - cargo  # Net amount (positive for credit, negative for debit)
+                    if monto == 0:
+                        # Fallback to generic Monto column
+                        monto = _parse_amount(row.get("Monto") or row.get("monto"))
                     moneda = _safe_currency(row.get("Moneda"))
                     banco = _strip(row.get("Banco") or row.get("bank"))
-                    cuenta = _strip(row.get("Cuenta") or row.get("account"))
+                    # Handle different account number column names
+                    cuenta = _strip(row.get("Cuenta") or row.get("account") or row.get("Número Cuenta"))
                     referencia = _strip(row.get("Referencia") or row.get("referencia"))
                     saldo = _parse_amount(row.get("Saldo") or row.get("saldo"))
                     tipo = _strip(row.get("Tipo") or row.get("tipo") or ("credito" if monto >= 0 else "debito")).lower()
-                    external_id = _strip(row.get("ID") or row.get("id") or row.get("External ID"))
+                    external_id = _strip(row.get("ID") or row.get("id") or row.get("External ID") or row.get("Id"))
                     if not external_id:
                         external_id = _bank_external_id(fecha, cuenta, moneda, monto, glosa)
 

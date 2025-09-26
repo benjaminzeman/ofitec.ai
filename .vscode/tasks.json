@@ -100,6 +100,47 @@
 				"3"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Database: Clean test databases",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\cleanup_databases.ps1"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Database: Show statistics",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\cleanup_databases.ps1",
+				"-Stats"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Database: Force clean all test DBs",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"${workspaceFolder}\\scripts\\cleanup_databases.ps1",
+				"-Force"
+			],
+			"group": "build",
+			"problemMatcher": []
 		}
 	]
 }

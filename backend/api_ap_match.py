@@ -39,7 +39,7 @@ from typing import Any
 
 from flask import Blueprint, jsonify, request
 
-from backend.db_utils import db_conn
+from db_utils import db_conn
 
 bp = Blueprint("ap_match", __name__)
 

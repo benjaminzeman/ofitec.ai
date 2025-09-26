@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import tempfile
-from backend.server import app
+from server import app
 
 
 def _new_db():

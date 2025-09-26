@@ -4,7 +4,7 @@ from pathlib import Path
 import uuid
 
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture(name="client")

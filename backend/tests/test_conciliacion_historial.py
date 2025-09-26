@@ -1,7 +1,7 @@
 import os
 import uuid
 from pathlib import Path
-from backend import server
+import server
 
 
 def _isolated_db():

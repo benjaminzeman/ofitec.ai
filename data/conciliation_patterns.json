@@ -1,0 +1,4755 @@
+{
+  "files_processed": 63,
+  "total_reconciliations": 37382,
+  "vendor_aliases": {
+    "76232071-1": {
+      "primary_name": "INMOBILIARIA BOLOMEY LIMITADA",
+      "aliases": [
+        "NAN",
+        "INMOBILIARIA BOLOMEY LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "79862000-2": {
+      "primary_name": "CENTRO COMERCIAL VICUÑA MACKENNA LIMITADA",
+      "aliases": [
+        "NAN",
+        "CENTRO COMERCIAL VICUNA MACKENNA LTDA",
+        "CENTRO COMERCIAL VICUÑA MACKENNA LIMITADA"
+      ],
+      "alias_count": 3
+    },
+    "77716610-7": {
+      "primary_name": "SOC COMERCIAL VALDIVIA & VALDIVIA LIMITA",
+      "aliases": [
+        "SOC COMERCIAL VALDIVIA & VALDIVIA LIMITA",
+        "SOC.COM.VALDIVIA Y VALDIVIA LTDA.",
+        "SOC COMERCIAL VALDIVIA Y VALDIVIA LTDA"
+      ],
+      "alias_count": 3
+    },
+    "70017820-K": {
+      "primary_name": "CAMARA DE COMERCIO DE SANTIAGO A.G.",
+      "aliases": [
+        "CAMARA DE COMERCIO DE SANTIAGO A G",
+        "CAMARA DE COMERCIO DE SANTIAGO A.G."
+      ],
+      "alias_count": 2
+    },
+    "89005900-7": {
+      "primary_name": "SOCIEDAD COMERCIAL ANTUCO LTDA.",
+      "aliases": [
+        "COMERCIAL ANTUCO SPA",
+        "SOCIEDAD COMERCIAL ANTUCO LTDA."
+      ],
+      "alias_count": 2
+    },
+    "84690000-4": {
+      "primary_name": "DROGUETT Y COMPAÏ¿½IA LIMITADA",
+      "aliases": [
+        "DROGUETT Y COMPANIA LIMITADA",
+        "DROGUETT Y COMPAÏ¿½IA LIMITADA",
+        "DROGUETT Y COMPAÑIA LIMITADA"
+      ],
+      "alias_count": 3
+    },
+    "77137860-9": {
+      "primary_name": "COMERCIAL K LIMITADA",
+      "aliases": [
+        "COMERCIAL K LIMITADA",
+        "COMERCIAL K SPA"
+      ],
+      "alias_count": 2
+    },
+    "79903920-6": {
+      "primary_name": "COMERCIAL HISPANO CHILENA LIMITADA",
+      "aliases": [
+        "COMERCIAL HISPANO CHILENA LTDA.",
+        "COMERCIAL HISPANO CHILENA LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "89396900-4": {
+      "primary_name": "DISTRIBUIDORA TECNICA ELECTRICA VITEL S.A.",
+      "aliases": [
+        "DISTRIBUIDORA TECNICA ELECTRICA VIT",
+        "DISTRIBUIDORA TECNICA ELECTRICA VITEL S.A."
+      ],
+      "alias_count": 2
+    },
+    "76896595-1": {
+      "primary_name": "INMOBILIARIA ALTO ALEMANIA DOS SPA",
+      "aliases": [
+        "INMOBILIARIA ALTO ALEMANIA DOS SPA",
+        "NAN",
+        "ALTO ALEMANIA DOS SPA"
+      ],
+      "alias_count": 3
+    },
+    "76262934-8": {
+      "primary_name": "SICPA GOVERNMENT SECURITY SOLUTIONS LATAM SPA",
+      "aliases": [
+        "SICPA GOVERNMENT SECURITY SOLUTIONS LATAM SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "79706120-4": {
+      "primary_name": "ESMAX RED LIMITADA",
+      "aliases": [
+        "ESMAX RED LIMITADA",
+        "ESMAX RED LTDA."
+      ],
+      "alias_count": 2
+    },
+    "76015021-5": {
+      "primary_name": "SOLUCIONES CONSTRUCTIVAS DE DRENAJES S.P.A.",
+      "aliases": [
+        "SOLUCIONES CONSTRUCTIVAS DE DRENAJES SPA",
+        "SOLUCIONES CONSTRUCTIVAS DE DRENAJES S.P.A."
+      ],
+      "alias_count": 2
+    },
+    "76008937-0": {
+      "primary_name": "COMERCIAL E INDUSTRIAL CHILE MADERAS LTDA.",
+      "aliases": [
+        "COMERCIAL E INDUSTRIAL CHILE MADERAS LTDA.",
+        "COMERC. E INDUSTRIAL CHILE MADERAS LTDA."
+      ],
+      "alias_count": 2
+    },
+    "76764263-6": {
+      "primary_name": "INTELIGENCIA TÉCNICA CONSULTORES SPA",
+      "aliases": [
+        "INTELIGENCIA TÉCNICA CONSULTORES SPA",
+        "ITERO SPA"
+      ],
+      "alias_count": 2
+    },
+    "99584090-1": {
+      "primary_name": "SOLUCIONES CONSTRUCTIVAS DESIGN SPA",
+      "aliases": [
+        "SOLUCIONES CONSTRUCTIVAS DESIGN SPA",
+        "SOLUCIONES CONSTRUCTIVAS DESIGN SA"
+      ],
+      "alias_count": 2
+    },
+    "78101780-9": {
+      "primary_name": "COMERCIALIZADORA LARRAIN Y CIA LTDA",
+      "aliases": [
+        "NAN",
+        "COMERCIALIZADORA LARRAIN Y CIA LTDA"
+      ],
+      "alias_count": 2
+    },
+    "96824110-9": {
+      "primary_name": "DISAL CHILE SANITARIOS PORTABLES LIMITADA.",
+      "aliases": [
+        "DISAL CHILE SANITARIOS PORTABLES LIMITADA.",
+        "AMBIPAR ENVIRONMENT CHILE LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "96562640-9": {
+      "primary_name": "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S.A.",
+      "aliases": [
+        "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S A",
+        "COMERCIALIZADORA Y DISTRIBUIDORA VIVANCO S.A.",
+        "NAN"
+      ],
+      "alias_count": 3
+    },
+    "89689900-7": {
+      "primary_name": "DE VICENTE PLASTICOS S.A.",
+      "aliases": [
+        "DE VICENTE PLASTICOS S.A.",
+        "DVP S.A."
+      ],
+      "alias_count": 2
+    },
+    "76037308-7": {
+      "primary_name": "AREVALO Y NAVARRO SOCIEDAD LTDA",
+      "aliases": [
+        "NAN",
+        "AREVALO Y NAVARRO SOCIEDAD LTDA",
+        "AREVALO Y NAVARRO SOC LTDA"
+      ],
+      "alias_count": 3
+    },
+    "99061000-2": {
+      "primary_name": "LIBERTY COMPAÑÍA DE SEGUROS GENERALES S.A.",
+      "aliases": [
+        "HDI SEGUROS S.A.",
+        "LIBERTY COMPAÑÍA DE SEGUROS GENERALES S.A.",
+        "LIBERTY COMPAÑIA DE SEGUROS GENERALES S.A.",
+        "LIBERTY COMPAÑIA DE SEGUROS GENERALES S.A"
+      ],
+      "alias_count": 4
+    },
+    "76775284-9": {
+      "primary_name": "CREATIVE CAMPUS SPA",
+      "aliases": [
+        "CREATIVE CAMPUS SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76568660-1": {
+      "primary_name": "EASY RETAIL S.A.",
+      "aliases": [
+        "EASY RETAIL S.A.",
+        "EASY RETAIL S A"
+      ],
+      "alias_count": 2
+    },
+    "88147600-2": {
+      "primary_name": "HORMIGONES TRANSEX LTDA.",
+      "aliases": [
+        "HORMIGONES TRANSEX LTDA",
+        "HORMIGONES TRANSEX LTDA."
+      ],
+      "alias_count": 2
+    },
+    "76451399-1": {
+      "primary_name": "COMERCIALIZADORA LARRAIN E HIJOS Y COMPANIA LIMITADA",
+      "aliases": [
+        "COMERCIALIZADORA LARRAIN E HIJOS Y COMPANIA LIMITADA",
+        "COMERCIALIZADORA LARRAIN E HIJOS Y CIA LTDA",
+        "COMERCIALIZADORA LARRAIN E HIJOS Y CIA. LTDA."
+      ],
+      "alias_count": 3
+    },
+    "76821330-5": {
+      "primary_name": "IMPERIAL S.A.",
+      "aliases": [
+        "IMPERIAL S.A.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "92642000-3": {
+      "primary_name": "ARTEL. S.A.I.C.",
+      "aliases": [
+        "ARTEL S.A.",
+        "ARTEL. S.A.I.C.",
+        "ARTEL S.A"
+      ],
+      "alias_count": 3
+    },
+    "76927160-0": {
+      "primary_name": "STUDIO GROUP SPA.",
+      "aliases": [
+        "STUDIO GROUP SPA.",
+        "STUDIO GROUP SPA"
+      ],
+      "alias_count": 2
+    },
+    "76484630-3": {
+      "primary_name": "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY LTDA.",
+      "aliases": [
+        "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY LTDA.",
+        "REVESTIMIENTOS MANUEL JESUS RODRIGUEZ BUCAREY EIRL"
+      ],
+      "alias_count": 2
+    },
+    "76080240-9": {
+      "primary_name": "CORTINAS METALICAS CORMET LIMITADA",
+      "aliases": [
+        "CORTINAS METALICAS CORMET LIMITADA",
+        "CORMET SPA"
+      ],
+      "alias_count": 2
+    },
+    "65109841-6": {
+      "primary_name": "FUNDACION EDUCACIONAL REGINA MUNDI",
+      "aliases": [
+        "NAN",
+        "FUNDACION EDUCACIONAL REGINA MUNDI"
+      ],
+      "alias_count": 2
+    },
+    "76278246-4": {
+      "primary_name": "ACEROS Y CUBIERTAS NACIONALES S.A.",
+      "aliases": [
+        "ACEROS Y CUBIERTAS NACIONALES S.A.",
+        "ACEROS Y CUBIERTAS NACIONALES SA"
+      ],
+      "alias_count": 2
+    },
+    "96556070-K": {
+      "primary_name": "ALUMINIOS ARMADOS S.A.",
+      "aliases": [
+        "ALUMINIOS ARMADOS S A",
+        "ALUMINIOS ARMADOS S.A."
+      ],
+      "alias_count": 2
+    },
+    "81201000-K": {
+      "primary_name": "CENCOSUD RETAIL S.A.",
+      "aliases": [
+        "CENCOSUD RETAIL S.A",
+        "CENCOSUD RETAIL S.A."
+      ],
+      "alias_count": 2
+    },
+    "76066593-2": {
+      "primary_name": "EUROPERFILES SANTIAGO S.A.",
+      "aliases": [
+        "EUROPERFILES SANTIAGO S.A.",
+        "VENTEKO S.A."
+      ],
+      "alias_count": 2
+    },
+    "76237019-0": {
+      "primary_name": "MAXI MOBILITY CHILE II SPA",
+      "aliases": [
+        "MAXI MOBILITY CHILE II SPA",
+        "MAXI MOBILITY II SPA",
+        "NAN"
+      ],
+      "alias_count": 3
+    },
+    "89462400-0": {
+      "primary_name": "PLASTICOS BIO BIO S.A.",
+      "aliases": [
+        "PLASTICOS BIO BIO S.A.",
+        "PBB S.A."
+      ],
+      "alias_count": 2
+    },
+    "76065559-7": {
+      "primary_name": "OSSA SISTEMAS CONTRA INCENDIO LIMITADA",
+      "aliases": [
+        "OSSA SISTEMAS CONTRA INCENDIO LIMITADA",
+        "OSSA SISTEMAS CONTRA INCENDIO SPA"
+      ],
+      "alias_count": 2
+    },
+    "76446431-1": {
+      "primary_name": "CENTRAL FRIENDS COFFEE HOUSE S.P.A.",
+      "aliases": [
+        "CENTRAL FRIENDS COFFEE HOUSE S.P.A.",
+        "NAN",
+        "CENTRAL FRIENDS COFFEE HOUSE SPA"
+      ],
+      "alias_count": 3
+    },
+    "77007071-6": {
+      "primary_name": "CENTRAL FRIENDS CIUDAD EMPRESARIAL SPA",
+      "aliases": [
+        "NAN",
+        "CENTRAL FRIENDS CIUDAD EMPRESARIAL SPA"
+      ],
+      "alias_count": 2
+    },
+    "10037150-2": {
+      "primary_name": "CARLOS GUILLERMO HERMOSILLA RIOS",
+      "aliases": [
+        "CARLOS GUILLERMO HERMOSILLA RIOS",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76913034-9": {
+      "primary_name": "PESTBUSTERS CONTROL DE PLAGAS SPA",
+      "aliases": [
+        "PESTBUSTERS CONTROL DE PLAGAS SPA",
+        "GRUPO PB SPA"
+      ],
+      "alias_count": 2
+    },
+    "76991583-4": {
+      "primary_name": "FAI PINEDA SPA",
+      "aliases": [
+        "FAI PINEDA SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "96800570-7": {
+      "primary_name": "ENEL DISTRIBUCIÓN CHILE S.A.",
+      "aliases": [
+        "ENEL DISTRIBUCION CHILE S.A",
+        "ENEL DISTRIBUCIÓN CHILE S.A."
+      ],
+      "alias_count": 2
+    },
+    "70200200-1": {
+      "primary_name": "COMPANIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+      "aliases": [
+        "COMPANIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+        "CIA DE LAS HIJAS DE LA CARIDAD DE SAN VICENTE DE PAUL",
+        "NAN"
+      ],
+      "alias_count": 3
+    },
+    "71309800-0": {
+      "primary_name": "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE MAIPU",
+      "aliases": [
+        "NAN",
+        "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE",
+        "CORPORACION MUNICIPAL DE SERVICIOS Y DESARROLLO DE MAIPU"
+      ],
+      "alias_count": 3
+    },
+    "76991587-7": {
+      "primary_name": "FAI COLON SPA",
+      "aliases": [
+        "FAI COLON SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77057368-8": {
+      "primary_name": "INMOBILIARIA REY ALBERTO SPA",
+      "aliases": [
+        "INMOBILIARIA REY ALBERTO SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76243212-9": {
+      "primary_name": "INMOBILIARIA E INVERSIONES VERNON LIMITADA",
+      "aliases": [
+        "NAN",
+        "INMOBILIARIA E INVERSIONES VERNON LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "76079342-6": {
+      "primary_name": "MASAVAL SAGR",
+      "aliases": [
+        "MASAVAL SAGR",
+        "MASAVAL"
+      ],
+      "alias_count": 2
+    },
+    "56014120-3": {
+      "primary_name": "560141203",
+      "aliases": [
+        "560141203",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "93278000-3": {
+      "primary_name": "CIA COM E IND DE FE Y MET FERROGLOBO S.A.",
+      "aliases": [
+        "CIA COM E IND DE FE Y MET FERROGLOBO S A",
+        "NAN",
+        "CIA COM E IND DE FE Y MET FERROGLOBO S.A."
+      ],
+      "alias_count": 3
+    },
+    "76874069-0": {
+      "primary_name": "INSURTECH SPA",
+      "aliases": [
+        "INSURTECH SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "65059721-4": {
+      "primary_name": "INSTITUTO DE NEUROCIENCIA BIOMEDICA",
+      "aliases": [
+        "INSTITUTO DE NEUROCIENCIA BIOMEDICA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "96767460-5": {
+      "primary_name": "CIUDAD EMPRESARIAL S.A.",
+      "aliases": [
+        "CIUDAD EMPRESARIAL S.A.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "15639030-5": {
+      "primary_name": "PABLO ANDRES THOMPSON LOPEZ",
+      "aliases": [
+        "NAN",
+        "PABLO ANDRES THOMPSON LOPEZ"
+      ],
+      "alias_count": 2
+    },
+    "78424310-9": {
+      "primary_name": "SOCIEDAD DISTRIBUIDORA Y COMERCIAL PI LIMITADA",
+      "aliases": [
+        "SOCIEDAD DISTRIBUIDORA Y COMERCIAL PI LIMITADA",
+        "SOC DISTRIBUIDORA Y COMERCIAL PI LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "76993875-3": {
+      "primary_name": "FAI URREJOLA SPA",
+      "aliases": [
+        "NAN",
+        "FAI URREJOLA SPA"
+      ],
+      "alias_count": 2
+    },
+    "96999930-7": {
+      "primary_name": "KITCHEN CENTER SPA",
+      "aliases": [
+        "KITCHEN CENTER",
+        "KITCHEN CENTER SPA"
+      ],
+      "alias_count": 2
+    },
+    "99530740-5": {
+      "primary_name": "GB INGENIERIA EN FIJACIONES S.A.",
+      "aliases": [
+        "GB INGENIERIA EN FIJACIONES S.A.",
+        "GB INGENIERÍA EN FIJACIONES S.A."
+      ],
+      "alias_count": 2
+    },
+    "23697539-8": {
+      "primary_name": "QUELER MIRANDA TELLO",
+      "aliases": [
+        "NAN",
+        "QUELER MIRANDA TELLO"
+      ],
+      "alias_count": 2
+    },
+    "76618549-5": {
+      "primary_name": "INMOBILIARIA GENERAL JOFRE SPA",
+      "aliases": [
+        "NAN",
+        "INMOBILIARIA GENERAL JOFRE SPA"
+      ],
+      "alias_count": 2
+    },
+    "61107000-4": {
+      "primary_name": "61107000-4-INSTITUTO NACIONAL DE DEPORTES",
+      "aliases": [
+        "INSTITUTO NACIONAL DE DEPORTES DE CHILE",
+        "NAN",
+        "INSTITUTO DE DEPORTES DE CHILE",
+        "61107000-4-INSTITUTO NACIONAL DE DEPORTES"
+      ],
+      "alias_count": 4
+    },
+    "76120063-1": {
+      "primary_name": "MULTIAVAL DOS S.A.G.R.",
+      "aliases": [
+        "FINFAST S.A.G.R.",
+        "MULTIAVAL DOS S.A.G.R."
+      ],
+      "alias_count": 2
+    },
+    "92745000-3": {
+      "primary_name": "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK HNOS S A",
+      "aliases": [
+        "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK HNOS S A",
+        "FCA PAVIMENTOS Y REVESTIMIENTOS BUDNIK H"
+      ],
+      "alias_count": 2
+    },
+    "56068960-8": {
+      "primary_name": "COMUNIDAD EDUARDO DE LA BARRA II",
+      "aliases": [
+        "COMUNIDAD EDUARDO DE LA BARRA II",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77122372-9": {
+      "primary_name": "FAI RUPANCO SPA",
+      "aliases": [
+        "FAI RUPANCO SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76025649-8": {
+      "primary_name": "COMERCIALIZADORA Y DISTRIBUIDORA GEO HIDRAULICA LIMITADA",
+      "aliases": [
+        "GEOHIDRÁULICA LTDA.",
+        "COMERCIALIZADORA Y DISTRIBUIDORA GEO HIDRAULICA LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "76376116-9": {
+      "primary_name": "COMERCIALIZADORA MIKO LIMITADA",
+      "aliases": [
+        "COMERCIALIZADORA MIKO LIMITADA",
+        "ENKO CHILE SPA"
+      ],
+      "alias_count": 2
+    },
+    "76230125-3": {
+      "primary_name": "CONSTRUCTORA DE VICENTE EDIFICACION SA",
+      "aliases": [
+        "CONSTRUCTORA DE VICENTE EDIFICACION SA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76574030-4": {
+      "primary_name": "DINAMMO CONSULTORES LIMITADA",
+      "aliases": [
+        "DINAMMO CONSULTORES LTDA",
+        "DINAMMO CONSULTORES LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "77081172-4": {
+      "primary_name": "FAI CENTRAL SPA",
+      "aliases": [
+        "FAI CENTRAL SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77081167-8": {
+      "primary_name": "FAI FRANKLIN SPA",
+      "aliases": [
+        "NAN",
+        "FAI FRANKLIN SPA"
+      ],
+      "alias_count": 2
+    },
+    "76171745-6": {
+      "primary_name": "BARRIOS Y WURMANN ARQUITECTOS ASOCIADOS LIMITADA",
+      "aliases": [
+        "BARRIOS Y WURMANN ARQUITECTOS ASOCIADOS LIMITADA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "85969100-5": {
+      "primary_name": "MANUFACTURAS ELÉCTRICAS BYP LTDA.",
+      "aliases": [
+        "MANUFACTURAS ELÉCTRICAS BYP LTDA.",
+        "MANUFACTURAS ELECTRICAS BYP LTDA."
+      ],
+      "alias_count": 2
+    },
+    "83162400-0": {
+      "primary_name": "EMARESA INGENIEROS Y REPRESENTACIONES S.A.",
+      "aliases": [
+        "EMARESA INGENIEROS Y REPRESENTACIONES S.A.",
+        "EMARESA INGENIEROS Y REPRESENTACIONES S.A"
+      ],
+      "alias_count": 2
+    },
+    "9561398-5": {
+      "primary_name": "PATRICIO VIDAL AMAYA",
+      "aliases": [
+        "NAN",
+        "PATRICIO VIDAL AMAYA"
+      ],
+      "alias_count": 2
+    },
+    "76761005-K": {
+      "primary_name": "INMOBILIARIA SANTA CRISTINA SPA",
+      "aliases": [
+        "INMOBILIARIA SANTA CRISTINA SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76058018-K": {
+      "primary_name": "PL EDIFICACIONES LIMITADA",
+      "aliases": [
+        "PL EDIFICACIONES LIMITADA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "65108431-8": {
+      "primary_name": "FUNDACION EDUCACIONAL SANTA CATALINA LABOURE",
+      "aliases": [
+        "NAN",
+        "FUNDACION EDUCACIONAL SANTA CATALINA LABOURE"
+      ],
+      "alias_count": 2
+    },
+    "78144260-7": {
+      "primary_name": "BUSES AHUMADA LTDA",
+      "aliases": [
+        "BUSES AHUMADA LTDA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "9477462-4": {
+      "primary_name": "LUIS CARLOS CRISTINO DE WITT",
+      "aliases": [
+        "NAN",
+        "LUIS CARLOS CRISTINO DE WITT"
+      ],
+      "alias_count": 2
+    },
+    "76028265-0": {
+      "primary_name": "COMERCIAL E INMOBILIARIA VISAN LIMITADA",
+      "aliases": [
+        "COMERCIAL E INMOBILIARIA VISAN LIMITADA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "87590300-4": {
+      "primary_name": "CARLOS BOLOMEY SPA",
+      "aliases": [
+        "CARLOS BOLOMEY SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "79588870-5": {
+      "primary_name": "ESMAX DISTRIBUCION SPA",
+      "aliases": [
+        "NAN",
+        "ESMAX DISTRIBUCION SPA"
+      ],
+      "alias_count": 2
+    },
+    "77363661-3": {
+      "primary_name": "FAI LAS DALIAS SPA",
+      "aliases": [
+        "NAN",
+        "FAI LAS DALIAS SPA"
+      ],
+      "alias_count": 2
+    },
+    "76882505-K": {
+      "primary_name": "INMOBILIARIA QUINCHAMALI SPA",
+      "aliases": [
+        "NAN",
+        "INMOBILIARIA QUINCHAMALI SPA"
+      ],
+      "alias_count": 2
+    },
+    "96767450-8": {
+      "primary_name": "GESTORA DE PATRIMONIOS S.A.",
+      "aliases": [
+        "NAN",
+        "GESTORA DE PATRIMONIOS S.A."
+      ],
+      "alias_count": 2
+    },
+    "76025260-3": {
+      "primary_name": "SOCIEDAD PROFESIONAL BECERRA Y GONZALEZ LTDA.",
+      "aliases": [
+        "SOC PROFESIONAL BECERRA & GONZALEZ LIMITADA",
+        "NAN",
+        "SOCIEDAD PROFESIONAL BECERRA Y GONZALEZ LTDA."
+      ],
+      "alias_count": 3
+    },
+    "76812664-K": {
+      "primary_name": "COMERCIALIZADORA DE MATERIALES DE CONSTRUCCION, SERVICIO DE TRANSPORTE",
+      "aliases": [
+        "D&C CONCRETE SPA",
+        "COMERCIALIZADORA DE MATERIALES DE CONSTRUCCION, SERVICIO DE TRANSPORTE"
+      ],
+      "alias_count": 2
+    },
+    "77110413-4": {
+      "primary_name": "INVERSIONES Y ASESORIAS CALIFORNIA SPA",
+      "aliases": [
+        "INVERSIONES Y ASESORIAS CALIFORNIA SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76875199-4": {
+      "primary_name": "CONSTRUCTORA RODRIGO ALBERTO MENESES MAYER E.I.R.L.",
+      "aliases": [
+        "AV BDO. OHIGGINS 4050 OF",
+        "CONSTRUCTORA RODRIGO ALBERTO MENESES MAYER E.I.R.L."
+      ],
+      "alias_count": 2
+    },
+    "76546016-6": {
+      "primary_name": "IMPORTADORA CONVERTIDORA Y COMERCIALIZADORA DE PRODUCTOS PLASTICOS VALPLAST SPA",
+      "aliases": [
+        "IMPORTADORA CONVERTIDORA Y COMERCIALIZADORA DE PRODUCTOS PLASTICOS VALPLAST SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76207727-2": {
+      "primary_name": "BOLOMEY INVERSIONES LTDA",
+      "aliases": [
+        "NAN",
+        "BOLOMEY INVERSIONES LTDA"
+      ],
+      "alias_count": 2
+    },
+    "80851400-1": {
+      "primary_name": "FERRETERIA ANTOFAGASTA LTDA.",
+      "aliases": [
+        "FERRETERIA ANTOFAGASTA LTDA.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "14532347-9": {
+      "primary_name": "ANDRES PATRICIO SILVA MUNSTER",
+      "aliases": [
+        "ANDRES PATRICIO SILVA MUNSTER",
+        "NAN",
+        "ANDRES SILVA MUNSTER"
+      ],
+      "alias_count": 3
+    },
+    "96973660-8": {
+      "primary_name": "INMOBILIARIA LOS TRONCOS",
+      "aliases": [
+        "NAN",
+        "INMOBILIARIA LOS TRONCOS"
+      ],
+      "alias_count": 2
+    },
+    "76978166-8": {
+      "primary_name": "CONSTRUCCIONES LUIS ISAÍAS GAETE NOVOA E.I.R.L.",
+      "aliases": [
+        "CONSTRUCCIONES LGN SPA",
+        "CONSTRUCCIONES LUIS ISAÍAS GAETE NOVOA E.I.R.L."
+      ],
+      "alias_count": 2
+    },
+    "77558346-0": {
+      "primary_name": "ELECTROMECANICA CLAUDIA GOMEZ NAVEA E.I.R.L.",
+      "aliases": [
+        "ELECTROMECANICA CLAUDIA GOMEZ NAVEA E.I.R.L.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76071429-1": {
+      "primary_name": "GOMEZ Y COMPANIA LIMITADA",
+      "aliases": [
+        "GOMEZ Y COMPANIA LIMITADA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "70000670-0": {
+      "primary_name": "CONGREGACION DEL BUEN PASTOR",
+      "aliases": [
+        "CONGREGACION DEL BUEN PASTOR",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77257623-4": {
+      "primary_name": "FAI MIRIARTE SPA",
+      "aliases": [
+        "FAI MIRIARTE SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77608458-1": {
+      "primary_name": "INMOBILIARIA MIRADOR LAGUNA SPA",
+      "aliases": [
+        "INMOBILIARIA MIRADOR LAGUNA SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "70012280-8": {
+      "primary_name": "FUNDACION DE BENEFICENCIA REGAZO",
+      "aliases": [
+        "FUNDACION DE BENEFICENCIA REGAZO",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76425116-4": {
+      "primary_name": "GANO ITOUCH GANO EXCEL SPA",
+      "aliases": [
+        "NAN",
+        "GANO ITOUCH GANO EXCEL SPA"
+      ],
+      "alias_count": 2
+    },
+    "77147322-9": {
+      "primary_name": "ATAM INGENIERIA Y CONSTRUCCION",
+      "aliases": [
+        "ATAM INGENIERIA Y CONSTRUCCION",
+        "NAN",
+        "ATAM DISENO Y CONSTRUCCION SPA"
+      ],
+      "alias_count": 3
+    },
+    "65188697-K": {
+      "primary_name": "ADMINISTRACION GENERAL CLUB LAGUNA",
+      "aliases": [
+        "ADMINISTRACION GENERAL CLUB LAGUNA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76152061-K": {
+      "primary_name": "INVERSIONES E INMOBILIARIA PLAENGE CHILE LIMITADA",
+      "aliases": [
+        "INVERSIONES E INMOBILIARIA PLAENGE CHILE LIMITADA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77114777-1": {
+      "primary_name": "SUNGROW POWER CHILE SPA",
+      "aliases": [
+        "NAN",
+        "SUNGROW POWER CHILE SPA"
+      ],
+      "alias_count": 2
+    },
+    "76449081-9": {
+      "primary_name": "ASICS CHILE SPA",
+      "aliases": [
+        "ASICS CHILE SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76061914-0": {
+      "primary_name": "GARCIA Y COMPAÑIA LTDA.",
+      "aliases": [
+        "GARCIA Y COMPAÑIA LTDA",
+        "GARCIA Y COMPAÑIA LTDA."
+      ],
+      "alias_count": 2
+    },
+    "65175316-3": {
+      "primary_name": "CORPORACION EDUCACIONAL REGACITO",
+      "aliases": [
+        "NAN",
+        "CORPORACION EDUCACIONAL REGACITO"
+      ],
+      "alias_count": 2
+    },
+    "76873710-K": {
+      "primary_name": "INSTITUTO JOHN F. KENNEDY CENTRO DE CAPACITACION SA",
+      "aliases": [
+        "INSTITUTO JOHN F. KENNEDY CENTRO DE CAPACITACION SA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "69061500-2": {
+      "primary_name": "ILUSTRE MUNICIPALIDAD DE VILLA ALEMANA",
+      "aliases": [
+        "NAN",
+        "ILUSTRE MUNICIPALIDAD DE VILLA ALEMANA"
+      ],
+      "alias_count": 2
+    },
+    "88213400-8": {
+      "primary_name": "EMPRESA CONSTRUCTORA DESCO S.A.",
+      "aliases": [
+        "NAN",
+        "EMPRESA CONSTRUCTORA DESCO S.A."
+      ],
+      "alias_count": 2
+    },
+    "76083728-8": {
+      "primary_name": "CAI S.A.",
+      "aliases": [
+        "CAI S.A.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "77096778-3": {
+      "primary_name": "INMOBILIARIA SAN EUGENIO SPA",
+      "aliases": [
+        "INMOBILIARIA SAN EUGENIO SPA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76734336-1": {
+      "primary_name": "INMOBILIARIA ANTOFAGASTA LTDA.",
+      "aliases": [
+        "INMOBILIARIA ANTOFAGASTA LTDA.",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76497650-9": {
+      "primary_name": "CHUNLING WANG IMPORTADORA COMERCIALIZADORA EIRL",
+      "aliases": [
+        "NAN",
+        "CHUNLING WANG IMPORTADORA COMERCIALIZADORA EIRL"
+      ],
+      "alias_count": 2
+    },
+    "76270229-0": {
+      "primary_name": "TCI CHILE SPA",
+      "aliases": [
+        "NAN",
+        "TCI CHILE SPA"
+      ],
+      "alias_count": 2
+    },
+    "76318496-K": {
+      "primary_name": "INMOBILIARIA ROSARIO LTDA",
+      "aliases": [
+        "INMOBILIARIA ROSARIO LTDA",
+        "NAN"
+      ],
+      "alias_count": 2
+    },
+    "76350751-3": {
+      "primary_name": "INVERSIONES ALVAREZ E HIJOS LIMITADA",
+      "aliases": [
+        "NAN",
+        "INVERSIONES ALVAREZ E HIJOS LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "77535354-6": {
+      "primary_name": "CENTRO PADEL LIMITADA",
+      "aliases": [
+        "NAN",
+        "CENTRO PADEL LIMITADA"
+      ],
+      "alias_count": 2
+    },
+    "99554390-7": {
+      "primary_name": "SABA ESTACIONAMIENTOS DE CHILE S.A.",
+      "aliases": [
+        "SABA ESTACIONAMIENTOS DE CHILE S.A.",
+        "NAN"
+      ],
+      "alias_count": 2
+    }
+  },
+  "matching_patterns": {},
+  "timing_analysis": {
+    "-365": {
+      "count": 4,
+      "avg_plazo": 13.75,
+      "min_plazo": 0.0,
+      "max_plazo": 43.0
+    },
+    "-1052": {
+      "count": 1,
+      "avg_plazo": 411.0,
+      "min_plazo": 411.0,
+      "max_plazo": 411.0
+    },
+    "-378": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-363": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 254.0
+    },
+    "-418": {
+      "count": 3,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-360": {
+      "count": 11,
+      "avg_plazo": 15.636363636363637,
+      "min_plazo": 0.0,
+      "max_plazo": 163.0
+    },
+    "-359": {
+      "count": 1,
+      "avg_plazo": 4.0,
+      "min_plazo": 4.0,
+      "max_plazo": 4.0
+    },
+    "-358": {
+      "count": 3,
+      "avg_plazo": 0.3333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-357": {
+      "count": 4,
+      "avg_plazo": 2.75,
+      "min_plazo": 0.0,
+      "max_plazo": 11.0
+    },
+    "-356": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 83.0
+    },
+    "-353": {
+      "count": 30,
+      "avg_plazo": 9.1,
+      "min_plazo": 0.0,
+      "max_plazo": 270.0
+    },
+    "-743": {
+      "count": 2,
+      "avg_plazo": 5.5,
+      "min_plazo": 0.0,
+      "max_plazo": 11.0
+    },
+    "-745": {
+      "count": 1,
+      "avg_plazo": 112.0,
+      "min_plazo": 112.0,
+      "max_plazo": 112.0
+    },
+    "-371": {
+      "count": 7,
+      "avg_plazo": 12.714285714285714,
+      "min_plazo": 0.0,
+      "max_plazo": 88.0
+    },
+    "-1040": {
+      "count": 1,
+      "avg_plazo": 903.0,
+      "min_plazo": 903.0,
+      "max_plazo": 903.0
+    },
+    "-409": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-352": {
+      "count": 7,
+      "avg_plazo": 0.5714285714285714,
+      "min_plazo": 0.0,
+      "max_plazo": 3.0
+    },
+    "-367": {
+      "count": 11,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 217.0
+    },
+    "-351": {
+      "count": 17,
+      "avg_plazo": 5.411764705882353,
+      "min_plazo": 0.0,
+      "max_plazo": 39.0
+    },
+    "-741": {
+      "count": 1,
+      "avg_plazo": 2.0,
+      "min_plazo": 2.0,
+      "max_plazo": 2.0
+    },
+    "-407": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-369": {
+      "count": 9,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-370": {
+      "count": 3,
+      "avg_plazo": 13.333333333333334,
+      "min_plazo": 0.0,
+      "max_plazo": 40.0
+    },
+    "-366": {
+      "count": 4,
+      "avg_plazo": 85.5,
+      "min_plazo": 0.0,
+      "max_plazo": 342.0
+    },
+    "-350": {
+      "count": 15,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 287.0
+    },
+    "-1037": {
+      "count": 1,
+      "avg_plazo": 250.0,
+      "min_plazo": 250.0,
+      "max_plazo": 250.0
+    },
+    "-742": {
+      "count": 1,
+      "avg_plazo": 102.0,
+      "min_plazo": 102.0,
+      "max_plazo": 102.0
+    },
+    "-740": {
+      "count": 1,
+      "avg_plazo": 2.0,
+      "min_plazo": 2.0,
+      "max_plazo": 2.0
+    },
+    "-349": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 145.0
+    },
+    "-346": {
+      "count": 9,
+      "avg_plazo": 10.222222222222221,
+      "min_plazo": 0.0,
+      "max_plazo": 37.0
+    },
+    "-399": {
+      "count": 1,
+      "avg_plazo": 3.0,
+      "min_plazo": 3.0,
+      "max_plazo": 3.0
+    },
+    "-347": {
+      "count": 6,
+      "avg_plazo": 4.0,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-364": {
+      "count": 5,
+      "avg_plazo": 1.2,
+      "min_plazo": 0.0,
+      "max_plazo": 6.0
+    },
+    "-402": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 238.0
+    },
+    "-345": {
+      "count": 16,
+      "avg_plazo": 7.8125,
+      "min_plazo": 0.0,
+      "max_plazo": 47.0
+    },
+    "-737": {
+      "count": 1,
+      "avg_plazo": 20.0,
+      "min_plazo": 20.0,
+      "max_plazo": 20.0
+    },
+    "-497": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-343": {
+      "count": 9,
+      "avg_plazo": 8.666666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 78.0
+    },
+    "-344": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-342": {
+      "count": 5,
+      "avg_plazo": 1.0,
+      "min_plazo": 0.0,
+      "max_plazo": 4.0
+    },
+    "-340": {
+      "count": 8,
+      "avg_plazo": 0.125,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-339": {
+      "count": 10,
+      "avg_plazo": 4.8,
+      "min_plazo": 0.0,
+      "max_plazo": 23.0
+    },
+    "-491": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-385": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-338": {
+      "count": 6,
+      "avg_plazo": 0.3333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-384": {
+      "count": 4,
+      "avg_plazo": 33.75,
+      "min_plazo": 0.0,
+      "max_plazo": 135.0
+    },
+    "-337": {
+      "count": 10,
+      "avg_plazo": 2.7,
+      "min_plazo": 0.0,
+      "max_plazo": 22.0
+    },
+    "-727": {
+      "count": 1,
+      "avg_plazo": 131.0,
+      "min_plazo": 131.0,
+      "max_plazo": 131.0
+    },
+    "-336": {
+      "count": 17,
+      "avg_plazo": 4.764705882352941,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-354": {
+      "count": 6,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-381": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-335": {
+      "count": 3,
+      "avg_plazo": 85.0,
+      "min_plazo": 3.0,
+      "max_plazo": 249.0
+    },
+    "-487": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-341": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 366.0
+    },
+    "-390": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-388": {
+      "count": 3,
+      "avg_plazo": 35.333333333333336,
+      "min_plazo": 14.0,
+      "max_plazo": 74.0
+    },
+    "-333": {
+      "count": 13,
+      "avg_plazo": 1.7692307692307692,
+      "min_plazo": 0.0,
+      "max_plazo": 20.0
+    },
+    "-332": {
+      "count": 6,
+      "avg_plazo": 1.1666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 3.0
+    },
+    "-484": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-375": {
+      "count": 2,
+      "avg_plazo": 42.5,
+      "min_plazo": 0.0,
+      "max_plazo": 85.0
+    },
+    "-331": {
+      "count": 8,
+      "avg_plazo": 24.375,
+      "min_plazo": 0.0,
+      "max_plazo": 194.0
+    },
+    "-1017": {
+      "count": 2,
+      "avg_plazo": 630.5,
+      "min_plazo": 583.0,
+      "max_plazo": 678.0
+    },
+    "-482": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-330": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 13.0
+    },
+    "-329": {
+      "count": 14,
+      "avg_plazo": 10.214285714285714,
+      "min_plazo": 0.0,
+      "max_plazo": 104.0
+    },
+    "-1015": {
+      "count": 1,
+      "avg_plazo": 691.0,
+      "min_plazo": 691.0,
+      "max_plazo": 691.0
+    },
+    "-718": {
+      "count": 1,
+      "avg_plazo": 2.0,
+      "min_plazo": 2.0,
+      "max_plazo": 2.0
+    },
+    "-374": {
+      "count": 3,
+      "avg_plazo": 117.33333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 332.0
+    },
+    "-325": {
+      "count": 23,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 128.0
+    },
+    "-715": {
+      "count": 1,
+      "avg_plazo": 5.0,
+      "min_plazo": 5.0,
+      "max_plazo": 5.0
+    },
+    "-326": {
+      "count": 7,
+      "avg_plazo": 34.142857142857146,
+      "min_plazo": 0.0,
+      "max_plazo": 239.0
+    },
+    "-477": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-717": {
+      "count": 1,
+      "avg_plazo": 347.0,
+      "min_plazo": 347.0,
+      "max_plazo": 347.0
+    },
+    "-479": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-714": {
+      "count": 2,
+      "avg_plazo": 15.0,
+      "min_plazo": 0.0,
+      "max_plazo": 30.0
+    },
+    "-324": {
+      "count": 9,
+      "avg_plazo": 4.888888888888889,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-476": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-323": {
+      "count": 38,
+      "avg_plazo": 6.552631578947368,
+      "min_plazo": 0.0,
+      "max_plazo": 188.0
+    },
+    "-1009": {
+      "count": 2,
+      "avg_plazo": 343.5,
+      "min_plazo": 0.0,
+      "max_plazo": 687.0
+    },
+    "-322": {
+      "count": 10,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 32.0
+    },
+    "-321": {
+      "count": 13,
+      "avg_plazo": 37.0,
+      "min_plazo": 0.0,
+      "max_plazo": 422.0
+    },
+    "-319": {
+      "count": 14,
+      "avg_plazo": 5.0,
+      "min_plazo": 0.0,
+      "max_plazo": 26.0
+    },
+    "-471": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-1005": {
+      "count": 1,
+      "avg_plazo": 690.0,
+      "min_plazo": 690.0,
+      "max_plazo": 690.0
+    },
+    "-470": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-334": {
+      "count": 18,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-318": {
+      "count": 18,
+      "avg_plazo": 8.555555555555555,
+      "min_plazo": 0.0,
+      "max_plazo": 49.0
+    },
+    "-317": {
+      "count": 7,
+      "avg_plazo": 8.285714285714286,
+      "min_plazo": 0.0,
+      "max_plazo": 34.0
+    },
+    "-707": {
+      "count": 1,
+      "avg_plazo": 67.0,
+      "min_plazo": 67.0,
+      "max_plazo": 67.0
+    },
+    "-1004": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-469": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-708": {
+      "count": 5,
+      "avg_plazo": 175.4,
+      "min_plazo": 27.0,
+      "max_plazo": 366.0
+    },
+    "-320": {
+      "count": 5,
+      "avg_plazo": 6.4,
+      "min_plazo": 0.0,
+      "max_plazo": 29.0
+    },
+    "-706": {
+      "count": 3,
+      "avg_plazo": 250.0,
+      "min_plazo": 8.0,
+      "max_plazo": 371.0
+    },
+    "-316": {
+      "count": 7,
+      "avg_plazo": 3.142857142857143,
+      "min_plazo": 0.0,
+      "max_plazo": 20.0
+    },
+    "-361": {
+      "count": 5,
+      "avg_plazo": 45.4,
+      "min_plazo": 0.0,
+      "max_plazo": 217.0
+    },
+    "-315": {
+      "count": 19,
+      "avg_plazo": 10.736842105263158,
+      "min_plazo": 0.0,
+      "max_plazo": 134.0
+    },
+    "-1002": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-314": {
+      "count": 11,
+      "avg_plazo": 5.363636363636363,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-466": {
+      "count": 4,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-311": {
+      "count": 21,
+      "avg_plazo": 2.380952380952381,
+      "min_plazo": 0.0,
+      "max_plazo": 15.0
+    },
+    "-703": {
+      "count": 5,
+      "avg_plazo": 371.2,
+      "min_plazo": 21.0,
+      "max_plazo": 695.0
+    },
+    "-563": {
+      "count": 7,
+      "avg_plazo": NaN,
+      "min_plazo": 554.0,
+      "max_plazo": 554.0
+    },
+    "-701": {
+      "count": 2,
+      "avg_plazo": 363.5,
+      "min_plazo": 128.0,
+      "max_plazo": 599.0
+    },
+    "-997": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-700": {
+      "count": 1,
+      "avg_plazo": 13.0,
+      "min_plazo": 13.0,
+      "max_plazo": 13.0
+    },
+    "-309": {
+      "count": 9,
+      "avg_plazo": 20.666666666666668,
+      "min_plazo": 0.0,
+      "max_plazo": 56.0
+    },
+    "-313": {
+      "count": 10,
+      "avg_plazo": 3.9,
+      "min_plazo": 0.0,
+      "max_plazo": 19.0
+    },
+    "-308": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 26.0
+    },
+    "-460": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-312": {
+      "count": 12,
+      "avg_plazo": 31.5,
+      "min_plazo": 0.0,
+      "max_plazo": 302.0
+    },
+    "-462": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-995": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-307": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 113.0
+    },
+    "-461": {
+      "count": 3,
+      "avg_plazo": 71.33333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 214.0
+    },
+    "-305": {
+      "count": 7,
+      "avg_plazo": 3.857142857142857,
+      "min_plazo": 0.0,
+      "max_plazo": 20.0
+    },
+    "-304": {
+      "count": 9,
+      "avg_plazo": 4.111111111111111,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-303": {
+      "count": 3,
+      "avg_plazo": 87.0,
+      "min_plazo": 0.0,
+      "max_plazo": 260.0
+    },
+    "-693": {
+      "count": 1,
+      "avg_plazo": 189.0,
+      "min_plazo": 189.0,
+      "max_plazo": 189.0
+    },
+    "-306": {
+      "count": 23,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-355": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-455": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-301": {
+      "count": 13,
+      "avg_plazo": 7.230769230769231,
+      "min_plazo": 0.0,
+      "max_plazo": 23.0
+    },
+    "-300": {
+      "count": 9,
+      "avg_plazo": 5.0,
+      "min_plazo": 0.0,
+      "max_plazo": 22.0
+    },
+    "-451": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-967": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-297": {
+      "count": 10,
+      "avg_plazo": 4.5,
+      "min_plazo": 0.0,
+      "max_plazo": 35.0
+    },
+    "-298": {
+      "count": 6,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-687": {
+      "count": 1,
+      "avg_plazo": 31.0,
+      "min_plazo": 31.0,
+      "max_plazo": 31.0
+    },
+    "-984": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-685": {
+      "count": 2,
+      "avg_plazo": 31.0,
+      "min_plazo": 0.0,
+      "max_plazo": 62.0
+    },
+    "-295": {
+      "count": 23,
+      "avg_plazo": 11.391304347826088,
+      "min_plazo": 0.0,
+      "max_plazo": 245.0
+    },
+    "-299": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-348": {
+      "count": 3,
+      "avg_plazo": 4.666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 14.0
+    },
+    "-362": {
+      "count": 3,
+      "avg_plazo": 3.6666666666666665,
+      "min_plazo": 0.0,
+      "max_plazo": 9.0
+    },
+    "-982": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-686": {
+      "count": 1,
+      "avg_plazo": 64.0,
+      "min_plazo": 64.0,
+      "max_plazo": 64.0
+    },
+    "-446": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-293": {
+      "count": 12,
+      "avg_plazo": 6.25,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-448": {
+      "count": 2,
+      "avg_plazo": 19.0,
+      "min_plazo": 0.0,
+      "max_plazo": 38.0
+    },
+    "-290": {
+      "count": 10,
+      "avg_plazo": 10.6,
+      "min_plazo": 0.0,
+      "max_plazo": 57.0
+    },
+    "-680": {
+      "count": 1,
+      "avg_plazo": 214.0,
+      "min_plazo": 214.0,
+      "max_plazo": 214.0
+    },
+    "-960": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-296": {
+      "count": 1,
+      "avg_plazo": 23.0,
+      "min_plazo": 23.0,
+      "max_plazo": 23.0
+    },
+    "-294": {
+      "count": 21,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 34.0
+    },
+    "-443": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-656": {
+      "count": 3,
+      "avg_plazo": 145.0,
+      "min_plazo": 19.0,
+      "max_plazo": 362.0
+    },
+    "-289": {
+      "count": 11,
+      "avg_plazo": 23.545454545454547,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-288": {
+      "count": 8,
+      "avg_plazo": 9.375,
+      "min_plazo": 0.0,
+      "max_plazo": 25.0
+    },
+    "-292": {
+      "count": 3,
+      "avg_plazo": 90.66666666666667,
+      "min_plazo": 2.0,
+      "max_plazo": 247.0
+    },
+    "-975": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-439": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-287": {
+      "count": 7,
+      "avg_plazo": 2.5714285714285716,
+      "min_plazo": 0.0,
+      "max_plazo": 14.0
+    },
+    "-286": {
+      "count": 3,
+      "avg_plazo": 17.666666666666668,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-970": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-436": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-673": {
+      "count": 1,
+      "avg_plazo": 30.0,
+      "min_plazo": 30.0,
+      "max_plazo": 30.0
+    },
+    "-283": {
+      "count": 4,
+      "avg_plazo": 30.0,
+      "min_plazo": 0.0,
+      "max_plazo": 53.0
+    },
+    "-282": {
+      "count": 10,
+      "avg_plazo": 6.3,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-969": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-328": {
+      "count": 11,
+      "avg_plazo": 43.81818181818182,
+      "min_plazo": 0.0,
+      "max_plazo": 292.0
+    },
+    "-281": {
+      "count": 16,
+      "avg_plazo": 2.625,
+      "min_plazo": 0.0,
+      "max_plazo": 26.0
+    },
+    "-279": {
+      "count": 10,
+      "avg_plazo": 4.1,
+      "min_plazo": 0.0,
+      "max_plazo": 10.0
+    },
+    "-285": {
+      "count": 3,
+      "avg_plazo": 0.3333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-949": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-280": {
+      "count": 9,
+      "avg_plazo": 34.44444444444444,
+      "min_plazo": 0.0,
+      "max_plazo": 192.0
+    },
+    "-276": {
+      "count": 16,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 233.0
+    },
+    "-428": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-275": {
+      "count": 11,
+      "avg_plazo": 12.909090909090908,
+      "min_plazo": 0.0,
+      "max_plazo": 43.0
+    },
+    "-945": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-274": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-278": {
+      "count": 9,
+      "avg_plazo": 32.666666666666664,
+      "min_plazo": 0.0,
+      "max_plazo": 133.0
+    },
+    "-961": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-277": {
+      "count": 22,
+      "avg_plazo": 8.272727272727273,
+      "min_plazo": 0.0,
+      "max_plazo": 164.0
+    },
+    "-273": {
+      "count": 8,
+      "avg_plazo": 10.5,
+      "min_plazo": 0.0,
+      "max_plazo": 66.0
+    },
+    "-662": {
+      "count": 2,
+      "avg_plazo": 99.5,
+      "min_plazo": 42.0,
+      "max_plazo": 157.0
+    },
+    "-272": {
+      "count": 10,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 43.0
+    },
+    "-426": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-959": {
+      "count": 3,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-291": {
+      "count": 5,
+      "avg_plazo": 2.2,
+      "min_plazo": 0.0,
+      "max_plazo": 8.0
+    },
+    "-956": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-423": {
+      "count": 2,
+      "avg_plazo": 1.0,
+      "min_plazo": 0.0,
+      "max_plazo": 2.0
+    },
+    "-269": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-268": {
+      "count": 8,
+      "avg_plazo": 8.25,
+      "min_plazo": 0.0,
+      "max_plazo": 34.0
+    },
+    "-412": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-421": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-659": {
+      "count": 1,
+      "avg_plazo": 78.0,
+      "min_plazo": 78.0,
+      "max_plazo": 78.0
+    },
+    "-267": {
+      "count": 11,
+      "avg_plazo": 17.545454545454547,
+      "min_plazo": 0.0,
+      "max_plazo": 144.0
+    },
+    "-271": {
+      "count": 5,
+      "avg_plazo": 29.6,
+      "min_plazo": 0.0,
+      "max_plazo": 148.0
+    },
+    "-655": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 80.0,
+      "max_plazo": 576.0
+    },
+    "-265": {
+      "count": 4,
+      "avg_plazo": 11.0,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-262": {
+      "count": 7,
+      "avg_plazo": 14.0,
+      "min_plazo": 0.0,
+      "max_plazo": 53.0
+    },
+    "-266": {
+      "count": 7,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-415": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-413": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-261": {
+      "count": 28,
+      "avg_plazo": 32.32142857142857,
+      "min_plazo": 0.0,
+      "max_plazo": 806.0
+    },
+    "-653": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-634": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 516.0,
+      "max_plazo": 516.0
+    },
+    "-260": {
+      "count": 16,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 34.0
+    },
+    "-650": {
+      "count": 1,
+      "avg_plazo": 54.0,
+      "min_plazo": 54.0,
+      "max_plazo": 54.0
+    },
+    "-264": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 103.0
+    },
+    "-302": {
+      "count": 3,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-649": {
+      "count": 2,
+      "avg_plazo": 26.5,
+      "min_plazo": 11.0,
+      "max_plazo": 42.0
+    },
+    "-259": {
+      "count": 20,
+      "avg_plazo": 7.45,
+      "min_plazo": 0.0,
+      "max_plazo": 25.0
+    },
+    "-942": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-255": {
+      "count": 4,
+      "avg_plazo": 19.25,
+      "min_plazo": 0.0,
+      "max_plazo": 56.0
+    },
+    "-310": {
+      "count": 1,
+      "avg_plazo": 4.0,
+      "min_plazo": 4.0,
+      "max_plazo": 4.0
+    },
+    "-645": {
+      "count": 1,
+      "avg_plazo": 88.0,
+      "min_plazo": 88.0,
+      "max_plazo": 88.0
+    },
+    "-925": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-254": {
+      "count": 7,
+      "avg_plazo": 25.285714285714285,
+      "min_plazo": 0.0,
+      "max_plazo": 61.0
+    },
+    "-919": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 650.0,
+      "max_plazo": 650.0
+    },
+    "-646": {
+      "count": 1,
+      "avg_plazo": 31.0,
+      "min_plazo": 31.0,
+      "max_plazo": 31.0
+    },
+    "-258": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 35.0
+    },
+    "-253": {
+      "count": 4,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-251": {
+      "count": 10,
+      "avg_plazo": 2.1,
+      "min_plazo": 0.0,
+      "max_plazo": 16.0
+    },
+    "-938": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-257": {
+      "count": 4,
+      "avg_plazo": 1.0,
+      "min_plazo": 1.0,
+      "max_plazo": 1.0
+    },
+    "-641": {
+      "count": 1,
+      "avg_plazo": 34.0,
+      "min_plazo": 34.0,
+      "max_plazo": 34.0
+    },
+    "-643": {
+      "count": 2,
+      "avg_plazo": 12.5,
+      "min_plazo": 0.0,
+      "max_plazo": 25.0
+    },
+    "-248": {
+      "count": 11,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 135.0
+    },
+    "-403": {
+      "count": 1,
+      "avg_plazo": 2.0,
+      "min_plazo": 2.0,
+      "max_plazo": 2.0
+    },
+    "-640": {
+      "count": 1,
+      "avg_plazo": 32.0,
+      "min_plazo": 32.0,
+      "max_plazo": 32.0
+    },
+    "-252": {
+      "count": 2,
+      "avg_plazo": 17.0,
+      "min_plazo": 0.0,
+      "max_plazo": 34.0
+    },
+    "-934": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-247": {
+      "count": 23,
+      "avg_plazo": 13.826086956521738,
+      "min_plazo": 0.0,
+      "max_plazo": 243.0
+    },
+    "-637": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 72.0,
+      "max_plazo": 72.0
+    },
+    "-932": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-263": {
+      "count": 12,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 24.0
+    },
+    "-245": {
+      "count": 6,
+      "avg_plazo": 5.666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 18.0
+    },
+    "-249": {
+      "count": 16,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-635": {
+      "count": 1,
+      "avg_plazo": 40.0,
+      "min_plazo": 40.0,
+      "max_plazo": 40.0
+    },
+    "-241": {
+      "count": 16,
+      "avg_plazo": 3.3125,
+      "min_plazo": 0.0,
+      "max_plazo": 21.0
+    },
+    "-244": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 114.0
+    },
+    "-398": {
+      "count": 2,
+      "avg_plazo": 0.5,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-250": {
+      "count": 6,
+      "avg_plazo": 1.0,
+      "min_plazo": 0.0,
+      "max_plazo": 6.0
+    },
+    "-909": {
+      "count": 1,
+      "avg_plazo": 640.0,
+      "min_plazo": 640.0,
+      "max_plazo": 640.0
+    },
+    "-396": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-395": {
+      "count": 1,
+      "avg_plazo": 15.0,
+      "min_plazo": 15.0,
+      "max_plazo": 15.0
+    },
+    "-631": {
+      "count": 1,
+      "avg_plazo": 74.0,
+      "min_plazo": 74.0,
+      "max_plazo": 74.0
+    },
+    "-906": {
+      "count": 1,
+      "avg_plazo": 637.0,
+      "min_plazo": 637.0,
+      "max_plazo": 637.0
+    },
+    "-393": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-238": {
+      "count": 12,
+      "avg_plazo": 26.666666666666668,
+      "min_plazo": 0.0,
+      "max_plazo": 101.0
+    },
+    "-928": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-237": {
+      "count": 8,
+      "avg_plazo": 4.75,
+      "min_plazo": 0.0,
+      "max_plazo": 37.0
+    },
+    "-904": {
+      "count": 1,
+      "avg_plazo": 635.0,
+      "min_plazo": 635.0,
+      "max_plazo": 635.0
+    },
+    "-284": {
+      "count": 8,
+      "avg_plazo": 26.0,
+      "min_plazo": 7.0,
+      "max_plazo": 42.0
+    },
+    "-628": {
+      "count": 3,
+      "avg_plazo": 112.66666666666667,
+      "min_plazo": 45.0,
+      "max_plazo": 229.0
+    },
+    "-242": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-235": {
+      "count": 4,
+      "avg_plazo": 2.25,
+      "min_plazo": 0.0,
+      "max_plazo": 7.0
+    },
+    "-392": {
+      "count": 1,
+      "avg_plazo": 41.0,
+      "min_plazo": 41.0,
+      "max_plazo": 41.0
+    },
+    "-924": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-234": {
+      "count": 8,
+      "avg_plazo": 12.25,
+      "min_plazo": 0.0,
+      "max_plazo": 39.0
+    },
+    "-243": {
+      "count": 2,
+      "avg_plazo": 9.0,
+      "min_plazo": 0.0,
+      "max_plazo": 18.0
+    },
+    "-231": {
+      "count": 12,
+      "avg_plazo": 1.6666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 20.0
+    },
+    "-240": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-624": {
+      "count": 1,
+      "avg_plazo": 15.0,
+      "min_plazo": 15.0,
+      "max_plazo": 15.0
+    },
+    "-921": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-230": {
+      "count": 1,
+      "avg_plazo": 4.0,
+      "min_plazo": 4.0,
+      "max_plazo": 4.0
+    },
+    "-229": {
+      "count": 17,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 27.0
+    },
+    "-228": {
+      "count": 8,
+      "avg_plazo": 13.75,
+      "min_plazo": 0.0,
+      "max_plazo": 100.0
+    },
+    "-918": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-621": {
+      "count": 3,
+      "avg_plazo": 190.0,
+      "min_plazo": 26.0,
+      "max_plazo": 280.0
+    },
+    "-246": {
+      "count": 7,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 7.0
+    },
+    "-617": {
+      "count": 2,
+      "avg_plazo": 198.5,
+      "min_plazo": 49.0,
+      "max_plazo": 348.0
+    },
+    "-898": {
+      "count": 1,
+      "avg_plazo": 13.0,
+      "min_plazo": 13.0,
+      "max_plazo": 13.0
+    },
+    "-224": {
+      "count": 6,
+      "avg_plazo": 45.833333333333336,
+      "min_plazo": 0.0,
+      "max_plazo": 164.0
+    },
+    "-233": {
+      "count": 3,
+      "avg_plazo": 13.333333333333334,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-227": {
+      "count": 3,
+      "avg_plazo": 28.666666666666668,
+      "min_plazo": 0.0,
+      "max_plazo": 54.0
+    },
+    "-912": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-379": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-222": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-270": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-221": {
+      "count": 5,
+      "avg_plazo": 21.2,
+      "min_plazo": 0.0,
+      "max_plazo": 63.0
+    },
+    "-614": {
+      "count": 1,
+      "avg_plazo": 30.0,
+      "min_plazo": 30.0,
+      "max_plazo": 30.0
+    },
+    "-220": {
+      "count": 2,
+      "avg_plazo": 4.0,
+      "min_plazo": 0.0,
+      "max_plazo": 8.0
+    },
+    "-613": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 41.0,
+      "max_plazo": 41.0
+    },
+    "-217": {
+      "count": 15,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 118.0
+    },
+    "-612": {
+      "count": 2,
+      "avg_plazo": 29.5,
+      "min_plazo": 0.0,
+      "max_plazo": 59.0
+    },
+    "-226": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-216": {
+      "count": 4,
+      "avg_plazo": 15.75,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-215": {
+      "count": 18,
+      "avg_plazo": 3.5,
+      "min_plazo": 0.0,
+      "max_plazo": 42.0
+    },
+    "-214": {
+      "count": 5,
+      "avg_plazo": 4.4,
+      "min_plazo": 0.0,
+      "max_plazo": 22.0
+    },
+    "-603": {
+      "count": 6,
+      "avg_plazo": 210.5,
+      "min_plazo": 0.0,
+      "max_plazo": 524.0
+    },
+    "-210": {
+      "count": 7,
+      "avg_plazo": 8.714285714285714,
+      "min_plazo": 0.0,
+      "max_plazo": 18.0
+    },
+    "-900": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-232": {
+      "count": 10,
+      "avg_plazo": 7.7,
+      "min_plazo": 0.0,
+      "max_plazo": 77.0
+    },
+    "-219": {
+      "count": 4,
+      "avg_plazo": 67.0,
+      "min_plazo": 0.0,
+      "max_plazo": 150.0
+    },
+    "-878": {
+      "count": 1,
+      "avg_plazo": 609.0,
+      "min_plazo": 609.0,
+      "max_plazo": 609.0
+    },
+    "-209": {
+      "count": 8,
+      "avg_plazo": 40.75,
+      "min_plazo": 0.0,
+      "max_plazo": 129.0
+    },
+    "-213": {
+      "count": 7,
+      "avg_plazo": 39.142857142857146,
+      "min_plazo": 0.0,
+      "max_plazo": 206.0
+    },
+    "-602": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 133.0,
+      "max_plazo": 203.0
+    },
+    "-208": {
+      "count": 2,
+      "avg_plazo": 30.5,
+      "min_plazo": 20.0,
+      "max_plazo": 41.0
+    },
+    "-207": {
+      "count": 7,
+      "avg_plazo": 15.0,
+      "min_plazo": 0.0,
+      "max_plazo": 90.0
+    },
+    "-896": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-212": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 63.0
+    },
+    "-203": {
+      "count": 12,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 147.0
+    },
+    "-596": {
+      "count": 1,
+      "avg_plazo": 54.0,
+      "min_plazo": 54.0,
+      "max_plazo": 54.0
+    },
+    "-211": {
+      "count": 1,
+      "avg_plazo": 50.0,
+      "min_plazo": 50.0,
+      "max_plazo": 50.0
+    },
+    "-202": {
+      "count": 4,
+      "avg_plazo": 0.25,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-201": {
+      "count": 17,
+      "avg_plazo": 7.9411764705882355,
+      "min_plazo": 0.0,
+      "max_plazo": 59.0
+    },
+    "-199": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 54.0
+    },
+    "-889": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-196": {
+      "count": 3,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-218": {
+      "count": 5,
+      "avg_plazo": 0.2,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-195": {
+      "count": 8,
+      "avg_plazo": 37.125,
+      "min_plazo": 0.0,
+      "max_plazo": 187.0
+    },
+    "-194": {
+      "count": 3,
+      "avg_plazo": 5.0,
+      "min_plazo": 0.0,
+      "max_plazo": 15.0
+    },
+    "-193": {
+      "count": 13,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 24.0
+    },
+    "-192": {
+      "count": 3,
+      "avg_plazo": 4.666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 14.0
+    },
+    "-882": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-587": {
+      "count": 1,
+      "avg_plazo": 85.0,
+      "min_plazo": 85.0,
+      "max_plazo": 85.0
+    },
+    "-585": {
+      "count": 1,
+      "avg_plazo": 237.0,
+      "min_plazo": 237.0,
+      "max_plazo": 237.0
+    },
+    "-189": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-188": {
+      "count": 5,
+      "avg_plazo": 2.8,
+      "min_plazo": 0.0,
+      "max_plazo": 14.0
+    },
+    "-580": {
+      "count": 2,
+      "avg_plazo": 171.5,
+      "min_plazo": 162.0,
+      "max_plazo": 181.0
+    },
+    "-186": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 180.0
+    },
+    "-182": {
+      "count": 6,
+      "avg_plazo": 10.333333333333334,
+      "min_plazo": 0.0,
+      "max_plazo": 36.0
+    },
+    "-191": {
+      "count": 8,
+      "avg_plazo": 0.375,
+      "min_plazo": 0.0,
+      "max_plazo": 3.0
+    },
+    "-577": {
+      "count": 1,
+      "avg_plazo": 20.0,
+      "min_plazo": 20.0,
+      "max_plazo": 20.0
+    },
+    "-204": {
+      "count": 9,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-575": {
+      "count": 1,
+      "avg_plazo": 535.0,
+      "min_plazo": 535.0,
+      "max_plazo": 535.0
+    },
+    "-200": {
+      "count": 4,
+      "avg_plazo": 13.5,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-177": {
+      "count": 5,
+      "avg_plazo": 58.2,
+      "min_plazo": 0.0,
+      "max_plazo": 97.0
+    },
+    "-179": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-170": {
+      "count": 3,
+      "avg_plazo": 1.0,
+      "min_plazo": 0.0,
+      "max_plazo": 2.0
+    },
+    "-175": {
+      "count": 10,
+      "avg_plazo": 26.1,
+      "min_plazo": 0.0,
+      "max_plazo": 165.0
+    },
+    "-574": {
+      "count": 1,
+      "avg_plazo": 97.0,
+      "min_plazo": 97.0,
+      "max_plazo": 97.0
+    },
+    "-167": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 7.0,
+      "max_plazo": 391.0
+    },
+    "-573": {
+      "count": 1,
+      "avg_plazo": 78.0,
+      "min_plazo": 78.0,
+      "max_plazo": 78.0
+    },
+    "-178": {
+      "count": 10,
+      "avg_plazo": 9.6,
+      "min_plazo": 0.0,
+      "max_plazo": 39.0
+    },
+    "-571": {
+      "count": 3,
+      "avg_plazo": 192.66666666666666,
+      "min_plazo": 69.0,
+      "max_plazo": 437.0
+    },
+    "-174": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 109.0
+    },
+    "-173": {
+      "count": 3,
+      "avg_plazo": 14.666666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 27.0
+    },
+    "-172": {
+      "count": 27,
+      "avg_plazo": 4.37037037037037,
+      "min_plazo": 0.0,
+      "max_plazo": 45.0
+    },
+    "-159": {
+      "count": 10,
+      "avg_plazo": 12.9,
+      "min_plazo": 0.0,
+      "max_plazo": 54.0
+    },
+    "-160": {
+      "count": 2,
+      "avg_plazo": 2.5,
+      "min_plazo": 1.0,
+      "max_plazo": 4.0
+    },
+    "-564": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 64.0
+    },
+    "-171": {
+      "count": 8,
+      "avg_plazo": 8.25,
+      "min_plazo": 0.0,
+      "max_plazo": 59.0
+    },
+    "-157": {
+      "count": 20,
+      "avg_plazo": 1.5,
+      "min_plazo": 0.0,
+      "max_plazo": 15.0
+    },
+    "-168": {
+      "count": 19,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 148.0
+    },
+    "-166": {
+      "count": 3,
+      "avg_plazo": 41.333333333333336,
+      "min_plazo": 24.0,
+      "max_plazo": 63.0
+    },
+    "-184": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 154.0
+    },
+    "-187": {
+      "count": 15,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-162": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 28.0
+    },
+    "-855": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-158": {
+      "count": 5,
+      "avg_plazo": 38.6,
+      "min_plazo": 0.0,
+      "max_plazo": 158.0
+    },
+    "-165": {
+      "count": 4,
+      "avg_plazo": 7.75,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-152": {
+      "count": 22,
+      "avg_plazo": 2.3181818181818183,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-153": {
+      "count": 6,
+      "avg_plazo": 5.666666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 19.0
+    },
+    "-854": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-149": {
+      "count": 6,
+      "avg_plazo": 24.333333333333332,
+      "min_plazo": 0.0,
+      "max_plazo": 105.0
+    },
+    "-183": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-161": {
+      "count": 4,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-150": {
+      "count": 8,
+      "avg_plazo": 28.125,
+      "min_plazo": 0.0,
+      "max_plazo": 102.0
+    },
+    "-148": {
+      "count": 4,
+      "avg_plazo": 10.5,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-169": {
+      "count": 3,
+      "avg_plazo": 0.3333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-155": {
+      "count": 5,
+      "avg_plazo": 1.8,
+      "min_plazo": 0.0,
+      "max_plazo": 9.0
+    },
+    "-554": {
+      "count": 1,
+      "avg_plazo": 85.0,
+      "min_plazo": 85.0,
+      "max_plazo": 85.0
+    },
+    "-156": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-206": {
+      "count": 2,
+      "avg_plazo": 18.0,
+      "min_plazo": 0.0,
+      "max_plazo": 36.0
+    },
+    "-146": {
+      "count": 5,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-145": {
+      "count": 11,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 455.0
+    },
+    "-163": {
+      "count": 2,
+      "avg_plazo": 58.5,
+      "min_plazo": 47.0,
+      "max_plazo": 70.0
+    },
+    "-143": {
+      "count": 8,
+      "avg_plazo": 15.0,
+      "min_plazo": 0.0,
+      "max_plazo": 36.0
+    },
+    "-147": {
+      "count": 13,
+      "avg_plazo": 7.384615384615385,
+      "min_plazo": 0.0,
+      "max_plazo": 28.0
+    },
+    "-547": {
+      "count": 1,
+      "avg_plazo": 95.0,
+      "min_plazo": 95.0,
+      "max_plazo": 95.0
+    },
+    "-151": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 10.0
+    },
+    "-142": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 35.0
+    },
+    "-140": {
+      "count": 25,
+      "avg_plazo": 7.0,
+      "min_plazo": 0.0,
+      "max_plazo": 96.0
+    },
+    "-144": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 80.0
+    },
+    "-154": {
+      "count": 6,
+      "avg_plazo": 29.333333333333332,
+      "min_plazo": 0.0,
+      "max_plazo": 151.0
+    },
+    "-138": {
+      "count": 2,
+      "avg_plazo": 4.0,
+      "min_plazo": 0.0,
+      "max_plazo": 8.0
+    },
+    "-136": {
+      "count": 7,
+      "avg_plazo": 66.57142857142857,
+      "min_plazo": 2.0,
+      "max_plazo": 224.0
+    },
+    "-176": {
+      "count": 6,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 135.0
+    },
+    "-135": {
+      "count": 12,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 225.0
+    },
+    "-141": {
+      "count": 10,
+      "avg_plazo": 0.1,
+      "min_plazo": 0.0,
+      "max_plazo": 1.0
+    },
+    "-134": {
+      "count": 3,
+      "avg_plazo": 5.333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 9.0
+    },
+    "-190": {
+      "count": 6,
+      "avg_plazo": 5.0,
+      "min_plazo": 0.0,
+      "max_plazo": 30.0
+    },
+    "-133": {
+      "count": 5,
+      "avg_plazo": 43.6,
+      "min_plazo": 0.0,
+      "max_plazo": 111.0
+    },
+    "-537": {
+      "count": 2,
+      "avg_plazo": 103.5,
+      "min_plazo": 103.0,
+      "max_plazo": 104.0
+    },
+    "-834": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-137": {
+      "count": 4,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 30.0
+    },
+    "-139": {
+      "count": 2,
+      "avg_plazo": 16.5,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-129": {
+      "count": 3,
+      "avg_plazo": 14.0,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-128": {
+      "count": 4,
+      "avg_plazo": 41.5,
+      "min_plazo": 0.0,
+      "max_plazo": 119.0
+    },
+    "-127": {
+      "count": 6,
+      "avg_plazo": 120.0,
+      "min_plazo": 0.0,
+      "max_plazo": 586.0
+    },
+    "-125": {
+      "count": 8,
+      "avg_plazo": 27.5,
+      "min_plazo": 0.0,
+      "max_plazo": 99.0
+    },
+    "-185": {
+      "count": 5,
+      "avg_plazo": 4.0,
+      "min_plazo": 0.0,
+      "max_plazo": 17.0
+    },
+    "-122": {
+      "count": 12,
+      "avg_plazo": 25.083333333333332,
+      "min_plazo": 0.0,
+      "max_plazo": 114.0
+    },
+    "-121": {
+      "count": 9,
+      "avg_plazo": 47.44444444444444,
+      "min_plazo": 0.0,
+      "max_plazo": 223.0
+    },
+    "-119": {
+      "count": 8,
+      "avg_plazo": 12.125,
+      "min_plazo": 0.0,
+      "max_plazo": 37.0
+    },
+    "-118": {
+      "count": 4,
+      "avg_plazo": 9.5,
+      "min_plazo": 0.0,
+      "max_plazo": 30.0
+    },
+    "-126": {
+      "count": 38,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 210.0
+    },
+    "-123": {
+      "count": 4,
+      "avg_plazo": 38.0,
+      "min_plazo": 0.0,
+      "max_plazo": 116.0
+    },
+    "-117": {
+      "count": 9,
+      "avg_plazo": 30.0,
+      "min_plazo": 0.0,
+      "max_plazo": 127.0
+    },
+    "-115": {
+      "count": 7,
+      "avg_plazo": 11.857142857142858,
+      "min_plazo": 0.0,
+      "max_plazo": 33.0
+    },
+    "-521": {
+      "count": 1,
+      "avg_plazo": 115.0,
+      "min_plazo": 115.0,
+      "max_plazo": 115.0
+    },
+    "-114": {
+      "count": 12,
+      "avg_plazo": 14.333333333333334,
+      "min_plazo": 0.0,
+      "max_plazo": 84.0
+    },
+    "-520": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 112.0,
+      "max_plazo": 112.0
+    },
+    "-113": {
+      "count": 13,
+      "avg_plazo": 19.846153846153847,
+      "min_plazo": 0.0,
+      "max_plazo": 258.0
+    },
+    "-519": {
+      "count": 1,
+      "avg_plazo": 113.0,
+      "min_plazo": 113.0,
+      "max_plazo": 113.0
+    },
+    "-112": {
+      "count": 17,
+      "avg_plazo": 26.705882352941178,
+      "min_plazo": 0.0,
+      "max_plazo": 271.0
+    },
+    "-499": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-108": {
+      "count": 10,
+      "avg_plazo": 13.3,
+      "min_plazo": 0.0,
+      "max_plazo": 103.0
+    },
+    "-116": {
+      "count": 2,
+      "avg_plazo": 3.0,
+      "min_plazo": 0.0,
+      "max_plazo": 6.0
+    },
+    "-164": {
+      "count": 11,
+      "avg_plazo": 75.63636363636364,
+      "min_plazo": 0.0,
+      "max_plazo": 355.0
+    },
+    "-789": {
+      "count": 1,
+      "avg_plazo": 504.0,
+      "min_plazo": 504.0,
+      "max_plazo": 504.0
+    },
+    "-104": {
+      "count": 11,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 592.0
+    },
+    "-105": {
+      "count": 6,
+      "avg_plazo": 12.0,
+      "min_plazo": 0.0,
+      "max_plazo": 69.0
+    },
+    "-101": {
+      "count": 4,
+      "avg_plazo": 92.75,
+      "min_plazo": 3.0,
+      "max_plazo": 350.0
+    },
+    "-100": {
+      "count": 13,
+      "avg_plazo": 5.6923076923076925,
+      "min_plazo": 0.0,
+      "max_plazo": 41.0
+    },
+    "-98": {
+      "count": 21,
+      "avg_plazo": 2.2857142857142856,
+      "min_plazo": 0.0,
+      "max_plazo": 21.0
+    },
+    "-503": {
+      "count": 3,
+      "avg_plazo": 77.0,
+      "min_plazo": 0.0,
+      "max_plazo": 131.0
+    },
+    "-97": {
+      "count": 13,
+      "avg_plazo": 14.076923076923077,
+      "min_plazo": 0.0,
+      "max_plazo": 73.0
+    },
+    "-102": {
+      "count": 7,
+      "avg_plazo": 7.857142857142857,
+      "min_plazo": 0.0,
+      "max_plazo": 42.0
+    },
+    "-501": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 347.0,
+      "max_plazo": 347.0
+    },
+    "-798": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-474": {
+      "count": 1,
+      "avg_plazo": 134.0,
+      "min_plazo": 134.0,
+      "max_plazo": 134.0
+    },
+    "-93": {
+      "count": 7,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 93.0
+    },
+    "-498": {
+      "count": 1,
+      "avg_plazo": 142.0,
+      "min_plazo": 142.0,
+      "max_plazo": 142.0
+    },
+    "-500": {
+      "count": 1,
+      "avg_plazo": 132.0,
+      "min_plazo": 132.0,
+      "max_plazo": 132.0
+    },
+    "-94": {
+      "count": 13,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 94.0
+    },
+    "-87": {
+      "count": 15,
+      "avg_plazo": 27.133333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 182.0
+    },
+    "-85": {
+      "count": 18,
+      "avg_plazo": 25.61111111111111,
+      "min_plazo": 0.0,
+      "max_plazo": 89.0
+    },
+    "-86": {
+      "count": 11,
+      "avg_plazo": 6.454545454545454,
+      "min_plazo": 0.0,
+      "max_plazo": 35.0
+    },
+    "-92": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 83.0
+    },
+    "-84": {
+      "count": 33,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 60.0
+    },
+    "-83": {
+      "count": 7,
+      "avg_plazo": 53.714285714285715,
+      "min_plazo": 0.0,
+      "max_plazo": 186.0
+    },
+    "-82": {
+      "count": 18,
+      "avg_plazo": 16.0,
+      "min_plazo": 0.0,
+      "max_plazo": 142.0
+    },
+    "-78": {
+      "count": 13,
+      "avg_plazo": 4.076923076923077,
+      "min_plazo": 0.0,
+      "max_plazo": 42.0
+    },
+    "-79": {
+      "count": 7,
+      "avg_plazo": 103.85714285714286,
+      "min_plazo": 0.0,
+      "max_plazo": 432.0
+    },
+    "-111": {
+      "count": 13,
+      "avg_plazo": 0.23076923076923078,
+      "min_plazo": 0.0,
+      "max_plazo": 3.0
+    },
+    "-779": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-110": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-76": {
+      "count": 14,
+      "avg_plazo": 24.857142857142858,
+      "min_plazo": 0.0,
+      "max_plazo": 185.0
+    },
+    "-77": {
+      "count": 25,
+      "avg_plazo": 27.72,
+      "min_plazo": 0.0,
+      "max_plazo": 412.0
+    },
+    "-72": {
+      "count": 13,
+      "avg_plazo": 30.46153846153846,
+      "min_plazo": 0.0,
+      "max_plazo": 251.0
+    },
+    "-71": {
+      "count": 17,
+      "avg_plazo": 34.23529411764706,
+      "min_plazo": 0.0,
+      "max_plazo": 216.0
+    },
+    "-73": {
+      "count": 5,
+      "avg_plazo": 8.2,
+      "min_plazo": 0.0,
+      "max_plazo": 31.0
+    },
+    "-80": {
+      "count": 8,
+      "avg_plazo": 90.375,
+      "min_plazo": 0.0,
+      "max_plazo": 469.0
+    },
+    "-70": {
+      "count": 35,
+      "avg_plazo": 8.8,
+      "min_plazo": 0.0,
+      "max_plazo": 69.0
+    },
+    "-67": {
+      "count": 26,
+      "avg_plazo": 14.23076923076923,
+      "min_plazo": 0.0,
+      "max_plazo": 275.0
+    },
+    "-106": {
+      "count": 6,
+      "avg_plazo": 116.0,
+      "min_plazo": 0.0,
+      "max_plazo": 603.0
+    },
+    "-66": {
+      "count": 5,
+      "avg_plazo": 128.6,
+      "min_plazo": 0.0,
+      "max_plazo": 625.0
+    },
+    "-65": {
+      "count": 11,
+      "avg_plazo": 27.545454545454547,
+      "min_plazo": 0.0,
+      "max_plazo": 74.0
+    },
+    "-64": {
+      "count": 28,
+      "avg_plazo": 10.714285714285714,
+      "min_plazo": 0.0,
+      "max_plazo": 63.0
+    },
+    "-63": {
+      "count": 27,
+      "avg_plazo": 9.666666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 62.0
+    },
+    "-96": {
+      "count": 17,
+      "avg_plazo": 0.7058823529411765,
+      "min_plazo": 0.0,
+      "max_plazo": 10.0
+    },
+    "-62": {
+      "count": 23,
+      "avg_plazo": 19.391304347826086,
+      "min_plazo": 0.0,
+      "max_plazo": 282.0
+    },
+    "-747": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-61": {
+      "count": 13,
+      "avg_plazo": 3.3846153846153846,
+      "min_plazo": 0.0,
+      "max_plazo": 44.0
+    },
+    "-57": {
+      "count": 32,
+      "avg_plazo": 7.46875,
+      "min_plazo": 0.0,
+      "max_plazo": 55.0
+    },
+    "-56": {
+      "count": 11,
+      "avg_plazo": 18.818181818181817,
+      "min_plazo": 0.0,
+      "max_plazo": 112.0
+    },
+    "-463": {
+      "count": 1,
+      "avg_plazo": 84.0,
+      "min_plazo": 84.0,
+      "max_plazo": 84.0
+    },
+    "-55": {
+      "count": 14,
+      "avg_plazo": 18.285714285714285,
+      "min_plazo": 0.0,
+      "max_plazo": 70.0
+    },
+    "-54": {
+      "count": 34,
+      "avg_plazo": 12.617647058823529,
+      "min_plazo": 0.0,
+      "max_plazo": 298.0
+    },
+    "-88": {
+      "count": 7,
+      "avg_plazo": 56.285714285714285,
+      "min_plazo": 0.0,
+      "max_plazo": 305.0
+    },
+    "-50": {
+      "count": 49,
+      "avg_plazo": 5.653061224489796,
+      "min_plazo": 0.0,
+      "max_plazo": 74.0
+    },
+    "-60": {
+      "count": 18,
+      "avg_plazo": 21.77777777777778,
+      "min_plazo": 0.0,
+      "max_plazo": 290.0
+    },
+    "-49": {
+      "count": 26,
+      "avg_plazo": 2.6153846153846154,
+      "min_plazo": 0.0,
+      "max_plazo": 29.0
+    },
+    "-58": {
+      "count": 18,
+      "avg_plazo": 9.666666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 74.0
+    },
+    "-51": {
+      "count": 8,
+      "avg_plazo": 25.5,
+      "min_plazo": 0.0,
+      "max_plazo": 117.0
+    },
+    "-45": {
+      "count": 24,
+      "avg_plazo": 4.333333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 73.0
+    },
+    "-43": {
+      "count": 28,
+      "avg_plazo": 39.214285714285715,
+      "min_plazo": 0.0,
+      "max_plazo": 514.0
+    },
+    "-81": {
+      "count": 32,
+      "avg_plazo": 12.90625,
+      "min_plazo": 0.0,
+      "max_plazo": 267.0
+    },
+    "-53": {
+      "count": 60,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 171.0
+    },
+    "-41": {
+      "count": 46,
+      "avg_plazo": 15.934782608695652,
+      "min_plazo": 0.0,
+      "max_plazo": 463.0
+    },
+    "-38": {
+      "count": 17,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 256.0
+    },
+    "-36": {
+      "count": 33,
+      "avg_plazo": 10.787878787878787,
+      "min_plazo": 0.0,
+      "max_plazo": 79.0
+    },
+    "-442": {
+      "count": 1,
+      "avg_plazo": 233.0,
+      "min_plazo": 233.0,
+      "max_plazo": 233.0
+    },
+    "-42": {
+      "count": 21,
+      "avg_plazo": 16.571428571428573,
+      "min_plazo": 0.0,
+      "max_plazo": 233.0
+    },
+    "-35": {
+      "count": 77,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 335.0
+    },
+    "-34": {
+      "count": 27,
+      "avg_plazo": 29.333333333333332,
+      "min_plazo": 0.0,
+      "max_plazo": 322.0
+    },
+    "-33": {
+      "count": 29,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 45.0
+    },
+    "-32": {
+      "count": 21,
+      "avg_plazo": 20.952380952380953,
+      "min_plazo": 0.0,
+      "max_plazo": 144.0
+    },
+    "-91": {
+      "count": 14,
+      "avg_plazo": 6.357142857142857,
+      "min_plazo": 0.0,
+      "max_plazo": 59.0
+    },
+    "-40": {
+      "count": 32,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 591.0
+    },
+    "-437": {
+      "count": 1,
+      "avg_plazo": 324.0,
+      "min_plazo": 324.0,
+      "max_plazo": 324.0
+    },
+    "-29": {
+      "count": 44,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 70.0
+    },
+    "-30": {
+      "count": 35,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 214.0
+    },
+    "-28": {
+      "count": 58,
+      "avg_plazo": 16.982758620689655,
+      "min_plazo": 0.0,
+      "max_plazo": 375.0
+    },
+    "-37": {
+      "count": 36,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 93.0
+    },
+    "-198": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 266.0
+    },
+    "-27": {
+      "count": 58,
+      "avg_plazo": 8.793103448275861,
+      "min_plazo": 0.0,
+      "max_plazo": 343.0
+    },
+    "-89": {
+      "count": 6,
+      "avg_plazo": 11.0,
+      "min_plazo": 0.0,
+      "max_plazo": 37.0
+    },
+    "-26": {
+      "count": 36,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 60.0
+    },
+    "-25": {
+      "count": 57,
+      "avg_plazo": 15.421052631578947,
+      "min_plazo": 0.0,
+      "max_plazo": 411.0
+    },
+    "-47": {
+      "count": 36,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 197.0
+    },
+    "-22": {
+      "count": 26,
+      "avg_plazo": 27.384615384615383,
+      "min_plazo": 0.0,
+      "max_plazo": 174.0
+    },
+    "-24": {
+      "count": 61,
+      "avg_plazo": 16.81967213114754,
+      "min_plazo": 0.0,
+      "max_plazo": 334.0
+    },
+    "-19": {
+      "count": 87,
+      "avg_plazo": 3.0804597701149423,
+      "min_plazo": 0.0,
+      "max_plazo": 56.0
+    },
+    "-21": {
+      "count": 62,
+      "avg_plazo": 10.887096774193548,
+      "min_plazo": 0.0,
+      "max_plazo": 203.0
+    },
+    "-18": {
+      "count": 60,
+      "avg_plazo": 5.283333333333333,
+      "min_plazo": 0.0,
+      "max_plazo": 93.0
+    },
+    "-15": {
+      "count": 87,
+      "avg_plazo": 6.816091954022989,
+      "min_plazo": 0.0,
+      "max_plazo": 294.0
+    },
+    "-16": {
+      "count": 59,
+      "avg_plazo": 0.7796610169491526,
+      "min_plazo": 0.0,
+      "max_plazo": 15.0
+    },
+    "-17": {
+      "count": 65,
+      "avg_plazo": 8.692307692307692,
+      "min_plazo": 0.0,
+      "max_plazo": 141.0
+    },
+    "-14": {
+      "count": 68,
+      "avg_plazo": 12.161764705882353,
+      "min_plazo": 0.0,
+      "max_plazo": 191.0
+    },
+    "-23": {
+      "count": 48,
+      "avg_plazo": 8.416666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 124.0
+    },
+    "-13": {
+      "count": 89,
+      "avg_plazo": 5.247191011235955,
+      "min_plazo": 0.0,
+      "max_plazo": 164.0
+    },
+    "-12": {
+      "count": 76,
+      "avg_plazo": 3.3552631578947367,
+      "min_plazo": 0.0,
+      "max_plazo": 48.0
+    },
+    "-10": {
+      "count": 58,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 143.0
+    },
+    "-8": {
+      "count": 85,
+      "avg_plazo": 16.305882352941175,
+      "min_plazo": 0.0,
+      "max_plazo": 220.0
+    },
+    "-711": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-9": {
+      "count": 85,
+      "avg_plazo": 5.670588235294118,
+      "min_plazo": 0.0,
+      "max_plazo": 63.0
+    },
+    "-6": {
+      "count": 115,
+      "avg_plazo": 22.8,
+      "min_plazo": 0.0,
+      "max_plazo": 379.0
+    },
+    "-11": {
+      "count": 52,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 159.0
+    },
+    "-5": {
+      "count": 150,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 244.0
+    },
+    "-4": {
+      "count": 141,
+      "avg_plazo": 9.198581560283689,
+      "min_plazo": 0.0,
+      "max_plazo": 193.0
+    },
+    "-2": {
+      "count": 238,
+      "avg_plazo": 8.378151260504202,
+      "min_plazo": 0.0,
+      "max_plazo": 378.0
+    },
+    "-1": {
+      "count": 633,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 306.0
+    },
+    "1": {
+      "count": 994,
+      "avg_plazo": 24.494969818913482,
+      "min_plazo": 0.0,
+      "max_plazo": 431.0
+    },
+    "-702": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "0": {
+      "count": 2323,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 742.0
+    },
+    "2": {
+      "count": 287,
+      "avg_plazo": 28.885017421602786,
+      "min_plazo": 0.0,
+      "max_plazo": 654.0
+    },
+    "-400": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 349.0
+    },
+    "-31": {
+      "count": 18,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 144.0
+    },
+    "-46": {
+      "count": 28,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 45.0
+    },
+    "-7": {
+      "count": 113,
+      "avg_plazo": 11.938053097345133,
+      "min_plazo": 0.0,
+      "max_plazo": 207.0
+    },
+    "-3": {
+      "count": 215,
+      "avg_plazo": 9.404651162790698,
+      "min_plazo": 0.0,
+      "max_plazo": 126.0
+    },
+    "-386": {
+      "count": 1,
+      "avg_plazo": 159.0,
+      "min_plazo": 159.0,
+      "max_plazo": 159.0
+    },
+    "-39": {
+      "count": 30,
+      "avg_plazo": 4.066666666666666,
+      "min_plazo": 0.0,
+      "max_plazo": 91.0
+    },
+    "-681": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "3": {
+      "count": 466,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 535.0
+    },
+    "-647": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": 378.0,
+      "max_plazo": 378.0
+    },
+    "-20": {
+      "count": 66,
+      "avg_plazo": 10.090909090909092,
+      "min_plazo": 0.0,
+      "max_plazo": 141.0
+    },
+    "-658": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-633": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": 364.0,
+      "max_plazo": 364.0
+    },
+    "-638": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-120": {
+      "count": 9,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 203.0
+    },
+    "-648": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-644": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-630": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-625": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-327": {
+      "count": 1,
+      "avg_plazo": 416.0,
+      "min_plazo": 416.0,
+      "max_plazo": 416.0
+    },
+    "-74": {
+      "count": 10,
+      "avg_plazo": 8.4,
+      "min_plazo": 0.0,
+      "max_plazo": 74.0
+    },
+    "-616": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-48": {
+      "count": 17,
+      "avg_plazo": 7.117647058823529,
+      "min_plazo": 0.0,
+      "max_plazo": 47.0
+    },
+    "-591": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-419": {
+      "count": 2,
+      "avg_plazo": 92.0,
+      "min_plazo": 8.0,
+      "max_plazo": 176.0
+    },
+    "-582": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-180": {
+      "count": 3,
+      "avg_plazo": 69.66666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 175.0
+    },
+    "-570": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-569": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-562": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-543": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-556": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-549": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-90": {
+      "count": 7,
+      "avg_plazo": 63.285714285714285,
+      "min_plazo": 0.0,
+      "max_plazo": 266.0
+    },
+    "-529": {
+      "count": 8,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-513": {
+      "count": 1,
+      "avg_plazo": 236.0,
+      "min_plazo": 236.0,
+      "max_plazo": 236.0
+    },
+    "-518": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-511": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-505": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-504": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-485": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-109": {
+      "count": 6,
+      "avg_plazo": 7.166666666666667,
+      "min_plazo": 0.0,
+      "max_plazo": 35.0
+    },
+    "-483": {
+      "count": 3,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-480": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-44": {
+      "count": 13,
+      "avg_plazo": 30.384615384615383,
+      "min_plazo": 0.0,
+      "max_plazo": 175.0
+    },
+    "-465": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-464": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-75": {
+      "count": 5,
+      "avg_plazo": NaN,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-130": {
+      "count": 5,
+      "avg_plazo": 3.8,
+      "min_plazo": 0.0,
+      "max_plazo": 16.0
+    },
+    "-435": {
+      "count": 1,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-429": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-99": {
+      "count": 8,
+      "avg_plazo": 13.5,
+      "min_plazo": 0.0,
+      "max_plazo": 75.0
+    },
+    "-95": {
+      "count": 6,
+      "avg_plazo": 27.166666666666668,
+      "min_plazo": 0.0,
+      "max_plazo": 91.0
+    },
+    "-408": {
+      "count": 2,
+      "avg_plazo": NaN,
+      "min_plazo": NaN,
+      "max_plazo": NaN
+    },
+    "-382": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-475": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-473": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-107": {
+      "count": 5,
+      "avg_plazo": 3.2,
+      "min_plazo": 0.0,
+      "max_plazo": 12.0
+    },
+    "-391": {
+      "count": 1,
+      "avg_plazo": 309.0,
+      "min_plazo": 309.0,
+      "max_plazo": 309.0
+    },
+    "-68": {
+      "count": 37,
+      "avg_plazo": 2.810810810810811,
+      "min_plazo": 0.0,
+      "max_plazo": 100.0
+    },
+    "-458": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-447": {
+      "count": 3,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-69": {
+      "count": 8,
+      "avg_plazo": 18.375,
+      "min_plazo": 0.0,
+      "max_plazo": 93.0
+    },
+    "-441": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-440": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-59": {
+      "count": 8,
+      "avg_plazo": 15.75,
+      "min_plazo": 0.0,
+      "max_plazo": 39.0
+    },
+    "-372": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-434": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-430": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-411": {
+      "count": 2,
+      "avg_plazo": 33.5,
+      "min_plazo": 0.0,
+      "max_plazo": 67.0
+    },
+    "4": {
+      "count": 28,
+      "avg_plazo": 18.392857142857142,
+      "min_plazo": 0.0,
+      "max_plazo": 179.0
+    },
+    "-387": {
+      "count": 1,
+      "avg_plazo": 289.0,
+      "min_plazo": 289.0,
+      "max_plazo": 289.0
+    },
+    "-132": {
+      "count": 4,
+      "avg_plazo": 7.0,
+      "min_plazo": 0.0,
+      "max_plazo": 28.0
+    },
+    "-239": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-52": {
+      "count": 9,
+      "avg_plazo": 21.0,
+      "min_plazo": 0.0,
+      "max_plazo": 114.0
+    },
+    "-225": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-256": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-223": {
+      "count": 3,
+      "avg_plazo": 2.3333333333333335,
+      "min_plazo": 0.0,
+      "max_plazo": 7.0
+    },
+    "-103": {
+      "count": 5,
+      "avg_plazo": 53.2,
+      "min_plazo": 0.0,
+      "max_plazo": 103.0
+    },
+    "-197": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-181": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-124": {
+      "count": 2,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "5": {
+      "count": 8,
+      "avg_plazo": 22.375,
+      "min_plazo": 6.0,
+      "max_plazo": 35.0
+    },
+    "-593": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-559": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-557": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-542": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-522": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-516": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-514": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-450": {
+      "count": 1,
+      "avg_plazo": 42.0,
+      "min_plazo": 42.0,
+      "max_plazo": 42.0
+    },
+    "-453": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-431": {
+      "count": 1,
+      "avg_plazo": 0.0,
+      "min_plazo": 0.0,
+      "max_plazo": 0.0
+    },
+    "-383": {
+      "count": 1,
+      "avg_plazo": 39.0,
+      "min_plazo": 39.0,
+      "max_plazo": 39.0
+    },
+    "-131": {
+      "count": 2,
+      "avg_plazo": 77.0,
+      "min_plazo": 0.0,
+      "max_plazo": 154.0
+    }
+  },
+  "amount_tolerances": {
+    "Honorario": {
+      "count": 282,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Factura compra": {
+      "count": 11291,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Gasto": {
+      "count": 1937,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Previred": {
+      "count": 72,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Movimiento bancario": {
+      "count": 282,
+      "avg_tolerance": 0.8405267358667126,
+      "max_tolerance": 0.9999880409114932,
+      "p95_tolerance": 0.9986249551125003
+    },
+    "Factura venta": {
+      "count": 978,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Impuesto": {
+      "count": 94,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Remuneración": {
+      "count": 3262,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "NaN": {
+      "count": 60,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "unknown": {
+      "count": 18487,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    },
+    "Boleta tercero": {
+      "count": 6,
+      "avg_tolerance": 0.0,
+      "max_tolerance": 0.0,
+      "p95_tolerance": 0.0
+    }
+  },
+  "categories": {
+    "movimientos_bancarios": 18265,
+    "boletas_terceros": 6,
+    "otros": 12352,
+    "gastos": 3038,
+    "honorarios": 286,
+    "impuestos": 98,
+    "previred": 71,
+    "remuneraciones": 3266
+  }
+}

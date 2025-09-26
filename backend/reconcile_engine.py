@@ -121,14 +121,26 @@ def _vendor_score(base_name: str, candidate_name: str) -> float:
     return score / 100.0
 
 
+def _safe_get(row, *keys):
+    """Helper para acceso seguro a sqlite3.Row con múltiples posibles keys"""
+    for key in keys:
+        try:
+            value = row[key]
+            if value is not None:
+                return value
+        except (KeyError, IndexError):
+            continue
+    return None
+
+
 def _collect_movement(row: sqlite3.Row) -> Movement:
     return Movement(
         id=row["id"],
         amount=float(row["monto"] or 0),
         currency=(row["moneda"] or "CLP"),
-        date=_parse_date(row.get("fecha")),
-        vendor_name=row.get("glosa") or row.get("referencia") or "",
-        reference=row.get("referencia") or row.get("glosa") or "",
+        date=_parse_date(row["fecha"]),
+        vendor_name=row["glosa"] or row["referencia"] or "",
+        reference=row["referencia"] or row["glosa"] or "",
         raw=dict(row),
     )
 
@@ -137,12 +149,12 @@ def _collect_candidate(kind: str, row: sqlite3.Row) -> Candidate:
     return Candidate(
         id=row["id"],
         kind=kind,
-        amount=float(row.get("monto") or row.get("total_amount") or 0),
-        currency=row.get("moneda") or row.get("currency") or "CLP",
-        date=_parse_date(row.get("fecha") or row.get("invoice_date") or row.get("periodo")),
-        vendor_name=row.get("proveedor") or row.get("vendor_name") or row.get("customer_name") or "",
-        vendor_rut=row.get("proveedor_rut") or row.get("vendor_rut") or row.get("customer_rut"),
-        reference=row.get("invoice_number") or row.get("documento") or row.get("ref") or None,
+        amount=float(_safe_get(row, "monto", "total_amount") or 0),
+        currency=_safe_get(row, "moneda", "currency") or "CLP",
+        date=_parse_date(_safe_get(row, "fecha", "invoice_date", "periodo")),
+        vendor_name=_safe_get(row, "proveedor", "vendor_name", "customer_name") or "",
+        vendor_rut=_safe_get(row, "proveedor_rut", "vendor_rut", "customer_rut"),
+        reference=_safe_get(row, "invoice_number", "documento", "ref"),
         raw=dict(row),
     )
 
@@ -232,9 +244,146 @@ def suggest_for_movement(
     movement = fetch_bank_movement(conn, movement_id)
     if not movement:
         return []
+    
+    # 🎯 MAGIA: Buscar tanto candidatos individuales como combinaciones
+    individual_suggestions = _find_individual_matches(conn, movement, amount_tolerance, top_n)
+    combo_suggestions = _find_combination_matches(conn, movement, amount_tolerance, top_n)
+    
+    # Combinar y ordenar todas las sugerencias
+    all_suggestions = individual_suggestions + combo_suggestions
+    all_suggestions.sort(key=lambda s: s['score'], reverse=True)
+    
+    return all_suggestions[:top_n]
+
+
+def _find_individual_matches(
+    conn: sqlite3.Connection,
+    movement: Movement,
+    amount_tolerance: float,
+    top_n: int
+) -> list[dict[str, Any]]:
+    """Encuentra coincidencias individuales (1 movimiento = 1 factura)"""
     candidates = fetch_candidates(conn, movement, amount_tolerance=amount_tolerance)
     if not candidates:
         return []
     suggestions = [score_candidate(movement, cand) for cand in candidates]
     suggestions.sort(key=lambda s: s.confidence, reverse=True)
     return [s.as_dict() for s in suggestions[:top_n]]
+
+
+def _find_combination_matches(
+    conn: sqlite3.Connection,
+    movement: Movement,
+    amount_tolerance: float,
+    max_combos: int = 3
+) -> list[dict[str, Any]]:
+    """ALGORITMO MATEMÁTICO: Encuentra combinaciones de facturas que sumen el monto exacto"""
+    if not movement.amount:
+        return []
+    
+    target_amount = abs(movement.amount)
+    
+    # Buscar candidatos con rango más amplio para combinaciones
+    broader_candidates = fetch_candidates(
+        conn, movement,
+        amount_tolerance=min(0.5, amount_tolerance * 10)  # Hasta 50% de diferencia
+    )
+    
+    if len(broader_candidates) < 2:
+        return []
+    
+    # ALGORITMO RÁPIDO: Buscar combinaciones de 2-4 facturas
+    combinations = []
+    
+    for combo_size in [2, 3, 4]:  # Máximo 4 facturas por movimiento
+        if len(broader_candidates) < combo_size:
+            continue
+            
+        from itertools import combinations as iter_combinations
+        
+        for candidate_combo in iter_combinations(broader_candidates, combo_size):
+            combo_total = sum(abs(c.amount or 0) for c in candidate_combo)
+            amount_diff = abs(combo_total - target_amount)
+            tolerance_amount = target_amount * amount_tolerance
+            
+            if amount_diff <= tolerance_amount:
+                # ENCONTRÓ COMBINACIÓN EXACTA!
+                combo_score = _calculate_combination_score(
+                    movement, candidate_combo, amount_diff, target_amount
+                )
+                
+                combo_suggestion = {
+                    'type': 'combination',
+                    'score': combo_score,
+                    'target_kind': 'multi',
+                    'amount': combo_total,
+                    'combination_count': combo_size,
+                    'amount_difference': amount_diff,
+                    'documents': [
+                        {
+                            'doc': c.doc_id,
+                            'amount': c.amount,
+                            'fecha': c.date.isoformat() if c.date else None,
+                            'target_kind': c.kind
+                        } for c in candidate_combo
+                    ],
+                    'reasons': [
+                        {
+                            'rule': 'amount_combination',
+                            'detail': f'Suma exacta: {combo_size} documentos = ${combo_total:,.0f}',
+                            'score': 1.0 - (amount_diff / target_amount)
+                        },
+                        {
+                            'rule': 'combination_magic',
+                            'detail': f'Diferencia: ${amount_diff:,.0f}',
+                            'score': combo_score
+                        }
+                    ]
+                }
+                
+                combinations.append(combo_suggestion)
+                
+        # Solo las mejores combinaciones por tamaño
+        if len(combinations) >= max_combos:
+            break
+    
+    # Ordenar por score y retornar las mejores
+    combinations.sort(key=lambda x: x['score'], reverse=True)
+    return combinations[:max_combos]
+
+
+def _calculate_combination_score(
+    movement: Movement,
+    candidates: tuple,
+    amount_diff: float,
+    target_amount: float
+) -> float:
+    """Calcula score para combinaciones multi-documento"""
+    # Score base por exactitud del monto
+    amount_score = 1.0 - (amount_diff / target_amount)
+    
+    # Bonus por fecha cercana (promedio de las fechas de candidatos)
+    if movement.date:
+        date_scores = []
+        for candidate in candidates:
+            if candidate.date:
+                days_diff = abs((movement.date - candidate.date).days)
+                date_score = max(0, 1.0 - (days_diff / 365))  # Score decrece en 1 año
+                date_scores.append(date_score)
+        
+        avg_date_score = sum(date_scores) / len(date_scores) if date_scores else 0
+    else:
+        avg_date_score = 0.5
+    
+    # Penalty por número de documentos (menos documentos = mejor)
+    complexity_penalty = 1.0 - (len(candidates) - 2) * 0.1  # -10% por cada doc extra después de 2
+    complexity_penalty = max(0.5, complexity_penalty)  # Mínimo 50%
+    
+    # Score final combinado
+    final_score = (
+        amount_score * 0.6 +           # 60% peso en exactitud de monto
+        avg_date_score * 0.2 +         # 20% peso en fechas
+        complexity_penalty * 0.2       # 20% peso en simplicidad
+    )
+    
+    return min(0.99, final_score)  # Máximo 99% para combinations (individual puede ser 100%)

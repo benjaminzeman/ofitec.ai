@@ -38,7 +38,7 @@ def test_summary_cache_header_and_rate_limit_headers(client):
 
 def test_rate_limit_exhaustion_headers(client, monkeypatch):
     # Force small window & max
-    import backend.server as srv
+    import server as srv
     monkeypatch.setattr(srv, "_RATE_LIMIT_MAX", 1, raising=False)
     # first request ok
     r_ok = client.post("/api/ai/ask", json={"question": "Q?", "context": {}})
@@ -52,7 +52,7 @@ def test_rate_limit_exhaustion_headers(client, monkeypatch):
 
 
 def test_job_pruning(monkeypatch):
-    import backend.server as srv
+    import server as srv
     # Simulate many completed jobs
     with srv._jobs_lock:  # noqa: SLF001 (test access)
         for i in range(250):

@@ -3,8 +3,8 @@ import re
 import uuid
 from pathlib import Path
 import pytest
-from backend import server
-from backend.conciliacion_api_clean import test_reset_internal
+import server
+from conciliacion_api_clean import test_reset_internal
 
 
 @pytest.fixture(name="client")

@@ -1,11 +1,11 @@
-from backend.server import app
+from server import app
 
 
 def test_slo_violation_ratio_and_total(monkeypatch):
     # Configure extremely low SLO so every sample violates
     monkeypatch.setenv('RECON_LATENCY_SLO_P95', '0.0000001')
     monkeypatch.setenv('RECON_METRICS_DEBUG', '1')
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     # Force suggest to be fast returning empty list
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     client = app.test_client()
@@ -35,7 +35,7 @@ def test_slo_violation_ratio_and_total(monkeypatch):
 def test_debug_token_required(monkeypatch):
     monkeypatch.setenv('RECON_METRICS_DEBUG', '1')
     monkeypatch.setenv('RECON_METRICS_DEBUG_TOKEN', 'secdebug')
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     client = app.test_client()
     # Fire one sample

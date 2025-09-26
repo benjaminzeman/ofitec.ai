@@ -5,7 +5,7 @@ import unittest
 class OverviewEndpointsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from backend import server
+        import server
         cls.app = server.app
         cls.client = cls.app.test_client()
 

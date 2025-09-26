@@ -1,7 +1,7 @@
 import re
 import sqlite3
 import os
-from backend.api_matching_metrics import _ap_metrics  # type: ignore
+from api_matching_metrics import _ap_metrics  # type: ignore
 
 
 def test_confidence_bucket_labels_pattern(tmp_path):

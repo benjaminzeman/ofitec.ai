@@ -1,7 +1,7 @@
 import time
 
 from flask import Flask
-from backend.conciliacion_api_clean import bp as conciliacion_bp  # type: ignore
+from conciliacion_api_clean import bp as conciliacion_bp  # type: ignore
 
 
 def make_app():

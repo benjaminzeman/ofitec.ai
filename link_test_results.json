@@ -1,0 +1,411 @@
+{
+  "frontend": [
+    {
+      "url": "http://localhost:3001/",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/overview",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/facturas-venta",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/facturas-compra",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/gastos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/impuestos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/previred",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/sueldos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/cartola-bancaria",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ventas",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/tesoreria",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/ordenes-compra",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/cashflow",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/reportes-proyectos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/reportes-proveedores",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/conciliacion",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/sii",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/finanzas/bancos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos/overview",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos/financiero",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos/subcontratistas",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos/cambios",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proyectos/planning",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/operaciones",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/operaciones/reportes",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/operaciones/hse",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/operaciones/recursos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/operaciones/comunicacion",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/documentos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/documentos/docuchat",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/documentos/rfi",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/documentos/biblioteca",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/riesgos",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/riesgos/matriz",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/riesgos/predicciones",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/riesgos/alertas",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/cliente",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/cliente/proyecto",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/cliente/reportes",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/cliente/interaccion",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ia",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ia/copilots",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ia/analytics",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ia/insights",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/config",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/config/usuarios",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/config/integraciones",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/config/personalizacion",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/control-financiero",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/ceo/overview",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    },
+    {
+      "url": "http://localhost:3001/proveedores",
+      "status_code": null,
+      "status": "❌ CONNECTION_ERROR",
+      "response_time": null,
+      "content_length": 0
+    }
+  ],
+  "backend": [
+    {
+      "url": "http://localhost:5555/api/status",
+      "status_code": 200,
+      "status": "✅ OK",
+      "response_time": 2041.77,
+      "content_length": 237
+    },
+    {
+      "url": "http://localhost:5555/api/control_financiero/resumen",
+      "status_code": 200,
+      "status": "✅ OK",
+      "response_time": 2063.34,
+      "content_length": 2760
+    },
+    {
+      "url": "http://localhost:5555/api/ceo/overview",
+      "status_code": 200,
+      "status": "✅ OK",
+      "response_time": 2087.87,
+      "content_length": 1169
+    },
+    {
+      "url": "http://localhost:5555/api/debug/info",
+      "status_code": 404,
+      "status": "⚠️ 404",
+      "response_time": 2063.29,
+      "content_length": 207
+    }
+  ],
+  "summary": {
+    "total_tested": 57,
+    "working": 3,
+    "errors": 53,
+    "warnings": 1
+  }
+}

@@ -9,8 +9,8 @@ from typing import Any, Dict
 
 from flask import Blueprint, Response, jsonify, request, stream_with_context
 
-from backend.db_utils import db_conn
-from backend.sii_service import (
+from db_utils import db_conn
+from sii_service import (
     SiiClient,
     ensure_schema,
     log_event,

@@ -41,7 +41,7 @@ import hashlib
 from typing import Any, Optional
 import os
 from datetime import datetime, UTC
-from backend.db_utils import db_conn  # shared connection manager
+from db_utils import db_conn  # shared connection manager
 from dataclasses import dataclass
 from flask import Blueprint, jsonify, request
 

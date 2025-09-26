@@ -1,0 +1,18 @@
+{
+  "movements": [
+    {
+      "movement_id": "mov1",
+      "description": "INMOBILIARIA BOLOMEY",
+      "amount": 850000,
+      "date": "2025-01-20"
+    }
+  ],
+  "documents": [
+    {
+      "document_id": "doc1", 
+      "description": "INMOBILIARIA BOLOMEY LIMITADA",
+      "amount": 850000,
+      "date": "2025-01-20"
+    }
+  ]
+}

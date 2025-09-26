@@ -5,7 +5,7 @@ import unittest
 class ApMatchAdvancedTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from backend import server
+        import server
         cls.app = server.app
         cls.client = cls.app.test_client()
         # Inject minimal PO + line balance views if not present
@@ -13,8 +13,8 @@ class ApMatchAdvancedTests(unittest.TestCase):
 
     @classmethod
     def _prepare_data(cls):
-        from backend.db_utils import db_conn
-        from backend.api_ap_match import _table_exists
+        from db_utils import db_conn
+        from api_ap_match import _table_exists
         with db_conn() as conn:
             # Create simplified purchase_orders_unified if missing
             if not _table_exists(conn, 'purchase_orders_unified'):

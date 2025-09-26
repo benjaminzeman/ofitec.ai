@@ -1,6 +1,6 @@
 from flask import Flask
 import sqlite3
-from backend import server_utils as su
+import server_utils as su
 
 
 def test_list_routes_basic():

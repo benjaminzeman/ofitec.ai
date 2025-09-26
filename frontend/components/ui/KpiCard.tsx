@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { CategoriasIconos } from '@/lib/icons';
 
 type Trend = {
   value: number;
@@ -12,7 +13,7 @@ export interface KpiCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string; // Permite tanto ReactNode como string para iconos
   trend?: Trend;
   accent?: 'lime' | 'blue' | 'amber' | 'red' | 'slate';
 }
@@ -42,6 +43,19 @@ export default function KpiCard({
         ? 'text-lime-600 dark:text-lime-400'
         : 'text-slate-500 dark:text-slate-400';
 
+  // Renderizar ícono - soporta tanto string (para iconos de Lucide) como ReactNode
+  const renderIcon = () => {
+    if (typeof icon === 'string') {
+      // Si es string, buscar en CategoriasIconos.financiero
+      const IconComponent = CategoriasIconos.financiero[icon];
+      if (IconComponent) {
+        return <IconComponent className={`w-6 h-6 ${colors.text}`} />;
+      }
+    }
+    // Si es ReactNode o no se encontró el icono, renderizar como antes
+    return <span className={`${colors.text} text-xl`}>{icon}</span>;
+  };
+
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
       <div className="flex items-center justify-between">
@@ -58,7 +72,7 @@ export default function KpiCard({
           )}
         </div>
         <div className={`w-12 h-12 ${colors.box} rounded-xl flex items-center justify-center`}>
-          <span className={`${colors.text} text-xl`}>{icon}</span>
+          {renderIcon()}
         </div>
       </div>
     </div>

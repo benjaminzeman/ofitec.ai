@@ -1,9 +1,9 @@
-from backend.server import app
+from server import app
 
 
 def test_conciliacion_latency_relationship(monkeypatch):
     client = app.test_client()
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
 
     for _ in range(5):

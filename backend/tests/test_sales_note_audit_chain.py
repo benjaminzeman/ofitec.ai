@@ -1,7 +1,7 @@
 import hashlib
 import sqlite3
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture

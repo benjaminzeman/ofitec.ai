@@ -1,0 +1,12 @@
+{
+  "name": "ofitec-monorepo-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root wrapper para scripts del frontend",
+  "scripts": {
+    "lint": "npm --prefix frontend run lint",
+    "lint:fix": "npm --prefix frontend run lint:fix",
+    "format": "npm --prefix frontend run format",
+    "format:check": "npm --prefix frontend run format:check"
+  }
+}

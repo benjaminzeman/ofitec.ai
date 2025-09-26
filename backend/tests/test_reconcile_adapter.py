@@ -1,4 +1,4 @@
-from backend import reconcile_adapter as ra
+import reconcile_adapter as ra
 
 
 def test_build_source_and_defaults():

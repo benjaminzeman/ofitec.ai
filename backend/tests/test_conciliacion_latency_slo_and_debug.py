@@ -1,10 +1,10 @@
-from backend.server import app
+from server import app
 
 
 def test_latency_slo_gauges(monkeypatch):
     monkeypatch.setenv('RECON_LATENCY_SLO_P95', '0.000001')  # tiny slo to trigger violation after samples
     client = app.test_client()
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     for _ in range(2):
         client.post('/api/conciliacion/suggest', json={'context': 'bank', 'movement_id': 77})
@@ -20,7 +20,7 @@ def test_latency_debug_endpoint(monkeypatch):
     assert r_disabled.status_code == 404
     # Enable debug
     monkeypatch.setenv('RECON_METRICS_DEBUG', '1')
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     for _ in range(3):
         client.post('/api/conciliacion/suggest', json={'context': 'bank', 'movement_id': 88})

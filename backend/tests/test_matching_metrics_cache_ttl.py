@@ -5,8 +5,8 @@ import uuid
 import unittest
 from datetime import datetime, UTC
 
-from backend import server  # noqa: F401
-from backend.api_matching_metrics import _CACHE  # access internal for test TTL manipulation
+import server  # noqa: F401
+from api_matching_metrics import _CACHE  # access internal for test TTL manipulation
 
 
 class MatchingMetricsCacheTTLTests(unittest.TestCase):

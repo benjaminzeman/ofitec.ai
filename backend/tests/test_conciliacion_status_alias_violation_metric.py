@@ -1,4 +1,4 @@
-from backend.server import app
+from server import app
 
 
 def test_conciliacion_status_alias_violation_metric():

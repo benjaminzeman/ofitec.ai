@@ -3,7 +3,7 @@ import uuid
 import logging
 from pathlib import Path
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture(name="client")

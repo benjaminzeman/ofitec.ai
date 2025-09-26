@@ -1,5 +1,5 @@
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture(name="client")
@@ -143,8 +143,20 @@ def test_ar_map_alias_canonical_fallback(client):
     import pathlib
     import sqlite3
 
-    db_root = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
-    db_path = os.getenv("DB_PATH") or str(db_root / "chipax_data.db")
+    # Use same DB path resolution as other modules
+    raw_path = os.getenv("DB_PATH")
+    if raw_path:
+        db_path = str(pathlib.Path(raw_path).resolve())
+    else:
+        db_root = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
+        db_path = str(db_root / "chipax_data.db")
+        
+    # Ensure database and parent directory exist (for test isolation)
+    if not os.path.exists(db_path):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        with sqlite3.connect(db_path) as temp_con:
+            temp_con.execute("SELECT 1")  # Force file creation
+        
     with sqlite3.connect(db_path) as con:
         cur = con.cursor()
         cur.executescript(

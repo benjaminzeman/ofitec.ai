@@ -1,6 +1,6 @@
 import os
 import tempfile
-from backend.server import app
+from server import app
 
 
 def test_snapshot_age_and_purge(monkeypatch):
@@ -10,7 +10,7 @@ def test_snapshot_age_and_purge(monkeypatch):
     monkeypatch.setenv('RECON_METRICS_DEBUG', '1')
     monkeypatch.setenv('RECON_METRICS_DEBUG_TOKEN', 'tok')
     import importlib
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     importlib.reload(capi)
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     client = app.test_client()

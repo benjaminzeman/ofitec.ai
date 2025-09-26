@@ -1,6 +1,6 @@
 import re
 
-from backend.server import app
+from server import app
 
 
 def _enable_prom(monkeypatch):

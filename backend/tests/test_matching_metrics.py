@@ -4,7 +4,7 @@ import sqlite3
 import unittest
 import uuid
 
-from backend import server  # ensure app import (registers blueprint)
+import server  # ensure app import (registers blueprint)
 
 
 class MatchingMetricsTests(unittest.TestCase):

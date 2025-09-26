@@ -1,4 +1,4 @@
-from backend import server
+import server
 
 
 def test_admin_routes_contains_key_endpoints():

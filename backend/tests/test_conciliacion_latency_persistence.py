@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-from backend.server import app
+from server import app
 
 
 def test_latency_persistence_basic(monkeypatch):
@@ -10,7 +10,7 @@ def test_latency_persistence_basic(monkeypatch):
     monkeypatch.setenv('RECON_LATENCY_PERSIST_PATH', path)
     # Reload module to trigger load (will be empty) and pick up env
     import importlib
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     importlib.reload(capi)
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     client = app.test_client()

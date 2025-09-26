@@ -1,11 +1,11 @@
-from backend.server import app
+from server import app
 
 
 def test_conciliacion_metrics_histogram_presence(monkeypatch):
     monkeypatch.setenv('RECON_METRICS_DISABLED', 'false')
     client = app.test_client()
     # Generate some latency data by monkeypatching engine to fast path
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     for _ in range(4):
         r = client.post('/api/conciliacion/suggest', json={"context": "bank", "movement_id": 9})
@@ -29,7 +29,7 @@ def test_conciliacion_metrics_reset_requires_token(monkeypatch):
     assert resp.status_code == 403
     # Provide correct token
     # First create some latency entries
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
     for _ in range(2):
         client.post('/api/conciliacion/suggest', json={"context": "bank", "movement_id": 10})

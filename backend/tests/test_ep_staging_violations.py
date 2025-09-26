@@ -4,7 +4,7 @@ import unittest
 class EpStagingViolationsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from backend import server  # ensure blueprints
+        import server  # ensure blueprints
         cls.app = server.app
         cls.client = cls.app.test_client()
 

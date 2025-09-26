@@ -5,7 +5,7 @@ import uuid
 import unittest
 from datetime import datetime, UTC
 
-from backend import server  # noqa: F401
+import server  # noqa: F401
 
 
 class MatchingMetricsPromTests(unittest.TestCase):

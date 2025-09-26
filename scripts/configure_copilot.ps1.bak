@@ -1,0 +1,236 @@
+# ============================================================================
+# OFITEC.AI - SCRIPT DE CONFIGURACIÓN AVANZADA DE COPILOT
+# ============================================================================
+
+Write-Host "🤖 Aplicando configuración avanzada de GitHub Copilot..." -ForegroundColor Green
+
+# Verificar que estamos en el directorio correcto
+$projectRoot = "C:\Ofitec\ofitec.ai"
+if (-not (Test-Path $projectRoot)) {
+    Write-Host "❌ Error: Proyecto no encontrado en $projectRoot" -ForegroundColor Red
+    exit 1
+}
+
+Set-Location $projectRoot
+
+Write-Host "📁 Directorio de trabajo: $((Get-Location).Path)" -ForegroundColor Cyan
+
+# ============================================================================
+# VERIFICAR ARCHIVOS DE CONFIGURACIÓN
+# ============================================================================
+
+$configFiles = @(
+    ".vscode\settings.json",
+    ".vscode\copilot.json", 
+    ".copilot-instructions.md"
+)
+
+Write-Host "`n🔍 Verificando archivos de configuración..." -ForegroundColor Yellow
+
+foreach ($file in $configFiles) {
+    if (Test-Path $file) {
+        Write-Host "  ✅ $file - OK" -ForegroundColor Green
+    } else {
+        Write-Host "  ❌ $file - FALTA" -ForegroundColor Red
+    }
+}
+
+# ============================================================================
+# COMANDOS AUTO-APROBADOS DISPONIBLES
+# ============================================================================
+
+Write-Host "`n🚀 COMANDOS AUTO-APROBADOS CONFIGURADOS:" -ForegroundColor Green
+
+$autoCommands = @(
+    "# Desarrollo Frontend",
+    "npm run dev",
+    "npm run build",
+    "npm run lint",
+    "npm run test",
+    "npm install",
+    "",
+    "# Backend Python",
+    "python -m pytest",
+    "python -m flake8", 
+    "python server.py",
+    "pip install -r requirements.txt",
+    "",
+    "# Docker",
+    "docker compose up -d",
+    "docker compose down",
+    "docker compose build",
+    "docker compose logs",
+    "docker compose ps",
+    "docker compose restart",
+    "",
+    "# Git (Safe)",
+    "git status",
+    "git diff",
+    "git log --oneline -10",
+    "git branch",
+    "git fetch",
+    "git add .",
+    "",
+    "# Sistema",
+    "ls / dir",
+    "pwd / cd",
+    "cat / type",
+    "grep / findstr",
+    "curl",
+    "",
+    "# Base de Datos",
+    "sqlite3 data/chipax_data.db "".tables""",
+    "sqlite3 data/chipax_data.db "".schema"""
+)
+
+foreach ($cmd in $autoCommands) {
+    if ($cmd.StartsWith("#")) {
+        Write-Host "  $cmd" -ForegroundColor Cyan
+    } elseif ($cmd -eq "") {
+        Write-Host ""
+    } else {
+        Write-Host "  ✓ $cmd" -ForegroundColor White
+    }
+}
+
+# ============================================================================
+# VERIFICAR EXTENSIONES DE VS CODE
+# ============================================================================
+
+Write-Host "`n🔌 Verificando extensiones requeridas..." -ForegroundColor Yellow
+
+$requiredExtensions = @(
+    "GitHub.copilot",
+    "GitHub.copilot-chat", 
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-containers"
+)
+
+foreach ($ext in $requiredExtensions) {
+    try {
+        $installed = code --list-extensions | Where-Object { $_ -eq $ext }
+        if ($installed) {
+            Write-Host "  ✅ $ext - Instalada" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️  $ext - NO instalada" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "  ❓ No se pudo verificar $ext" -ForegroundColor Gray
+    }
+}
+
+# ============================================================================
+# VALIDAR CONFIGURACIÓN ESPECÍFICA DEL PROYECTO
+# ============================================================================
+
+Write-Host "`n🎯 CONFIGURACIONES ESPECÍFICAS DEL PROYECTO:" -ForegroundColor Green
+
+$projectConfig = @{
+    "Frontend Port" = "3001 (Ley de Puertos)"
+    "Backend Port" = "5555 (Ley de Puertos)"
+    "Database" = "SQLite - data/chipax_data.db (DB Canónica)"
+    "Módulos Extraídos" = "4 módulos de server.py"
+    "Type Safety" = "TypeScript Strict + Python Type Hints"
+    "Linting" = "ESLint + Flake8"
+    "Formatting" = "Prettier + Black"
+}
+
+foreach ($key in $projectConfig.Keys) {
+    Write-Host "  📋 $key`: $($projectConfig[$key])" -ForegroundColor White
+}
+
+# ============================================================================
+# VERIFICAR ESTADO DE LA REFACTORIZACIÓN
+# ============================================================================
+
+Write-Host "`n🔄 ESTADO DE REFACTORIZACIÓN:" -ForegroundColor Green
+
+$refactoredModules = @(
+    "backend\config.py",
+    "backend\rate_limiting.py", 
+    "backend\db_utils_centralized.py",
+    "backend\ai_jobs.py"
+)
+
+$totalLinesExtracted = 0
+foreach ($module in $refactoredModules) {
+    if (Test-Path $module) {
+        $lineCount = (Get-Content $module).Count
+        $totalLinesExtracted += $lineCount
+        Write-Host "  ✅ $module - $lineCount líneas" -ForegroundColor Green
+    } else {
+        Write-Host "  ❌ $module - FALTA" -ForegroundColor Red
+    }
+}
+
+Write-Host "  📊 Total líneas extraídas: $totalLinesExtracted" -ForegroundColor Cyan
+Write-Host "  🎯 Reducción estimada de server.py: ~16%" -ForegroundColor Cyan
+
+# ============================================================================
+# RECOMENDACIONES FINALES
+# ============================================================================
+
+Write-Host "`n💡 RECOMENDACIONES:" -ForegroundColor Yellow
+
+$recommendations = @(
+    "1. Reiniciar VS Code para aplicar configuraciones",
+    "2. Verificar que GitHub Copilot esté activo",
+    "3. Probar comandos auto-aprobados en terminal",
+    "4. Usar Ctrl+I para chat de Copilot",
+    "5. Configurar .env con OPENAI_API_KEY si es necesario"
+)
+
+foreach ($rec in $recommendations) {
+    Write-Host "  $rec" -ForegroundColor White
+}
+
+# ============================================================================
+# SMOKE TEST OPCIONAL
+# ============================================================================
+
+Write-Host "`n🧪 ¿Ejecutar smoke test de configuración? (S/N)" -ForegroundColor Yellow
+$response = Read-Host
+
+if ($response -eq "S" -or $response -eq "s" -or $response -eq "Y" -or $response -eq "y") {
+    Write-Host "`n🔥 Ejecutando smoke test..." -ForegroundColor Green
+    
+    # Test básico de Python
+    Write-Host "  Testing Python..." -NoNewline
+    try {
+        python --version | Out-Null
+        Write-Host " ✅" -ForegroundColor Green
+    } catch {
+        Write-Host " ❌" -ForegroundColor Red
+    }
+    
+    # Test básico de Node
+    Write-Host "  Testing Node.js..." -NoNewline
+    try {
+        node --version | Out-Null
+        Write-Host " ✅" -ForegroundColor Green
+    } catch {
+        Write-Host " ❌" -ForegroundColor Red
+    }
+    
+    # Test básico de Docker
+    Write-Host "  Testing Docker..." -NoNewline
+    try {
+        docker --version | Out-Null
+        Write-Host " ✅" -ForegroundColor Green
+    } catch {
+        Write-Host " ❌" -ForegroundColor Red
+    }
+    
+    # Test de database
+    Write-Host "  Testing Database..." -NoNewline
+    if (Test-Path "data\chipax_data.db") {
+        Write-Host " ✅" -ForegroundColor Green
+    } else {
+        Write-Host " ❌" -ForegroundColor Red
+    }
+}
+
+Write-Host "`n🎉 Configuración de Copilot completada!" -ForegroundColor Green
+Write-Host "Reinicia VS Code para aplicar todos los cambios." -ForegroundColor Cyan

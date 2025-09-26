@@ -1,0 +1,420 @@
+{
+  "github.copilot.chat.experimental.agents": true,
+  "github.copilot.chat.experimental.codeActions": true,
+  "github.copilot.chat.experimental.contextSelection": true,
+  "github.copilot.chat.experimental.generateTests": true,
+  
+  "github.copilot.autoApprove": {
+    "enabled": true,
+    "allCommands": true,
+    "allTools": true,
+    "languages": {
+      "python": true,
+      "powershell": true,
+      "pwsh": true
+    },
+    "terminals": {
+      "python": true,
+      "powershell": true,
+      "pwsh": true,
+      "cmd": true,
+      "bash": true
+    }
+  },
+  
+  "github.copilot.advanced": {
+    "listCount": 10,
+    "inlineSuggestCount": 5,
+    "top_p": 1,
+    "temperature": 0.1
+  },
+  
+  "github.copilot.autoApproveCommands": [
+    "replace_string_in_file",
+    "edit_files",
+    "create_file",
+    "grep_search",
+    "semantic_search",
+    "file_search",
+    "read_file",
+    "list_dir",
+    "run_in_terminal",
+    "get_errors",
+    "npm run dev",
+    "npm run build", 
+    "npm run lint",
+    "npm run test",
+    "docker compose up -d",
+    "docker compose down",
+    "docker compose build",
+    "docker compose logs",
+    "docker compose ps",
+    "docker compose restart",
+    "python*",
+    "python",
+    "python -c*",
+    "python -m*",
+    "python -m pytest*",
+    "python -m flake8*",
+    "python server.py*",
+    "python *.py*",
+    "pwsh*",
+    "powershell*",
+    "PowerShell*",
+    "git status",
+    "git diff",
+    "git log --oneline -10",
+    "git branch",
+    "git fetch",
+    "git add .",
+    "ls",
+    "dir",
+    "pwd",
+    "cd*",
+    "cat*",
+    "type*",
+    "grep*",
+    "findstr*",
+    "find*",
+    "where*",
+    "curl*",
+    "sqlite3*",
+    "Get-ChildItem*",
+    "gci*",
+    "tree*",
+    "tree /f*",
+    "tree /a*",
+    "analyze*",
+    "analysis*",
+    "debug*",
+    "check*",
+    "verify*",
+    "validate*",
+    "test*",
+    "inspect*",
+    "explore*",
+    "scan*",
+    "review*",
+    "audit*",
+    "benchmark*",
+    "profile*",
+    "trace*",
+    "monitor*",
+    "measure*",
+    "compare*"
+  ],
+  
+  "github.copilot.bulkOperations": {
+    "autoApprove": true,
+    "maxFiles": 100,
+    "confirmationThreshold": 10,
+    "allowedOperations": [
+      "import_fixes",
+      "mass_replace",
+      "refactoring",
+      "lint_fixes",
+      "format_fixes",
+      "test_fixes"
+    ]
+  },
+  
+  "github.copilot.toolAutoApproval": {
+    "python": {
+      "enabled": true,
+      "commands": ["*"],
+      "tools": ["*"],
+      "scripts": ["*"],
+      "modules": ["*"]
+    },
+    "powershell": {
+      "enabled": true,
+      "commands": ["*"],
+      "scripts": ["*"],
+      "cmdlets": ["*"]
+    },
+    "pwsh": {
+      "enabled": true,
+      "commands": ["*"],
+      "scripts": ["*"],
+      "cmdlets": ["*"],
+      "analysisCommands": [
+        "Get-ChildItem",
+        "Get-Content", 
+        "Get-Location",
+        "Get-Process",
+        "Get-Service",
+        "Measure-Object",
+        "Compare-Object",
+        "Test-Path",
+        "Resolve-Path",
+        "Get-ItemProperty",
+        "Get-Member",
+        "Get-Variable",
+        "Get-Command",
+        "Get-Module",
+        "Format-Table",
+        "Format-List",
+        "Sort-Object",
+        "Group-Object",
+        "Select-Object",
+        "Where-Object",
+        "ForEach-Object"
+      ]
+    },
+    "terminal": {
+      "autoApproveAll": true,
+      "languages": ["python", "powershell", "pwsh", "bash", "cmd"]
+    }
+  },
+  
+  "github.copilot.repositoryAnalysis": {
+    "autoApprove": true,
+    "commands": [
+      "Get-ChildItem*",
+      "gci*",
+      "ls*",
+      "dir*",
+      "tree*",
+      "find*",
+      "grep*",
+      "search*",
+      "analyze*",
+      "check*",
+      "verify*",
+      "validate*",
+      "inspect*",
+      "explore*",
+      "scan*",
+      "review*",
+      "audit*",
+      "test*",
+      "debug*",
+      "trace*",
+      "monitor*",
+      "measure*",
+      "profile*",
+      "benchmark*",
+      "compare*"
+    ],
+    "patterns": [
+      "*analysis*",
+      "*debug*", 
+      "*check*",
+      "*verify*",
+      "*validate*",
+      "*test*",
+      "*inspect*",
+      "*explore*",
+      "*scan*",
+      "*review*",
+      "*audit*",
+      "*monitor*",
+      "*measure*",
+      "*profile*",
+      "*benchmark*",
+      "*compare*"
+    ],
+    "fileOperations": {
+      "read": true,
+      "list": true,
+      "search": true,
+      "analyze": true
+    }
+  },
+  
+  "github.copilot.refactoringMode": {
+    "enabled": true,
+    "autoApproveSimpleChanges": true,
+    "autoApproveImportFixes": true,
+    "autoApproveLintFixes": true,
+    "maxFilesPerBatch": 50
+  },
+  
+  "github.copilot.autoTriggerCommands": [
+    "npm run dev",
+    "npm run build", 
+    "npm run lint",
+    "npm run test",
+    "docker compose up -d",
+    "docker compose down",
+    "docker compose build",
+    "docker compose logs",
+    "docker compose ps",
+    "docker compose restart",
+    "python*",
+    "python",
+    "python -c*",
+    "python -m*",
+    "python -m pytest*",
+    "python -m flake8*",
+    "python server.py*",
+    "python *.py*",
+    "pwsh*",
+    "powershell*",
+    "PowerShell*",
+    "git status",
+    "git diff",
+    "git log --oneline -10",
+    "git branch",
+    "git fetch",
+    "git add .",
+    "ls",
+    "dir",
+    "pwd",
+    "cd*",
+    "cat*",
+    "type*",
+    "grep*",
+    "findstr*",
+    "find*",
+    "where*",
+    "curl*",
+    "sqlite3*",
+    "Get-ChildItem*",
+    "gci*",
+    "tree*",
+    "tree /f*",
+    "tree /a*",
+    "analyze*",
+    "analysis*",
+    "debug*",
+    "check*",
+    "verify*",
+    "validate*",
+    "test*",
+    "inspect*",
+    "explore*",
+    "scan*",
+    "review*",
+    "audit*",
+    "benchmark*",
+    "profile*",
+    "trace*",
+    "monitor*",
+    "measure*",
+    "compare*"
+  ],
+  
+  "github.copilot.contextPatterns": {
+    "backend": [
+      "backend/**/*.py",
+      "*.py",
+      "requirements.txt",
+      "pytest.ini",
+      ".flake8"
+    ],
+    "frontend": [
+      "frontend/**/*.{ts,tsx,js,jsx}",
+      "frontend/**/*.{css,scss}",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "next.config.js"
+    ],
+    "database": [
+      "data/*.db",
+      "**/*_schema.sql",
+      "**/*_migration.sql"
+    ],
+    "docker": [
+      "docker-compose*.yml",
+      "**/Dockerfile*",
+      ".dockerignore"
+    ],
+    "config": [
+      ".vscode/**",
+      ".github/**",
+      "scripts/**",
+      ".env*",
+      "*.json",
+      "*.yaml",
+      "*.yml"
+    ],
+    "tests": [
+      "backend/tests/**/*.py",
+      "frontend/__tests__/**/*.{ts,tsx}",
+      "**/*test*.py",
+      "**/*spec*.{ts,tsx}"
+    ]
+  },
+  
+  "github.copilot.domainSpecificSuggestions": {
+    "ofitec": {
+      "patterns": [
+        "conciliacion",
+        "reconcile", 
+        "invoice",
+        "factura",
+        "bank",
+        "banco",
+        "movement",
+        "movimiento",
+        "customer",
+        "cliente",
+        "supplier",
+        "proveedor",
+        "tax",
+        "impuesto",
+        "sii",
+        "ar_",
+        "ap_",
+        "sc_",
+        "ep_"
+      ],
+      "contextFiles": [
+        "recon_constants.py",
+        "reconcile_engine.py", 
+        "db_utils.py",
+        "server.py"
+      ]
+    }
+  },
+  
+  "github.copilot.languagePreferences": {
+    "python": {
+      "style": "pythonic",
+      "typing": "strict",
+      "docstrings": "google",
+      "linting": "flake8"
+    },
+    "typescript": {
+      "style": "strict",
+      "imports": "absolute_from_root",
+      "components": "functional",
+      "hooks": "preferred"
+    },
+    "sql": {
+      "dialect": "sqlite",
+      "style": "lowercase_keywords"
+    }
+  },
+  
+  "github.copilot.massOperations": {
+    "import_correction": {
+      "enabled": true,
+      "patterns": [
+        "from backend import",
+        "from backend.",
+        "import backend."
+      ],
+      "replacements": [
+        {
+          "from": "from backend import (.*)",
+          "to": "import $1"
+        },
+        {
+          "from": "from backend\\.(.*) import",
+          "to": "from $1 import"
+        }
+      ]
+    },
+    "test_fixes": {
+      "enabled": true,
+      "autoFix": true,
+      "patterns": [
+        "ModuleNotFoundError: No module named 'backend'",
+        "ImportError.*backend"
+      ]
+    }
+  }
+}

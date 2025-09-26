@@ -1,0 +1,27 @@
+{
+  "model_version": "2.0",
+  "training_data_source": "6_year_historical_analysis",
+  "confidence_threshold": 0.7,
+  "use_vendor_aliases": true,
+  "use_amount_tolerances": true,
+  "use_timing_patterns": true,
+  "features": {
+    "fuzzy_matching": true,
+    "subset_sum_matching": true,
+    "vendor_alias_learning": true,
+    "historical_pattern_matching": true,
+    "confidence_scoring": true
+  },
+  "thresholds": {
+    "high_confidence": 0.9,
+    "medium_confidence": 0.7,
+    "low_confidence": 0.5
+  },
+  "last_training": "2025-09-24T01:51:50.019461",
+  "training_stats": {
+    "total_reconciliations": 37382,
+    "vendor_aliases": 125,
+    "timing_patterns": 608,
+    "amount_tolerances": 11
+  }
+}

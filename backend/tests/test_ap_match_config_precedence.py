@@ -1,8 +1,8 @@
 import unittest
 
-from backend import server
-from backend.db_utils import db_conn
-from backend.api_ap_match import _table_exists
+import server
+from db_utils import db_conn
+from api_ap_match import _table_exists
 
 
 class ApMatchConfigPrecedenceTests(unittest.TestCase):

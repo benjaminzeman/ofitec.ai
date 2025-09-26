@@ -3,7 +3,7 @@ import json
 import gzip
 import tempfile
 
-from backend.server import app
+from server import app
 
 
 def test_fast_mode_every_n(monkeypatch):
@@ -16,7 +16,7 @@ def test_fast_mode_every_n(monkeypatch):
     os.close(fd)
     monkeypatch.setenv('RECON_LATENCY_PERSIST_PATH', path)
     # Import clean module (dynamic env lookups mean reload not required)
-    import backend.conciliacion_api_clean as capi  # noqa: F401
+    import conciliacion_api_clean as capi  # noqa: F401
     client = app.test_client()
     for _ in range(3):
         client.post('/api/conciliacion/suggest', json={'movement_id': 100})
@@ -65,7 +65,7 @@ def test_persistence_extra_fields(monkeypatch):
     os.close(fd)
     monkeypatch.setenv('RECON_LATENCY_PERSIST_PATH', path)
     # Use existing loaded module state (no reload to avoid blueprint state drift)
-    import backend.conciliacion_api_clean as capi
+    import conciliacion_api_clean as capi
     client = app.test_client()
     for _ in range(2):
         client.post('/api/conciliacion/suggest', json={'movement_id': 200})
@@ -88,7 +88,7 @@ def test_metrics_new_gauges(monkeypatch):
     monkeypatch.setenv('RECONCILIACION_CLEAN', '1')
     # Force metrics enabled even if previous test set disable flag
     monkeypatch.setenv('RECON_METRICS_DISABLED', 'false')
-    import backend.conciliacion_api_clean as capi  # noqa: F401
+    import conciliacion_api_clean as capi  # noqa: F401
     client = app.test_client()
     client.post('/api/conciliacion/suggest', json={'movement_id': 300})
     text = client.get('/api/conciliacion/metrics').get_data(as_text=True)
@@ -109,7 +109,7 @@ def test_internal_reset_helper(monkeypatch):
     pre = client.get('/api/conciliacion/metrics/json').get_json()['suggest_latency']['count']
     assert pre >= 1
     # Call internal helper
-    import backend.conciliacion_api_clean as capi
+    import conciliacion_api_clean as capi
     capi.test_reset_internal()
     # Obtain count directly from module (bypass potential caching / debug gating)
     post = capi._latency_summary()['count']

@@ -4,11 +4,11 @@ import gzip
 import tempfile
 import time
 from pathlib import Path
-from backend.server import app
+from server import app
 
 def _reload(monkeypatch):
     import importlib
-    import backend.conciliacion_api as capi
+    import conciliacion_api as capi
     importlib.reload(capi)
     importlib.reload(importlib.import_module('backend.conciliacion_api_clean'))
     monkeypatch.setattr(capi, 'suggest_for_movement', lambda *a, **k: [])
@@ -113,7 +113,7 @@ def test_engine_success_and_fallback_counters(monkeypatch):
     metrics1 = client.get('/api/conciliacion/metrics').get_data(as_text=True)
     assert 'recon_suggest_engine_success_total ' in metrics1
     # force failure
-    import backend.conciliacion_api as capi2
+    import conciliacion_api as capi2
 
     def boom(*_a, **_k):
         raise RuntimeError('fail')

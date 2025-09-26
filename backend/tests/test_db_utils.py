@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from backend import db_utils
+import db_utils
 
 
 def test_resolve_db_path_default(monkeypatch):

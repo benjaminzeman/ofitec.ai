@@ -1,4 +1,4 @@
-from backend.metrics_utils import percentile, histogram
+from metrics_utils import percentile, histogram
 
 
 def test_percentile_basic_cases():

@@ -1,5 +1,5 @@
 import pytest
-from backend import server
+import server
 
 
 @pytest.fixture(name='sn_client')

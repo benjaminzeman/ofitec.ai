@@ -14,7 +14,7 @@ blueprint. They return plain dicts or scalar IDs so they are easy to test.
 """
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
-from backend.db_utils import db_conn
+from db_utils import db_conn
 
 ALIAS_MAX_LEN = 120
 

@@ -1,4 +1,4 @@
-from backend.server import app
+from server import app
 
 
 def test_dynamic_latency_buckets(monkeypatch):

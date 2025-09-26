@@ -3,7 +3,7 @@ import json
 import gzip
 from pathlib import Path
 
-from backend.conciliacion_api_clean import test_reset_internal, _record_latency, _LATENCIES, _load_persisted
+from conciliacion_api_clean import test_reset_internal, _record_latency, _LATENCIES, _load_persisted
 
 
 def _set_env(tmp_path: Path, gzip_mode: bool):

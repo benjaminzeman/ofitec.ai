@@ -3,7 +3,7 @@ import sqlite3
 import tempfile
 from datetime import date, timedelta
 
-from backend.server import app  # assumes blueprint already registered
+from server import app  # assumes blueprint already registered
 
 
 # Helper to set a temporary DB per test module

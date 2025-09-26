@@ -1,4 +1,4 @@
-from backend.metrics_utils import compute_latency_summary, percentile
+from metrics_utils import compute_latency_summary, percentile
 
 
 def test_p95_monotonic_adjustment_skewed():

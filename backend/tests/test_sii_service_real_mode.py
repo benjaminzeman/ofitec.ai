@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-import backend.sii_service as sii_service
+import sii_service as sii_service
 
 SiiClient = sii_service.SiiClient
 

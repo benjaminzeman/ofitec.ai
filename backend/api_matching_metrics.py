@@ -47,7 +47,7 @@ import statistics
 
 from flask import Blueprint, jsonify, request, current_app
 
-from backend.db_utils import db_conn
+from db_utils import db_conn
 
 matching_metrics_bp = Blueprint("matching_metrics", __name__)
 
@@ -166,7 +166,7 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
             cand_counts: list[int] = []
             # Use centralized bucket edges constant for confidence distribution
             try:
-                from backend.recon_constants import AP_CONFIDENCE_BUCKET_EDGES as bucket_edges  # type: ignore
+                from recon_constants import AP_CONFIDENCE_BUCKET_EDGES as bucket_edges  # type: ignore
             except Exception:  # noqa: BLE001
                 # Fallback edges aligned with test expectations
                 bucket_edges = [0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 1.0]
@@ -287,7 +287,7 @@ def _ap_metrics(con: sqlite3.Connection, window_days: int) -> Dict[str, Any]:
                 if rows:
                     # Use existing edges (from recon_constants fallback above)
                     try:
-                        from backend.recon_constants import AP_CONFIDENCE_BUCKET_EDGES as _edges_fb  # type: ignore
+                        from recon_constants import AP_CONFIDENCE_BUCKET_EDGES as _edges_fb  # type: ignore
                     except Exception:  # noqa: BLE001
                         _edges_fb = [0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 1.0]
                     counts = [0 for _ in _edges_fb]
@@ -790,7 +790,7 @@ def matching_metrics_prom():  # pragma: no cover - lightweight exposition
                     rows_sorted = sorted(rows, key=lambda r: r["id"])  # ascending
                     for r in rows_sorted:
                         # Recompute hash
-                        from backend.api_ap_match import _compute_event_hash  # type: ignore
+                        from api_ap_match import _compute_event_hash  # type: ignore
                         test_row = dict(r)
                         test_row["prev_hash"] = prev
                         recomputed = _compute_event_hash(test_row)

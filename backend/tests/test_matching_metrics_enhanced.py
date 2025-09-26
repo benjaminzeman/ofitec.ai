@@ -5,7 +5,7 @@ import unittest
 import uuid
 from datetime import datetime, timedelta, UTC
 
-from backend import server  # noqa: F401
+import server  # noqa: F401
 
 
 class MatchingMetricsEnhancedTests(unittest.TestCase):

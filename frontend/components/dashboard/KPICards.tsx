@@ -1,7 +1,7 @@
 'use client';
 
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { TrendingUp, TrendingDown, Package, Users, FolderOpen, DollarSign } from 'lucide-react';
+import { MetricaIcono, EstadoBadge } from '@/lib/icons';
 
 export function KPICards() {
   const { kpis, loading, error } = useDashboardData();
@@ -62,21 +62,16 @@ export function KPICards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-lime-500/10 rounded-xl flex items-center justify-center">
-              <Package className="h-6 w-6 text-lime-500" />
+              <MetricaIcono tipo="ordenes" value="" size="lg" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            {kpis.growth_rate >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
-            )}
-            <span
-              className={`text-sm ${kpis.growth_rate >= 0 ? 'text-green-500' : 'text-red-500'}`}
-            >
-              {kpis.growth_rate > 0 ? '+' : ''}
-              {kpis.growth_rate.toFixed(1)}%
-            </span>
+            <MetricaIcono 
+              tipo="ordenes" 
+              value={`${kpis.growth_rate > 0 ? '+' : ''}${kpis.growth_rate.toFixed(1)}%`}
+              trend={kpis.growth_rate >= 0 ? "up" : "down"}
+              size="sm"
+            />
             <span className="text-slate-500 dark:text-slate-400 text-sm ml-2">vs mes anterior</span>
           </div>
         </div>
@@ -93,11 +88,12 @@ export function KPICards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-lime-500/10 rounded-xl flex items-center justify-center">
-              <Users className="h-6 w-6 text-lime-500" />
+              <MetricaIcono tipo="proveedores" value="" size="lg" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="text-sm text-lime-500">{formatNumber(kpis.active_providers)}</span>
+            <EstadoBadge estado="vigente" showLabel={false} size="xs" />
+            <span className="text-sm text-lime-500 ml-2">{formatNumber(kpis.active_providers)}</span>
             <span className="text-slate-500 dark:text-slate-400 text-sm ml-2">
               activos este mes
             </span>
@@ -116,11 +112,12 @@ export function KPICards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-lime-500/10 rounded-xl flex items-center justify-center">
-              <FolderOpen className="h-6 w-6 text-lime-500" />
+              <MetricaIcono tipo="proyectos" value="" size="lg" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="text-sm text-lime-500">{Math.round(kpis.total_projects * 0.3)}</span>
+            <EstadoBadge estado="pendiente" showLabel={false} size="xs" />
+            <span className="text-sm text-lime-500 ml-2">{Math.round(kpis.total_projects * 0.3)}</span>
             <span className="text-slate-500 dark:text-slate-400 text-sm ml-2">en progreso</span>
           </div>
         </div>
@@ -137,11 +134,11 @@ export function KPICards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-lime-500/10 rounded-xl flex items-center justify-center">
-              <DollarSign className="h-6 w-6 text-lime-500" />
+              <MetricaIcono tipo="revenue" value="" size="lg" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="text-sm text-lime-500">+8%</span>
+            <MetricaIcono tipo="revenue" value="+8%" trend="up" size="sm" />
             <span className="text-slate-500 dark:text-slate-400 text-sm ml-2">vs objetivo</span>
           </div>
         </div>

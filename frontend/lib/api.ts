@@ -1,12 +1,11 @@
 // ofitec.ai - API Data Services
 // Connects Next.js frontend to Flask backend with real data
 
-// Prefer relative API path so rewrites work in Docker and dev; fall back to env when needed
+// Use environment variables correctly for Docker deployment
 const API_BASE_URL =
   typeof window !== 'undefined'
     ? '/api'
-    : process.env.NEXT_PUBLIC_API_BASE ||
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5555'}/api`;
+    : process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5555/api';
 
 // Response types
 export interface DashboardData {
@@ -978,6 +977,269 @@ export async function getApMatchConfig(params?: {
         .join('&')
     : '';
   const resp = await fetch(`${API_BASE_URL}/ap-match/config${qs}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// -----------------------------
+// AR (Accounts Receivable) API
+// -----------------------------
+
+export interface SalesInvoice {
+  invoice_id: number;
+  customer_rut: string;
+  customer_name: string;
+  invoice_number: string;
+  issue_date: string;
+  due_date?: string;
+  currency?: string;
+  total_amount: number;
+  project_id?: number | null;
+  project_name?: string;
+  paid_amount?: number | null;
+  outstanding_amount?: number;
+  days_overdue?: number;
+  status?: 'paid' | 'pending' | 'overdue' | 'partial';
+}
+
+export interface ArSuggestion {
+  project_id: string | number;
+  project_name?: string;
+  confidence: number;
+  reasons: string[];
+  reason?: string; // backward compatibility
+}
+
+export interface ArRuleStats {
+  rules_total: number;
+  rules_by_kind: Record<string, number>;
+  invoices_total: number;
+  invoices_with_project: number;
+  project_assign_rate: number | null;
+  distinct_customer_names: number;
+  customer_names_with_rule: number;
+  customer_name_rule_coverage: number | null;
+  recent_events_30d: number;
+  generated_at: string;
+}
+
+export interface ArAgingBucket {
+  project_id: string | number;
+  project_name?: string;
+  d0_30: number;
+  d31_60: number;
+  d61_90: number;
+  d90p: number;
+}
+
+// Fetch sales invoices with pagination and filtering
+export async function fetchSalesInvoices(params?: {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  project_id?: string | number;
+  date_from?: string;
+  date_to?: string;
+  order_by?: string;
+  order_dir?: 'ASC' | 'DESC';
+  status?: 'paid' | 'pending' | 'overdue' | 'partial';
+}): Promise<PagedResponse<SalesInvoice>> {
+  const qs = params
+    ? '?' +
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+
+  try {
+    const resp = await fetch(`${API_BASE_URL}/sales_invoices${qs}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+
+    // Transform and enrich the response
+    const items = (data.items || []).map((invoice: any) => ({
+      invoice_id: invoice.invoice_id ?? invoice.id ?? 0,
+      customer_rut: invoice.customer_rut ?? invoice.cliente_rut ?? '',
+      customer_name: invoice.customer_name ?? invoice.cliente_nombre ?? '',
+      invoice_number: invoice.invoice_number ?? invoice.documento_numero ?? '',
+      issue_date: invoice.issue_date ?? invoice.fecha ?? '',
+      due_date: invoice.due_date ?? invoice.fecha_vencimiento,
+      currency: invoice.currency ?? invoice.moneda ?? 'CLP',
+      total_amount: Number(invoice.total_amount ?? invoice.monto_total ?? 0),
+      project_id: invoice.project_id,
+      project_name: invoice.project_name ?? invoice.nombre_proyecto,
+      paid_amount: Number(invoice.paid_amount ?? invoice.monto_pagado ?? 0),
+      outstanding_amount: Number(
+        invoice.outstanding_amount ??
+          Number(invoice.total_amount ?? 0) - Number(invoice.paid_amount ?? 0),
+      ),
+      days_overdue: invoice.days_overdue ?? invoice.dias_vencidos,
+      status:
+        invoice.status ??
+        (Number(invoice.paid_amount ?? 0) >= Number(invoice.total_amount ?? 0)
+          ? 'paid'
+          : invoice.days_overdue > 0
+            ? 'overdue'
+            : Number(invoice.paid_amount ?? 0) > 0
+              ? 'partial'
+              : 'pending'),
+    }));
+
+    return {
+      items,
+      meta: data.meta ?? { total: items.length, page: 1, page_size: items.length, pages: 1 },
+    };
+  } catch (error) {
+    console.error('Error fetching sales invoices:', error);
+    throw error;
+  }
+}
+
+// Fetch AR project mapping suggestions
+export async function fetchArSuggestions(payload: {
+  invoice: {
+    invoice_id?: number;
+    customer_rut?: string;
+    customer_name?: string;
+    invoice_number?: string;
+    total_amount?: number;
+    issue_date?: string;
+    drive_path?: string;
+  };
+  project_hint?: string;
+}): Promise<{ items: ArSuggestion[] }> {
+  const resp = await fetch(`${API_BASE_URL}/ar-map/suggestions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Confirm AR mapping and create rules
+export async function confirmArMapping(payload: {
+  rules: Array<{
+    kind: 'customer_name_like' | 'drive_path_like';
+    pattern: string;
+    project_id: string;
+  }>;
+  assignment?: {
+    invoice_id: number;
+    project_id: string;
+  };
+  metadata?: {
+    user_id: string;
+  };
+}): Promise<{ ok: boolean; saved_rules: number; updated_invoices: number }> {
+  const resp = await fetch(`${API_BASE_URL}/ar-map/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok && resp.status !== 201) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Auto-assign project to invoice when confidence is high
+export async function autoAssignArProject(payload: {
+  invoice: {
+    invoice_id?: number;
+    customer_rut?: string;
+    customer_name?: string;
+    invoice_number?: string;
+    total_amount?: number;
+    issue_date?: string;
+  };
+  invoice_id?: number;
+  threshold?: number;
+  dry_run?: boolean;
+}): Promise<{
+  ok: boolean;
+  auto_assigned: boolean;
+  dry_run: boolean;
+  threshold: number;
+  chosen: ArSuggestion | null;
+  updated_invoices: number;
+}> {
+  const resp = await fetch(`${API_BASE_URL}/ar-map/auto_assign`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Fetch AR aging by project
+export async function fetchArAging(params?: {
+  project_id?: string | number;
+}): Promise<{ items: ArAgingBucket[] }> {
+  const qs = params
+    ? '?' +
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+  const resp = await fetch(`${API_BASE_URL}/ar_aging_by_project${qs}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Fetch AR rules statistics
+export async function fetchArRuleStats(): Promise<ArRuleStats> {
+  const resp = await fetch(`${API_BASE_URL}/ar/rules_stats`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Fetch alias candidates for promotion to rules
+export async function fetchArAliasCandidates(params?: {
+  min_hits?: number;
+  promoted?: '0' | '1';
+}): Promise<{
+  items: Array<{
+    pattern: string;
+    project_id: string;
+    hits: number;
+    last_hit: string;
+    promoted_at: string | null;
+  }>;
+  count: number;
+}> {
+  const qs = params
+    ? '?' +
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null && String(v) !== '')
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+  const resp = await fetch(`${API_BASE_URL}/ar-map/alias_candidates${qs}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// Bulk assign projects to multiple invoices
+export async function bulkAssignArProjects(payload: {
+  assignments: Array<{
+    invoice_id: number;
+    project_id: string;
+  }>;
+  create_rules?: boolean;
+  user_id?: string;
+}): Promise<{
+  ok: boolean;
+  assigned: number;
+  failed: number;
+  rules_created: number;
+}> {
+  const resp = await fetch(`${API_BASE_URL}/ar-map/bulk_assign`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   return await resp.json();
 }

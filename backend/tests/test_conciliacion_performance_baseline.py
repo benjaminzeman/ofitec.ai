@@ -4,7 +4,7 @@ import json
 import statistics
 import pytest
 from flask import Flask
-from backend.conciliacion_api_clean import bp as conciliacion_bp  # type: ignore
+from conciliacion_api_clean import bp as conciliacion_bp  # type: ignore
 
 RUNTIME_MS_BUDGET = float(os.getenv("PERF_SUGGEST_P95_BUDGET_MS", "120"))  # default 120ms p95 budget
 ITERATIONS = int(os.getenv("PERF_SUGGEST_ITERS", "60"))  # keep small for CI

@@ -5,7 +5,7 @@ If any additional code appears below the sentinel, remove it.
 """
 from __future__ import annotations
 
-from .conciliacion_api_clean import (  # type: ignore F401
+from conciliacion_api_clean import (  # type: ignore F401
     bp,
     suggest_for_movement,
     _SUGGEST_LATENCIES,
@@ -62,7 +62,7 @@ def _load_persisted():  # type: ignore
             arr = data
             slo_total = None
             last_reset = None
-        from . import conciliacion_api_clean as _clean  # import after read
+        import conciliacion_api_clean as _clean  # import after read
         # Clear alias + primary deque (they reference same object originally)
         try:
             _clean._LATENCIES.clear()
@@ -86,7 +86,7 @@ def _load_persisted():  # type: ignore
                 pass
         # Also mirror into legacy shim's exported deque reference (may point to old object)
         try:
-            from . import conciliacion_api as _shim_self  # self import
+            import conciliacion_api as _shim_self  # self import
             if hasattr(_shim_self, '_SUGGEST_LATENCIES') and _shim_self._SUGGEST_LATENCIES is not _clean._LATENCIES:
                 try:
                     _shim_self._SUGGEST_LATENCIES.clear()

@@ -1,26 +1,35 @@
 import os
-import importlib
-import sqlite3
 import pytest
+from test_db_cleanup import get_test_db, ensure_test_schema, cleanup_test_dbs
 
 
 @pytest.fixture(scope="function")
 def client(tmp_path):
     """Unified test client using a fresh temp DB for isolation.
 
-    Sets DB_PATH env before importing/reloading server so that all modules
-    (including api_ar_map & matching metrics) point to the same ephemeral DB.
+    Uses the new test database management system to prevent accumulation
+    of test databases in the data directory.
     """
-    db_file = tmp_path / "test.db"
+    # Use the new test DB manager instead of tmp_path
+    db_file = get_test_db("test_client")
     os.environ["DB_PATH"] = str(db_file)
+    
+    # Clear modules that might have cached DB paths
+    import sys
+    modules_to_clear = [name for name in sys.modules.keys()
+                        if any(x in name for x in ['server', 'sc_ep_api', 'ep_api']) and 'api_ar_map' not in name]
+    for module_name in modules_to_clear:
+        del sys.modules[module_name]
+
     # Ensure clean import state
-    import backend.server as server
-    importlib.reload(server)
-    # Pre-create minimal tables often expected to exist implicitly
-    with sqlite3.connect(str(db_file)) as con:
-        con.execute("CREATE TABLE IF NOT EXISTS ar_project_rules(id INTEGER PRIMARY KEY, kind TEXT, pattern TEXT, project_id TEXT, created_at TEXT, created_by TEXT)")
-        con.execute("CREATE TABLE IF NOT EXISTS ap_match_events(id INTEGER PRIMARY KEY, candidates_json TEXT, confidence REAL, accepted INTEGER, created_at TEXT)")
-        con.commit()
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    import server
+    # Don't reload - just import fresh
+    
+    # Use the new schema setup function
+    ensure_test_schema(str(db_file))
+    
     server.app.config["TESTING"] = True
     with server.app.test_client() as c:
         yield c
@@ -32,6 +41,7 @@ def _recon_env_isolation():
 
     Prevent leakage of sampling overrides or disable flags set by previous tests.
     Tests that need specific values simply set them after their fixtures run.
+    Also performs cleanup of old test databases periodically.
     """
     # Clear sampling globals/overrides
     for k in list(os.environ.keys()):
@@ -44,5 +54,10 @@ def _recon_env_isolation():
         "RECON_STRUCTURED_LOG_ASYNC",
     ]:
         os.environ.pop(k, None)
+    
     yield
-    # (No teardown restoration needed; tests set what they need explicitly.)
+    
+    # Periodic cleanup of old test databases (every 50 tests approximately)
+    import random
+    if random.randint(1, 50) == 1:
+        cleanup_test_dbs()

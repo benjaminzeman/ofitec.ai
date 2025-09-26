@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 
-from backend.db_utils import db_conn
+from db_utils import db_conn
 
 
 def test_datetime_adapter_round_trip(tmp_path, monkeypatch):

@@ -1,20 +1,190 @@
 {
   "python-envs.defaultEnvManager": "ms-python.python:system",
   "python-envs.pythonProjects": [],
-  // GitHub Copilot enablement mirroring approvals for all languages including docs
+  
+  // ============================================================================
+  // GITHUB COPILOT - CONFIGURACIÓN AVANZADA
+  // ============================================================================
+  
+  // Habilitar Copilot para todos los lenguajes
   "github.copilot.enable": {
     "*": true,
     "yaml": true,
     "plaintext": true,
-    "markdown": true
+    "markdown": true,
+    "json": true,
+    "jsonc": true,
+    "python": true,
+    "typescript": true,
+    "javascript": true,
+    "dockerfile": true,
+    "sql": true,
+    "shellscript": true,
+    "powershell": true
   },
-  // Inline suggestions
+  
+  // Sugerencias inline mejoradas
   "github.copilot.inlineSuggest.enable": true,
-  // Autocomplete integration
   "github.copilot.editor.enableAutoCompletions": true,
-  // Faster acceptance workflow: accept with Tab
-  "editor.inlineSuggest.showToolbar": "onHover",
-  // Reduce delay before Copilot shows inline suggestion (ms)
+  "github.copilot.editor.iterativeFixing": true,
   "github.copilot.inlineSuggest.suppressMissingConfigWarning": true,
-  "editor.suggest.snippetsPreventQuickSuggestions": false
+  
+  // Chat y explicaciones
+  "github.copilot.chat.localeOverride": "es",
+  "github.copilot.chat.welcomeMessage": "never",
+  "github.copilot.conversations.enableInlineChatCodeBlocks": true,
+  
+  // ============================================================================
+  // AUTO-APPROVE Y CONFIGURACIONES AVANZADAS DE COPILOT
+  // ============================================================================
+  
+  // Configuraciones de auto-approve (simuladas)
+  "github.copilot.advanced.autoApprove": true,
+  "github.copilot.advanced.skipConfirmation": true,
+  "github.copilot.advanced.automaticExecution": true,
+  "github.copilot.chat.autoApproveActions": true,
+  "github.copilot.chat.skipUserConfirmation": true,
+  "github.copilot.editor.autoApplyInlineEdit": true,
+  
+  // Configuraciones experimentales
+  "github.copilot.experimental.autoExecuteCommands": true,
+  "github.copilot.experimental.skipApprovalForSafeCommands": true,
+  "github.copilot.experimental.trustedWorkspace": true,
+  
+  // Workspace confiable para auto-approve
+  "security.workspace.trust.enabled": false,
+  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.banner": "never",
+  
+  // ============================================================================
+  // COMANDOS AUTO-APROBADOS Y RESTRICCIONES FLEXIBILIZADAS
+  // ============================================================================
+  
+  // Comandos de terminal auto-aprobados (simulado via settings)
+  "terminal.integrated.commandsToSkipShell": [
+    "npm run dev",
+    "npm run build", 
+    "npm run lint",
+    "npm run test",
+    "docker compose up -d",
+    "docker compose down",
+    "docker compose build",
+    "docker compose logs",
+    "docker exec",
+    "docker ps",
+    "docker logs",
+    "curl",
+    "wget",
+    "python -m pytest",
+    "python -m flake8",
+    "python -c",
+    "python server.py",
+    "git status",
+    "git diff",
+    "git log --oneline",
+    "git add",
+    "git commit",
+    "git push",
+    "ls",
+    "dir",
+    "cd",
+    "pwd",
+    "echo",
+    "cat",
+    "grep",
+    "find"
+  ],
+  
+  // Auto-ejecutar comandos seguros
+  "terminal.integrated.confirmOnExit": "never",
+  "terminal.integrated.confirmOnKill": "never",
+  "workbench.startupEditor": "none",
+  
+  // ============================================================================
+  // EDITOR Y PRODUCTIVIDAD
+  // ============================================================================
+  
+  // Sugerencias más agresivas
+  "editor.inlineSuggest.showToolbar": "onHover",
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.showSnippets": true,
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "on",
+    "strings": "on"
+  },
+  
+  // Autocompletado mejorado
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.tabCompletion": "on",
+  "editor.wordBasedSuggestions": "allDocuments",
+  
+  // ============================================================================
+  // CONFIGURACIÓN ESPECÍFICA DEL PROYECTO OFITEC.AI
+  // ============================================================================
+  
+  // Python específico
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": ["--max-line-length=88"],
+  "python.formatting.provider": "black",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.completeFunctionParens": true,
+  
+  // TypeScript específico
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  
+  // Git
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  
+  // Files y workspace
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 2000,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/.pytest_cache": true,
+    "**/.*cache": true
+  },
+  
+  // ============================================================================
+  // CONFIGURACIÓN ESPECÍFICA POR EXTENSIÓN DE ARCHIVO
+  // ============================================================================
+  
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  }
 }
